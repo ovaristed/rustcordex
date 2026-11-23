@@ -2145,7 +2145,7 @@ function setPopoverFeedback(msg, isErr = false) {
 function syncProfilePopoverUi() {
   if (!me) return;
   if (String(me.profile_sticker_url || '').startsWith('data:image/')) me.profile_sticker_url = '';
-  document.getElementById('popNick').textContent = displayNameOf(me.username);
+  document.getElementById('popNick').innerHTML = formatProfileDisplayName(displayNameOf(me.username));
   document.getElementById('popLoginText').textContent = '@' + me.username;
   document.getElementById('popAv').innerHTML = renderAvatarHtml(me.username);
   const popBanner = document.querySelector('#profilePopover .pop-banner');
