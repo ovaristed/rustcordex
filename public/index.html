@@ -2063,6 +2063,7 @@ function persistSavedAccount(userObj, authToken) {
     avatar_url: userObj.avatar_url || '',
     profile_description: userObj.profile_description || '',
     profile_sticker_url: userObj.profile_sticker_url || '',
+    profile_background: userObj.profile_background || '',
     token: authToken || token || ''
   };
   savedAccounts = [entry, ...savedAccounts.filter((a) => a.username !== entry.username)].slice(0, 8);
@@ -3587,7 +3588,7 @@ async function selectProfileSticker(value, source) {
     try {
       const res = await fetch('/api/profile', {
         method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},
-        body:JSON.stringify({nickname:me.nickname||'',avatar_url:me.avatar_url||'',profile_description:me.profile_description||'',profile_sticker_url:me.profile_sticker_url})
+        body:JSON.stringify({nickname:me.nickname||'',avatar_url:me.avatar_url||'',profile_description:me.profile_description||'',profile_sticker_url:me.profile_sticker_url,profile_background:me.profile_background||''})
       });
       const data = await res.json().catch(()=>({}));
       if (!res.ok) throw new Error(data.error || 'Не удалось сохранить стикер');
@@ -3647,7 +3648,7 @@ async function saveProfile() {
     const res = await fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ nickname: nick, avatar_url: me.avatar_url || '', profile_description: document.getElementById('profileDescriptionInput').value.trim().slice(0, 120), profile_sticker_url: me.profile_sticker_url || '' })
+      body: JSON.stringify({ nickname: nick, avatar_url: me.avatar_url || '', profile_description: document.getElementById('profileDescriptionInput').value.trim().slice(0, 120), profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgValue || me.profile_background || '' })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -3951,7 +3952,7 @@ async function refreshSocial() {
       friends = rawFriends.map(normalizeUserEntry).filter(Boolean);
       chatsMeta = rawChats.map(normalizeUserEntry).filter(Boolean);
       for (const item of [...friends, ...chatsMeta]) {
-        userProfiles[item.username] = { nickname: item.nickname || '', avatar_url: item.avatar_url || '', profile_description: item.profile_description || '', profile_sticker_url: item.profile_sticker_url || '' };
+        userProfiles[item.username] = { nickname: item.nickname || '', avatar_url: item.avatar_url || '', profile_description: item.profile_description || '', profile_sticker_url: item.profile_sticker_url || '', profile_background: item.profile_background || '' };
       }
     }
     if (rRes.ok) {
@@ -3961,7 +3962,7 @@ async function refreshSocial() {
         : (Array.isArray(rData.incoming) ? rData.incoming : (Array.isArray(rData.requests) ? rData.requests : []));
       incomingReqs = rawInc.map(normalizeUserEntry).filter(Boolean);
       for (const req of incomingReqs) {
-        userProfiles[req.username] = { nickname: req.nickname || '', avatar_url: req.avatar_url || '', profile_description: req.profile_description || '', profile_sticker_url: req.profile_sticker_url || '' };
+        userProfiles[req.username] = { nickname: req.nickname || '', avatar_url: req.avatar_url || '', profile_description: req.profile_description || '', profile_sticker_url: req.profile_sticker_url || '', profile_background: req.profile_background || '' };
       }
     }
     if (gRes && gRes.ok) {
@@ -3992,7 +3993,7 @@ async function refreshSocial() {
       for (const grp of groupsMeta) {
         if (grp.profiles) {
           for (const [u, prof] of Object.entries(grp.profiles)) {
-            userProfiles[u] = { nickname: (prof && prof.nickname) || '', avatar_url: (prof && prof.avatar_url) || '', profile_description: (prof && prof.profile_description) || '', profile_sticker_url: (prof && prof.profile_sticker_url) || '' };
+            userProfiles[u] = { nickname: (prof && prof.nickname) || '', avatar_url: (prof && prof.avatar_url) || '', profile_description: (prof && prof.profile_description) || '', profile_sticker_url: (prof && prof.profile_sticker_url) || '', profile_background: (prof && prof.profile_background) || '' };
           }
         }
       }
