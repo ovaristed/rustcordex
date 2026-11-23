@@ -418,6 +418,18 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
   }
 });
 
+app.get('/api/users/:username/profile', authMiddleware, async (req, res) => {
+  try {
+    const username = String(req.params.username || '').trim();
+    if (!username) return res.status(400).json({ error: 'Не указан логин пользователя' });
+    const result = await pool.query('SELECT username, nickname, avatar_url, profile_description, profile_sticker_url FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+    if (!result.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
+    return res.json({ user: result.rows[0] });
+  } catch (err) {
+    console.error('Public profile error:', err);
+    return res.status(500).json({ error: 'Ошибка загрузки профиля' });
+  }
+});
 app.get('/api/friends', authMiddleware, async (req, res) => {
   try {
     const meName = req.user.username;
