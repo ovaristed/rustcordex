@@ -8,3 +8,15 @@ if (location.protocol === 'data:') {
     openExternal: (url) => ipcRenderer.send('open-external-url', String(url || ''))
   });
 }
+
+
+// Native notification bridge for the trusted Rustcord web origin.
+if (location.protocol === 'https:') {
+  contextBridge.exposeInMainWorld('rustcordDesktop', {
+    notify: (payload) => ipcRenderer.send('rustcord:notify', {
+      title: String(payload && payload.title || 'Rustcord').slice(0, 100),
+      body: String(payload && payload.body || '').slice(0, 220),
+      tag: String(payload && payload.tag || 'rustcord').slice(0, 120)
+    })
+  });
+}
