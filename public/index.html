@@ -2346,7 +2346,7 @@ let ringAudioCtx = null;
 const peerConnections = new Map();
 const remoteAudios = new Map();
 const remoteStreams = new Map();
-const remoteAudioAnalysers = new Map();
+const remoteSpeakingState = new Map();
 
 let rawMicStream = null, micStream = null, camStream = null, scrStream = null;
 let micAudioCtx = null, micGainNode = null, micAnalyser = null, speakRaf = null;
@@ -2731,10 +2731,12 @@ function applyRemotePeerAudioSettings(username) {
     aud.muted = muted;
     aud.volume = clampedVol;
   }
+  // Remote video carries the same audio track as the dedicated audio element.
+  // Keep video muted so the participant is heard exactly once, without phase/echo issues.
   const rv = document.getElementById('remoteVideo_' + username);
   if (rv) {
-    rv.muted = muted;
-    rv.volume = clampedVol;
+    rv.muted = true;
+    rv.volume = 0;
   }
 }
 
@@ -5067,8 +5069,7 @@ function cleanupPeerConnection(username) {
   pcState.delete(username);
   const aud = remoteAudios.get(username);
   if (aud) { aud.srcObject = null; try { aud.remove(); } catch {} remoteAudios.delete(username); }
-  const analyserState=remoteAudioAnalysers.get(username);
-  if (analyserState) { try { analyserState.context.close(); } catch {} remoteAudioAnalysers.delete(username); }
+  remoteSpeakingState.delete(username);
   remoteStreams.delete(username);
 
   const tile = document.getElementById('remoteTile_' + username);
@@ -5129,16 +5130,31 @@ function startSpeakingLoop() {
       document.getElementById('localTile').classList.toggle('speaking', localSpeaking);
       document.getElementById('meAv').classList.toggle('speaking-ring', localSpeaking);
     }
-    for (const [username, state] of remoteAudioAnalysers) {
-      const tile=document.getElementById('remoteTile_'+username);
-      if (!tile || !state.analyser) continue;
-      state.analyser.getByteFrequencyData(state.buffer);
-      const avg=state.buffer.reduce((a,b)=>a+b,0)/state.buffer.length;
-      const speaking=avg>18;
-      if (speaking!==state.speaking) {
-        state.speaking=speaking;
-        tile.classList.toggle('speaking',speaking);
-      }
+    // Poll inbound WebRTC audio levels without routing or modifying remote audio.
+    for (const [username, state] of remoteSpeakingState) {
+      if (state.pending || !state.pc || state.pc.connectionState === 'closed') continue;
+      state.pending = true;
+      state.pc.getStats(state.track || undefined).then((stats) => {
+        let level = 0;
+        stats.forEach((report) => {
+          if (report.type === 'inbound-rtp' && (report.kind === 'audio' || report.mediaType === 'audio')) {
+            if (Number.isFinite(report.audioLevel)) level = Math.max(level, report.audioLevel);
+            else if (Number.isFinite(report.totalAudioEnergy) && Number.isFinite(report.totalSamplesDuration) && report.totalSamplesDuration > 0) {
+              const energy = report.totalAudioEnergy - (state.lastEnergy || 0);
+              const duration = report.totalSamplesDuration - (state.lastDuration || 0);
+              if (duration > 0 && energy >= 0) level = Math.max(level, Math.sqrt(energy / duration));
+              state.lastEnergy = report.totalAudioEnergy;
+              state.lastDuration = report.totalSamplesDuration;
+            }
+          }
+        });
+        const speaking = level > 0.025;
+        if (speaking !== state.speaking) {
+          state.speaking = speaking;
+          const tile = document.getElementById('remoteTile_' + username);
+          if (tile) tile.classList.toggle('speaking', speaking);
+        }
+      }).catch(() => {}).finally(() => { state.pending = false; });
     }
 
     speakRaf = requestAnimationFrame(tick);
@@ -5334,18 +5350,20 @@ function ensurePC(peerUser) {
         remoteAudios.set(peerUser, aud);
       }
       aud.srcObject = stream;
-      const AudioCtx=window.AudioContext||window.webkitAudioContext;
-      if (AudioCtx && !remoteAudioAnalysers.has(peerUser)) {
-        try {
-          const context=new AudioCtx();
-          const source=context.createMediaStreamSource(stream);
-          const analyser=context.createAnalyser();
-          analyser.fftSize=256;
-          source.connect(analyser);
-          remoteAudioAnalysers.set(peerUser,{context,source,analyser,buffer:new Uint8Array(analyser.frequencyBinCount),speaking:false});
-          if (context.state==='suspended') context.resume().catch(()=>{});
-        } catch(err) { console.warn('[voice] remote speaking analyser failed',peerUser,err); }
-      }
+      aud.muted = false;
+      const peerPc = c;
+      remoteSpeakingState.set(peerUser, {
+        pc: peerPc,
+        track: e.track,
+        pending: false,
+        speaking: false,
+        lastEnergy: 0,
+        lastDuration: 0
+      });
+      const tile = document.getElementById('remoteTile_' + peerUser);
+      if (tile) tile.classList.remove('speaking');
+      const playPromise = aud.play && aud.play();
+      if (playPromise && typeof playPromise.catch === 'function') playPromise.catch((err) => console.warn('[voice] remote audio playback blocked', peerUser, err));
       applyOutputDeviceToAll();
       applyRemotePeerAudioSettings(peerUser);
     } else if (e.track.kind === 'video') {
