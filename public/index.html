@@ -3635,6 +3635,7 @@ function initProfileBgCanvas(){
 function clearProfileBgCanvas(){const c=document.getElementById('profileBgCanvas');if(!c)return;const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.fillStyle='#20232b';x.fillRect(0,0,c.width,c.height);}
 function useProfileBgDrawing(){const c=document.getElementById('profileBgCanvas');if(!c)return;profileBgValue=c.toDataURL('image/jpeg',.82);updateProfileBgPreview('url('+profileBgValue+')');}
 function resetProfileBg(){profileBgValue='';me.profile_background='';updateProfileBgPreview(profileBgGradient());}
+document.addEventListener('DOMContentLoaded',()=>{initProfileBgCanvas();});
 function setProfileBannerBackground(value){const el=document.querySelector('.user-profile-banner');if(!el)return;el.style.background=value&&value.startsWith('data:image/')?'center/cover no-repeat url("'+value+'")':(value||'linear-gradient(135deg,#c83e4d,var(--accent))');}
 
 async function saveProfile() {
