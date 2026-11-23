@@ -5042,11 +5042,9 @@ function endCall(notify = true, postLog = true) {
   if (notify && ws && ws.readyState === WebSocket.OPEN) {
     const sigType = (ctxAtEnd && ctxAtEnd.kind === 'group') ? 'call-end' : (isRingingOutgoing ? 'call-reject' : 'call-end');
     if (ctxAtEnd && ctxAtEnd.kind === 'group') {
-      const grp = getGroupById(ctxAtEnd.id);
-      const targets = ((grp && grp.members) || []).filter((u) => me && u !== me.username);
-      for (const u of targets) {
-        ws.send(JSON.stringify({ type: sigType, to: u, callContext: ctxAtEnd, callId: callIdAtEnd }));
-      }
+      // Let the server resolve current group membership. A stale or missing
+      // client-side group cache must never leave other members ringing.
+      ws.send(JSON.stringify({ type: 'call-end', callContext: ctxAtEnd, callId: callIdAtEnd }));
     } else if (ctxAtEnd && ctxAtEnd.id) {
       ws.send(JSON.stringify({ type: sigType, to: ctxAtEnd.id, callContext: ctxAtEnd, callId: callIdAtEnd }));
     }
