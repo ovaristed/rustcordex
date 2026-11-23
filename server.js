@@ -573,6 +573,22 @@ app.post('/api/friends/remove', authMiddleware, async (req, res) => {
   }
 });
 
+app.delete('/api/dm', authMiddleware, async (req, res) => {
+  try {
+    const meName = req.user.username;
+    const peer = String(req.query.peer || '').trim();
+    if (!peer || peer.toLowerCase() === meName.toLowerCase()) return res.status(400).json({ error: 'Некорректный собеседник' });
+    const exists = await pool.query('SELECT username FROM users WHERE LOWER(username) = LOWER($1)', [peer]);
+    if (!exists.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
+    const realPeer = exists.rows[0].username;
+    const deleted = await pool.query('DELETE FROM direct_messages WHERE (sender = $1 AND recipient = $2) OR (sender = $2 AND recipient = $1)', [meName, realPeer]);
+    return res.json({ ok: true, deleted: deleted.rowCount || 0 });
+  } catch (err) {
+    console.error('DM clear error:', err);
+    return res.status(500).json({ error: 'Не удалось очистить переписку' });
+  }
+});
+
 app.get('/api/dm', authMiddleware, async (req, res) => {
   try {
     const meName = req.user.username;
