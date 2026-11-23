@@ -1499,9 +1499,9 @@
   }
 
   /* Refined iOS Liquid Glass: neutral crystal, soft white light */
-  html[data-theme="liquid"] body {
-    background-color:#090b10;
-    background-image:radial-gradient(ellipse at 50% -18%,rgba(255,255,255,.13),transparent 48%),radial-gradient(ellipse at 8% 45%,rgba(190,215,245,.055),transparent 38%),linear-gradient(145deg,#080a0f,#11141b 58%,#090b10);
+  html[data-theme="aurora-glass"] body {
+    background-color:#06121d;
+    background-image:radial-gradient(ellipse at 16% 8%,rgba(42,225,211,.22),transparent 38%),radial-gradient(ellipse at 88% 18%,rgba(144,130,255,.20),transparent 42%),radial-gradient(ellipse at 52% 105%,rgba(74,163,220,.16),transparent 45%),linear-gradient(145deg,#050d18,#0b1b2b 54%,#07111e);
   }
   html[data-theme="liquid"] .sidebar, html[data-theme="liquid"] .main, html[data-theme="liquid"] .card, html[data-theme="liquid"] .modal-card, html[data-theme="liquid"] .incoming-card, html[data-theme="liquid"] .profile-popover, html[data-theme="liquid"] .user-profile-card, html[data-theme="liquid"] .voice-ctx-menu, html[data-theme="liquid"] .group-ctx-menu {
     background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(220,230,245,.035) 52%,rgba(255,255,255,.018)) !important;
@@ -1868,8 +1868,7 @@
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Дискорд</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
-          <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#35c6c8"></span>Аврора</button>
-          <button type="button" class="theme-swatch" data-theme="liquid" onclick="applyTheme('liquid')"><span class="dot" style="background:linear-gradient(135deg,#8edcff,#b9a6ff,#ffb8dc)"></span>Liquid Glass</button>
+          <button type="button" class="theme-swatch" data-theme="aurora-glass" onclick="applyTheme('aurora-glass')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff)"></span>Aurora Glass</button>
         </div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
@@ -2098,6 +2097,11 @@ function syncProfilePopoverUi() {
   document.getElementById('popNick').textContent = displayNameOf(me.username);
   document.getElementById('popLoginText').textContent = '@' + me.username;
   document.getElementById('popAv').innerHTML = renderAvatarHtml(me.username);
+  const popBanner = document.querySelector('#profilePopover .pop-banner');
+  if (popBanner) {
+    const drawing = String(me.profile_background || '');
+    popBanner.style.background = drawing.startsWith('data:image/') ? profileBgGradient() + ', center / cover no-repeat url("' + drawing + '")' : profileBgGradient();
+  }
   const popDesc = document.getElementById('popDescription');
   if (popDesc) popDesc.textContent = me.profile_description || 'Здесь будет описание';
   const popSticker = document.getElementById('popSticker');
@@ -3227,15 +3231,10 @@ const THEMES = {
     glow2: 'rgba(255, 168, 198, 0.24)', wallpaper: "url('/backgrounds/purple.jpg')",
     overlay: 'rgba(9, 7, 16, 0.52)', effect: 'sakura'
   },
-  aurora: {
-    bg: '#07131b', panelRgb: '13, 34, 43', accent: '#35c6c8',
-    glow2: 'rgba(53, 198, 200, 0.18)', wallpaper: 'none',
-    overlay: 'rgba(5, 15, 22, 0.12)', effect: 'none'
-  },
-  liquid: {
-    bg: '#07111f', panelRgb: '105, 151, 194', accent: '#91d7ff',
-    glow2: 'rgba(179, 155, 255, 0.32)', wallpaper: 'none',
-    overlay: 'rgba(4, 12, 25, 0.18)', effect: 'none'
+  'aurora-glass': {
+    bg: '#06121d', panelRgb: '44, 91, 112', accent: '#72e4df',
+    glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: 'none',
+    overlay: 'rgba(4, 13, 24, 0.12)', effect: 'none'
   }
 };
 
@@ -3253,7 +3252,8 @@ function syncThemeEffect() {
 }
 
 function applyTheme(name) {
-  const valid = THEMES[name] ? name : 'discord';
+  const requested = name === 'aurora' || name === 'liquid' ? 'aurora-glass' : name;
+  const valid = THEMES[requested] ? requested : 'discord';
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
   const t = THEMES[valid];
@@ -3268,7 +3268,7 @@ function applyTheme(name) {
   }
   document.documentElement.style.setProperty('--theme-overlay', t.overlay || 'rgba(7, 9, 15, 0.52)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
-  const panelAlpha = valid === 'discord' ? '1' : (valid === 'liquid' ? '0.24' : '0.16');
+  const panelAlpha = valid === 'discord' ? '1' : (valid === 'aurora-glass' ? '0.22' : '0.16');
   document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
   document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
   document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
