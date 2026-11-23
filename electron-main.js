@@ -3,7 +3,7 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 
-const DEFAULT_SERVER_URL = process.env.RUSTCORD_SERVER_URL || 'https://rustcord-server.onrender.com';
+const DEFAULT_SERVER_URL = process.env.RUSTCORD_SERVER_URL || 'https://rustcord.hostless.app';
 const REQUEST_TIMEOUT_MS = 12000;
 
 let mainWindow = null;
