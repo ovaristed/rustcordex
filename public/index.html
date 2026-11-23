@@ -2176,12 +2176,10 @@ async function openUserProfile(username) {
   const nameEl = document.getElementById('userProfileName');
   const loginEl = document.getElementById('userProfileLogin');
   const avatarEl = document.getElementById('userProfileAvatar');
-  const descEl = document.getElementById('userProfileDescription');
   const stickerEl = document.getElementById('userProfileSticker');
   const thoughtEl = document.getElementById('userProfileThought');
   nameEl.textContent = displayNameOf(target); loginEl.textContent = '@' + target;
-  avatarEl.textContent = '…'; descEl.textContent = 'Загружаем профиль…';
-  descEl.classList.add('user-profile-empty'); stickerEl.classList.add('hidden'); if (thoughtEl) { thoughtEl.textContent=''; thoughtEl.classList.add('hidden'); }
+  avatarEl.textContent = '…'; stickerEl.classList.add('hidden'); if (thoughtEl) { thoughtEl.textContent='Загружаем профиль…'; thoughtEl.classList.remove('hidden'); }
   overlay.classList.remove('hidden');
   try {
     const res = await fetch('/api/users/' + encodeURIComponent(target) + '/profile', { headers: { Authorization: 'Bearer ' + token } });
@@ -2194,8 +2192,6 @@ async function openUserProfile(username) {
     avatarEl.innerHTML = renderAvatarHtml(target);
     const description = String(p.profile_description || '').trim().slice(0, 50);
     if (thoughtEl) { thoughtEl.textContent = description; thoughtEl.classList.toggle('hidden', !description); }
-    descEl.textContent = description || 'Мысли пока не добавлены.';
-    descEl.classList.toggle('user-profile-empty', !description);
     const presenceEl = document.getElementById('userProfilePresence');
     if (presenceEl) { presenceEl.classList.toggle('is-online', !!p.online); presenceEl.classList.toggle('is-offline', !p.online); presenceEl.title = p.online ? 'В сети' : 'Не в сети'; presenceEl.setAttribute('aria-label', presenceEl.title); }
     const sticker = String(p.profile_sticker_url || '');
@@ -2204,7 +2200,7 @@ async function openUserProfile(username) {
       stickerEl.classList.remove('hidden');
     }
   } catch (err) {
-    descEl.textContent = err.message || 'Ошибка загрузки профиля'; descEl.classList.add('user-profile-empty');
+    if (thoughtEl) { thoughtEl.textContent = err.message || 'Ошибка загрузки профиля'; thoughtEl.classList.remove('hidden'); }
     avatarEl.textContent = target.slice(0, 2).toUpperCase();
   }
 }
