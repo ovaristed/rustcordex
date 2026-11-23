@@ -3533,6 +3533,8 @@ function loadProfileForm() {
   document.getElementById('profileStickerPreview').innerHTML = stickerValue.startsWith('data:image/') ? '<img src="' + esc(stickerValue) + '" alt="Стикер профиля" />' : (stickerValue ? esc(stickerValue) : '＋');
   document.getElementById('profileAvPreview').innerHTML = renderAvatarHtml(me.username);
   document.getElementById('profileStatus').textContent = '';
+  profileBgValue = me.profile_background || '';
+  updateProfileBgPreview(profileBgValue ? (profileBgValue.startsWith('data:image/') ? 'url("'+profileBgValue+'")' : profileBgValue) : profileBgGradient());
 }
 
 function onAvatarFileChange(ev) {
