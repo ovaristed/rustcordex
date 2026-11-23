@@ -2916,9 +2916,19 @@ function playNotificationSound(name) {
 }
 
 function notifyDesktop(title, body, tag) {
-  if (!desktopNotificationsEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+  if (!desktopNotificationsEnabled) return;
+  const payload = {
+    title: String(title || 'Rustcord').slice(0, 100),
+    body: String(body || '').slice(0, 220),
+    tag: String(tag || 'rustcord').slice(0, 120)
+  };
+  // Electron uses native Windows/macOS notifications; browser mode falls back to Notification API.
+  if (window.rustcordDesktop && typeof window.rustcordDesktop.notify === 'function') {
+    try { window.rustcordDesktop.notify(payload); return; } catch (err) { console.warn('Native notification failed:', err); }
+  }
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
   try {
-    const note = new Notification(title || 'Rustcord', { body: body || '', tag: tag || 'rustcord', silent: true, icon: '/favicon.ico' });
+    const note = new Notification(payload.title, { body: payload.body, tag: payload.tag, silent: true, icon: '/favicon.ico' });
     note.onclick = () => { try { window.focus(); note.close(); } catch {} };
   } catch (err) { console.warn('Desktop notification failed:', err); }
 }
@@ -2945,11 +2955,11 @@ function setNotificationSounds(enabled) {
 function playDiscordSfx(name) {
   if (deafened && name !== 'undeaf') return;
   if (name === 'join') {
-    playTone(587.33, 0, 0.065, 'triangle', 0.11);
-    playTone(880, 0.06, 0.11, 'triangle', 0.11);
+    playTone(659.25, 0, 0.055, 'sine', 0.10);
+    playTone(987.77, 0.055, 0.075, 'sine', 0.10);
   } else if (name === 'leave') {
-    playTone(880, 0, 0.065, 'triangle', 0.10);
-    playTone(440, 0.06, 0.12, 'triangle', 0.10);
+    playTone(987.77, 0, 0.055, 'sine', 0.09);
+    playTone(659.25, 0.055, 0.09, 'sine', 0.09);
   } else if (name === 'mute') {
     playTone(420, 0, 0.055, 'sine', 0.10, 220);
   } else if (name === 'unmute') {
@@ -2964,11 +2974,14 @@ function playDiscordSfx(name) {
     playTone(392, 0.055, 0.075, 'sine', 0.10, 587.33);
     deafened = prevDeaf;
   } else if (name === 'message') {
-    playTone(659.25, 0, 0.06, 'sine', 0.085);
-    playTone(987.77, 0.055, 0.085, 'sine', 0.08);
+    playTone(1046.5, 0, 0.045, 'sine', 0.075);
+    playTone(1318.51, 0.055, 0.065, 'sine', 0.07);
   } else if (name === 'incoming') {
-    playTone(783.99, 0, 0.085, 'triangle', 0.09);
-    playTone(1046.5, 0.09, 0.12, 'triangle', 0.09);
+    // Discord-inspired two-note ring cadence, repeated while the call is ringing.
+    playTone(659.25, 0, 0.11, 'sine', 0.095);
+    playTone(783.99, 0.12, 0.12, 'sine', 0.095);
+    playTone(987.77, 0.26, 0.16, 'sine', 0.09);
+    playTone(783.99, 0.47, 0.11, 'sine', 0.085);
   }
 }
 
