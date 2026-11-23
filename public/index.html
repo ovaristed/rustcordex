@@ -257,8 +257,8 @@
   .user-profile-banner { height:112px; position:relative; background:linear-gradient(135deg,#c83e4d,var(--accent)); }
   .user-profile-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:0; border-radius:50%; background:rgba(0,0,0,.32); color:#fff; cursor:pointer; font-size:18px; }
   .user-profile-content { padding:0 18px 20px; }
-  .user-profile-avatar { width:82px; height:82px; margin-top:-42px; border:5px solid #17181c; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#252a36; font-size:26px; }
-  .user-profile-avatar img { width:100%; height:100%; object-fit:cover; }
+  .user-profile-avatar { width:82px; height:82px; min-width:82px; flex:0 0 82px; aspect-ratio:1/1; margin-top:-42px; border:5px solid #17181c; border-radius:50%; overflow:hidden; display:block; position:relative; background:#252a36; font-size:26px; }
+  .user-profile-avatar img { position:absolute; inset:0; display:block; width:100% !important; height:100% !important; max-width:none !important; max-height:none !important; object-fit:cover; object-position:center; border:0; border-radius:50%; transform:none; clip-path:circle(50% at 50% 50%); }
   .user-profile-name { margin:12px 0 2px; font-size:22px; font-weight:800; overflow-wrap:anywhere; }
   .user-profile-login { color:var(--muted); font-size:13px; }
   .user-profile-sticker { margin-top:14px; font-size:28px; min-height:34px; }
@@ -1456,6 +1456,19 @@
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.06); }
   }
+
+  /* iOS-inspired Liquid Glass theme */
+  html[data-theme="liquid"] body { background-image: radial-gradient(ellipse at 12% 8%, rgba(93,190,255,.34), transparent 38%), radial-gradient(ellipse at 88% 16%, rgba(193,143,255,.30), transparent 40%), radial-gradient(ellipse at 55% 100%, rgba(255,151,201,.18), transparent 42%), linear-gradient(145deg,#07111f,#101a32 55%,#17152b); }
+  html[data-theme="liquid"] .sidebar, html[data-theme="liquid"] .main, html[data-theme="liquid"] .card, html[data-theme="liquid"] .modal-card, html[data-theme="liquid"] .incoming-card, html[data-theme="liquid"] .profile-popover, html[data-theme="liquid"] .user-profile-card, html[data-theme="liquid"] .voice-ctx-menu, html[data-theme="liquid"] .group-ctx-menu {
+    background: linear-gradient(145deg,rgba(215,239,255,.16),rgba(119,157,206,.075) 48%,rgba(255,255,255,.045)) !important;
+    border:1px solid rgba(224,243,255,.25) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 24px 70px rgba(0,0,0,.38),0 0 35px rgba(103,178,255,.08) !important;
+    backdrop-filter:blur(28px) saturate(165%); -webkit-backdrop-filter:blur(28px) saturate(165%);
+  }
+  html[data-theme="liquid"] .chat-header, html[data-theme="liquid"] .bottom-dock, html[data-theme="liquid"] .composer, html[data-theme="liquid"] .top-tabs, html[data-theme="liquid"] .panel-body { background:rgba(185,220,255,.055); border-color:rgba(226,243,255,.14); }
+  html[data-theme="liquid"] .list-item, html[data-theme="liquid"] .msg-bubble, html[data-theme="liquid"] .pop-card, html[data-theme="liquid"] .pop-profile-strip { background:rgba(216,237,255,.075); border-color:rgba(230,245,255,.15); }
+  html[data-theme="liquid"] .list-item.active { background:linear-gradient(120deg,rgba(125,207,255,.24),rgba(188,155,255,.15)); border-color:rgba(173,220,255,.3); }
+  html[data-theme="liquid"] .theme-swatch.active, html[data-theme="liquid"] .sm-btn.blue, html[data-theme="liquid"] .send-btn { box-shadow:0 0 24px rgba(113,195,255,.22); }
+  html[data-theme="liquid"] .avatar { border-color:rgba(231,246,255,.25); box-shadow:0 4px 16px rgba(0,0,0,.22); }
 </style>
 </head>
 <body>
@@ -1753,9 +1766,12 @@
   </button>
   <div class="voice-ctx-sep"></div>
   <button id="ctxBlockBtn" type="button" class="voice-ctx-btn danger" onclick="toggleCtxBlockUser()">
-    <span>Заблокировать</span>
-    <span id="ctxBlockState"></span>
+    <span>Заблокировать</span><span id="ctxBlockState"></span>
   </button>
+  <div class="voice-ctx-sep"></div>
+  <button type="button" class="voice-ctx-btn" onclick="ctxOpenProfile()">Открыть профиль ↗</button>
+  <button type="button" class="voice-ctx-btn" onclick="ctxClearChat()">Очистить переписку</button>
+  <button type="button" class="voice-ctx-btn danger" onclick="ctxRemoveFriend()">Удалить из друзей</button>
 </div>
 
 <div id="groupContextMenu" class="group-ctx-menu hidden" onclick="event.stopPropagation()">
@@ -1812,6 +1828,7 @@
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
           <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#35c6c8"></span>Аврора</button>
+          <button type="button" class="theme-swatch" data-theme="liquid" onclick="applyTheme('liquid')"><span class="dot" style="background:linear-gradient(135deg,#8edcff,#b9a6ff,#ffb8dc)"></span>Liquid Glass</button>
         </div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
@@ -2744,9 +2761,35 @@ function toggleCtxBlockUser() {
   document.getElementById('ctxBlockState').textContent = blocked ? '✓' : '';
   applyRemotePeerAudioSettings(target);
   renderLists();
-  if (activeChat && activeChat.kind === 'dm' && activeChat.id === target) {
-    openChat(target);
-  }
+  if (activeChat && activeChat.kind === 'dm' && activeChat.id === target) openChat(target);
+}
+
+function ctxOpenProfile() { const target = ctxTargetUser; closeVoiceContextMenu(); if (target) openUserProfile(target); }
+async function ctxClearChat() {
+  const target = ctxTargetUser; closeVoiceContextMenu(); if (!target || !token) return;
+  const ok = await showConfirmDialog({ title:'Очистить переписку?', message:'Удалить историю сообщений с @' + target + ' у обоих участников? Это действие нельзя отменить.', confirmText:'Очистить', danger:true });
+  if (!ok) return;
+  try {
+    const res = await fetch('/api/dm?peer=' + encodeURIComponent(target), { method:'DELETE', headers:{ Authorization:'Bearer ' + token } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Не удалось очистить чат');
+    try { sessionStorage.removeItem(chatCacheKey('dm', target)); } catch {}
+    localStorage.removeItem('rc_draft_dm_' + target);
+    if (activeChat && activeChat.kind === 'dm' && activeChat.id === target) openChat(target);
+    showToast('Переписка очищена');
+  } catch (err) { showToast(err.message || 'Ошибка очистки чата', 'error'); }
+}
+async function ctxRemoveFriend() {
+  const target = ctxTargetUser; closeVoiceContextMenu(); if (!target || !token) return;
+  const ok = await showConfirmDialog({ title:'Удалить из друзей?', message:'Удалить @' + target + ' из списка друзей? Переписка при этом сохранится.', confirmText:'Удалить', danger:true });
+  if (!ok) return;
+  try {
+    const res = await fetch('/api/friends/remove', { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:'Bearer ' + token }, body:JSON.stringify({ username:target }) });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Не удалось удалить из друзей');
+    if (activeChat && activeChat.kind === 'dm' && activeChat.id === target) { activeChat = null; resetChatPane(); }
+    await refreshSocial(); showToast('Пользователь удалён из друзей');
+  } catch (err) { showToast(err.message || 'Ошибка удаления', 'error'); }
 }
 
 document.addEventListener('click', (e) => {
@@ -3139,6 +3182,11 @@ const THEMES = {
     bg: '#07131b', panelRgb: '13, 34, 43', accent: '#35c6c8',
     glow2: 'rgba(53, 198, 200, 0.18)', wallpaper: 'none',
     overlay: 'rgba(5, 15, 22, 0.12)', effect: 'none'
+  },
+  liquid: {
+    bg: '#07111f', panelRgb: '105, 151, 194', accent: '#91d7ff',
+    glow2: 'rgba(179, 155, 255, 0.32)', wallpaper: 'none',
+    overlay: 'rgba(4, 12, 25, 0.18)', effect: 'none'
   }
 };
 
@@ -3158,6 +3206,7 @@ function syncThemeEffect() {
 function applyTheme(name) {
   const valid = THEMES[name] ? name : 'discord';
   activeThemeName = valid;
+  document.documentElement.dataset.theme = valid;
   const t = THEMES[valid];
   document.documentElement.style.setProperty('--bg', t.bg);
   document.documentElement.style.setProperty('--theme-wallpaper', t.wallpaper || 'none');
@@ -3170,7 +3219,7 @@ function applyTheme(name) {
   }
   document.documentElement.style.setProperty('--theme-overlay', t.overlay || 'rgba(7, 9, 15, 0.52)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
-  const panelAlpha = valid === 'discord' ? '1' : '0.16';
+  const panelAlpha = valid === 'discord' ? '1' : (valid === 'liquid' ? '0.24' : '0.16');
   document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
   document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
   document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
@@ -4566,7 +4615,8 @@ function appendMsg(m) {
 
   if (m.sender) el.querySelectorAll('[data-profile-user]').forEach((target) => target.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(target.dataset.profileUser); }));
   if (!isMine && m.sender) {
-    el.querySelector('.avatar').addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, m.sender));
+    el.querySelectorAll('[data-profile-user]').forEach((target) => target.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, m.sender)));
+    el.addEventListener('contextmenu', (ev) => { if (ev.target.closest('.msg-bubble')) openVoiceContextMenu(ev, m.sender); });
   }
 
   const vpEl = el.querySelector('.vp');
