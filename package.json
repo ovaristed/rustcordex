@@ -50,7 +50,8 @@
       "installerHeader": "build/installer-header.bmp",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
-      "uninstallDisplayName": "Rustcord"
+      "uninstallDisplayName": "Rustcord",
+      "language": 1049
     },
     "files": [
       "electron-main.js",
