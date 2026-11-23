@@ -1,0 +1,98 @@
+name: Build Rustcord Windows EXE
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'README*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rustcord-windows-build
+  cancel-in-progress: false
+
+jobs:
+  build-windows:
+    name: Build Windows installer and portable EXE
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create Windows application icon
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "build" | Out-Null
+          Add-Type -AssemblyName System.Drawing
+
+          $source = @("build/icon.png.jpg", "icon.png.jpg", "sidebar.png.jpg") |
+            Where-Object { Test-Path $_ } |
+            Select-Object -First 1
+
+          if (-not $source) {
+            throw "Не найден файл-источник иконки (build/icon.png.jpg или icon.png.jpg)."
+          }
+
+          $image = [System.Drawing.Image]::FromFile((Resolve-Path $source))
+          $bitmap = New-Object System.Drawing.Bitmap(256, 256)
+          $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+          $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $graphics.DrawImage($image, 0, 0, 256, 256)
+          $graphics.Dispose()
+          $image.Dispose()
+
+          $stream = New-Object System.IO.MemoryStream
+          $bitmap.Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)
+          $png = $stream.ToArray()
+          $stream.Dispose()
+          $bitmap.Dispose()
+
+          $file = [System.IO.File]::Open(
+            (Join-Path (Resolve-Path "build") "icon.ico"),
+            [System.IO.FileMode]::Create
+          )
+          $writer = New-Object System.IO.BinaryWriter($file)
+          $writer.Write([UInt16]0)
+          $writer.Write([UInt16]1)
+          $writer.Write([UInt16]1)
+          $writer.Write([Byte]0)
+          $writer.Write([Byte]0)
+          $writer.Write([Byte]0)
+          $writer.Write([Byte]0)
+          $writer.Write([UInt16]1)
+          $writer.Write([UInt16]32)
+          $writer.Write([UInt32]$png.Length)
+          $writer.Write([UInt32]22)
+          $writer.Write($png)
+          $writer.Close()
+          $file.Dispose()
+
+          Write-Host "Создан build/icon.ico из $source"
+
+      - name: Build EXE packages
+        run: npm run build -- --publish never
+
+      - name: Upload EXE artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rustcord-Windows-EXE
+          path: dist/*.exe
+          if-no-files-found: error
+          retention-days: 14
