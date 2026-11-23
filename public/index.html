@@ -2817,14 +2817,14 @@ function applyRemotePeerAudioSettings(username) {
   }
 }
 
-function openVoiceContextMenu(ev, username) {
+function openVoiceContextMenu(ev, username, allowVoiceControls = true) {
   ev.preventDefault(); ev.stopPropagation(); closeProfilePopover();
   const target=username||(activeChat&&activeChat.kind==='dm'?activeChat.id:null);
   if(!target||(me&&target===me.username))return;
   ctxTargetUser=target;
   const menu=document.getElementById('voiceContextMenu'),blocked=isUserBlocked(target);
   // Индивидуальная громкость и mute доступны только для реального участника текущего voice-соединения.
-  const inVoice = !!peerConnections.get(target) || !!remoteAudios.get(target) || !!document.getElementById('remoteTile_' + target);
+  const inVoice = allowVoiceControls && (!!peerConnections.get(target) || !!remoteAudios.get(target) || !!document.getElementById('remoteTile_' + target));
   document.getElementById('ctxVoiceVolumeControls').classList.toggle('hidden',!inVoice);
   document.getElementById('ctxMuteBtn').classList.toggle('hidden',!inVoice);
   document.getElementById('ctxTargetLabel').textContent=displayNameOf(target);
@@ -4194,7 +4194,7 @@ function renderLists() {
 
   cBox.querySelectorAll('[data-open-dm]').forEach((el) => {
     el.addEventListener('click', () => openChat(el.dataset.openDm));
-    el.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, el.dataset.openDm));
+    el.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, el.dataset.openDm, false));
   });
   cBox.querySelectorAll('[data-profile-user]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(el.dataset.profileUser); }));
 
@@ -4227,7 +4227,7 @@ function renderLists() {
 
   fBox.querySelectorAll('[data-open-dm]').forEach((el) => {
     el.addEventListener('click', () => openChat(el.dataset.openDm));
-    el.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, el.dataset.openDm));
+    el.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, el.dataset.openDm, false));
   });
   fBox.querySelectorAll('[data-profile-user]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(el.dataset.profileUser); }));
   fBox.querySelectorAll('[data-call-user]').forEach((btn) => {
