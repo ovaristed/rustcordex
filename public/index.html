@@ -3609,12 +3609,11 @@ async function saveProfile() {
   if (!me || !token) return;
   const nick = document.getElementById('profileNickInput').value.trim().slice(0, 32);
   const st = document.getElementById('profileStatus');
-  initProfileBgCanvas();
   try {
     const res = await fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ nickname: nick, avatar_url: me.avatar_url || '', profile_description: document.getElementById('profileDescriptionInput').value.trim().slice(0, 120), profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgSaveValue() })
+      body: JSON.stringify({ nickname: nick, avatar_url: me.avatar_url || '', profile_description: document.getElementById('profileDescriptionInput').value.trim().slice(0, 120), profile_sticker_url: me.profile_sticker_url || '', profile_background: '' })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
