@@ -2618,6 +2618,12 @@ function openGroupModal(nextMode) {
       '</div>'
     )).join('');
 
+    picker.querySelectorAll('[data-profile-user]').forEach((avatar) => {
+      avatar.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        openUserProfile(avatar.dataset.profileUser);
+      });
+    });
     picker.querySelectorAll('[data-pick-user]').forEach((row) => {
       const uName = row.dataset.pickUser;
       const pill = row.querySelector('.member-pick-pill');
