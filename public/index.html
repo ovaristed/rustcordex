@@ -1541,6 +1541,39 @@
   html[data-theme="aurora-glass"] ::selection { background:rgba(255,255,255,.24);color:#fff; }
   .default-avatar-fox{display:inline-flex;position:relative;align-items:center;justify-content:center;width:100%;height:100%;overflow:hidden;background:#241a66;border-radius:inherit}
   .default-avatar-fox>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+
+  /* Rustcord profile polish: consistent white names, subtle hover motion and readable presence. */
+  @keyframes rcNickNudge {
+    0%,100% { transform:translateX(0) rotate(0); }
+    28% { transform:translateX(-1px) rotate(-.35deg); }
+    62% { transform:translateX(1px) rotate(.35deg); }
+  }
+  .pop-nick, .user-profile-name {
+    color:#fff !important;
+    transform-origin:center;
+  }
+  .pop-nick:hover, .user-profile-name:hover {
+    color:#fff !important;
+    animation:rcNickNudge .32s ease-in-out;
+  }
+  .profile-name-emoji {
+    display:inline-block;
+    margin-left:7px;
+    white-space:nowrap;
+    vertical-align:baseline;
+  }
+  .user-profile-presence {
+    width:25px !important;
+    height:25px !important;
+    left:85px !important;
+    bottom:2px !important;
+    border-width:4px !important;
+    box-shadow:0 0 0 2px rgba(255,255,255,.08);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pop-nick:hover, .user-profile-name:hover { animation:none !important; }
+  }
+
 </style>
 </head>
 <body>
@@ -2169,6 +2202,14 @@ function syncProfilePopoverUi() {
   });
 }
 
+function formatProfileDisplayName(value) {
+  const raw = String(value || 'Профиль');
+  const match = raw.match(/([\\p{Extended_Pictographic}\\uFE0F\\u200D]+)$/u);
+  if (!match) return esc(raw);
+  const label = raw.slice(0, -match[1].length).trimEnd();
+  return esc(label) + '<span class="profile-name-emoji">' + esc(match[1]) + '</span>';
+}
+
 async function openUserProfile(username) {
   const target = String(username || '').trim();
   if (!target || !token) return;
@@ -2187,7 +2228,7 @@ async function openUserProfile(username) {
     if (!res.ok || !data.user) throw new Error(data.error || 'Не удалось загрузить профиль');
     const p = data.user;
     userProfiles[target] = { nickname:p.nickname||'', avatar_url:p.avatar_url||'', profile_description:p.profile_description||'', profile_sticker_url:p.profile_sticker_url||'', profile_background:p.profile_background||'' };
-    nameEl.textContent = p.nickname || p.username || target; loginEl.textContent = '@' + (p.username || target); setProfileBannerBackground();
+    nameEl.innerHTML = formatProfileDisplayName(p.nickname || p.username || target); loginEl.textContent = '@' + (p.username || target); setProfileBannerBackground();
     
     avatarEl.innerHTML = renderAvatarHtml(target);
     const description = String(p.profile_description || '').trim().slice(0, 50);
