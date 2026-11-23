@@ -183,7 +183,7 @@ function getStatusHtml() {
     <div class="badge">R</div>
     <h1 id="title">Подключаемся к Rustcord...</h1>
     <div id="spinner" class="spinner"></div>
-    <p id="message" class="desc">Проверяем доступность сервера и запускаем интерфейс.</p>
+    <p id="message" class="desc">Загружаем Rustcord.</p>
 
     <div id="controls" class="hidden">
       <input id="serverInput" class="url-box" type="text" placeholder="https://..." />
