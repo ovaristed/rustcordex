@@ -252,6 +252,29 @@
   .app-toast.error { border-color:rgba(255,69,58,.55); }
   .profile-open-target { cursor:pointer; }
   .profile-open-target:hover { filter:brightness(1.12); }
+  /* Единая лёгкая motion-система интерфейса */
+  @keyframes rcFadeUp { from { opacity:0; transform:translateY(9px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+  @keyframes rcFadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes rcProfileIn { 0% { opacity:0; transform:translateY(24px) scale(.92); filter:blur(8px); } 68% { opacity:1; transform:translateY(-3px) scale(1.012); filter:blur(0); } 100% { opacity:1; transform:translateY(0) scale(1); filter:blur(0); } }
+  @keyframes rcProfileGlow { from { opacity:.35; } to { opacity:1; } }
+  .user-profile-overlay:not(.hidden) { animation:rcFadeIn .22s ease-out both; }
+  .user-profile-overlay:not(.hidden) .user-profile-card { transform-origin:center; animation:rcProfileIn .48s cubic-bezier(.2,.85,.25,1) both; }
+  .user-profile-overlay:not(.hidden) .user-profile-banner { animation:rcProfileGlow .55s ease-out both; }
+  .profile-popover:not(.hidden), .modal-backdrop:not(.hidden) .modal-card,
+  .app-dialog-backdrop:not(.hidden) .app-dialog { animation:rcFadeUp .24s cubic-bezier(.2,.75,.25,1) both; }
+  .voice-ctx-menu, .group-ctx-menu { animation:rcFadeUp .14s ease-out both; transform-origin:top left; }
+  .app-toast { animation:rcFadeUp .2s ease-out both; }
+  .msg { animation:rcFadeUp .2s ease-out both; }
+  button, .list-item, .tab-btn, .icon-btn, .avatar, .pop-menu-btn, .voice-ctx-btn, .group-ctx-btn {
+    transition:background-color .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease, transform .16s ease, filter .16s ease, box-shadow .16s ease;
+  }
+  button:active, .icon-btn:active, .tab-btn:active { transform:scale(.97); }
+  .list-item:hover { transform:translateX(2px); }
+  .avatar.profile-open-target { transition:transform .18s cubic-bezier(.2,.8,.2,1), filter .18s ease, box-shadow .18s ease; }
+  .avatar.profile-open-target:hover { transform:scale(1.07); box-shadow:0 0 0 3px rgba(var(--accent-rgb),.22); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important; }
+  }
   .user-profile-overlay { position:fixed; inset:0; z-index:150; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.68); }
   .user-profile-card { width:min(390px,100%); max-height:min(640px,calc(100vh - 40px)); overflow:auto; border-radius:20px; background:#17181c; border:1px solid rgba(255,255,255,.14); color:var(--text); box-shadow:0 20px 52px rgba(0,0,0,.72); }
   .user-profile-banner { height:112px; position:relative; background:linear-gradient(135deg,#c83e4d,var(--accent)); }
@@ -2587,7 +2610,7 @@ function openGroupModal(nextMode) {
         '<div class="item-left">' +
           '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + '</div>' +
           '<div>' +
-            '<div class="item-name profile-open-target" data-profile-user="' + esc(f.username) + '">' + esc(displayNameOf(f.username)) + '</div>' +
+            '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
             '<div class="item-sub">@' + esc(f.username) + '</div>' +
           '</div>' +
         '</div>' +
@@ -4086,7 +4109,7 @@ function renderLists() {
         '<div class="item-left">' +
           '<div class="avatar profile-open-target" data-profile-user="' + esc(c.username) + '">' + renderAvatarHtml(c.username) + '</div>' +
           '<div style="min-width:0">' +
-            '<div class="item-name profile-open-target" data-profile-user="' + esc(c.username) + '">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
+            '<div class="item-name">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
             '<div class="item-sub">' + esc(blocked ? 'Пользователь заблокирован' : formatPreviewText(c.lastMessage)) + '</div>' +
           '</div>' +
         '</div>' +
@@ -4112,7 +4135,7 @@ function renderLists() {
       return (
         '<div class="list-item ' + (activeChat && activeChat.kind === 'dm' && activeChat.id === f.username ? 'active' : '') + '" data-open-dm="' + esc(f.username) + '">' +
           '<div class="item-left">' +
-            '<div class="avatar">' + renderAvatarHtml(f.username) + '</div>' +
+            '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + '</div>' +
             '<div style="min-width:0">' +
               '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
               (blocked ? '<div class="item-sub" style="color:#ff6961;">Заблокирован</div>' : '<div class="item-sub">@' + esc(f.username) + '</div>') +
@@ -4682,7 +4705,7 @@ function appendMsg(m) {
     '<div class="msg-bubble">' +
       (purePhotoGif ? '' : (
         '<div class="msg-head">' +
-          '<span class="msg-author profile-open-target" data-profile-user="' + esc(m.sender || '') + '">' + esc(authorLabel) + '</span>' +
+          '<span class="msg-author">' + esc(authorLabel) + '</span>' +
           '<span class="msg-time">' + hh + ':' + mm + (m.edited_at ? ' · изм.' : '') + '</span>' +
         '</div>'
       )) +
