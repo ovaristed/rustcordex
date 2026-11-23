@@ -1703,6 +1703,19 @@
   </div>
 </div>
 
+<div id="userProfileOverlay" class="user-profile-overlay hidden" onclick="if(event.target===this)closeUserProfile()">
+  <section class="user-profile-card" role="dialog" aria-modal="true" aria-labelledby="userProfileName">
+    <div class="user-profile-banner"><button class="user-profile-close" type="button" onclick="closeUserProfile()" aria-label="Закрыть">×</button></div>
+    <div class="user-profile-content">
+      <div id="userProfileAvatar" class="user-profile-avatar">?</div>
+      <div id="userProfileName" class="user-profile-name">Профиль</div>
+      <div id="userProfileLogin" class="user-profile-login">@username</div>
+      <div id="userProfileSticker" class="user-profile-sticker hidden"></div>
+      <div id="userProfileDescription" class="user-profile-description user-profile-empty">Пользователь пока не добавил описание.</div>
+    </div>
+  </section>
+</div>
+
 <div id="groupModal" class="modal-backdrop hidden" onclick="if(event.target===this)closeGroupModal()">
   <div class="modal-card">
     <div class="modal-head">
@@ -2059,6 +2072,46 @@ function syncProfilePopoverUi() {
       row.addEventListener('click', () => switchToSavedAccount(targetU));
     }
   });
+}
+
+async function openUserProfile(username) {
+  const target = String(username || '').trim();
+  if (!target || !token) return;
+  const overlay = document.getElementById('userProfileOverlay');
+  const nameEl = document.getElementById('userProfileName');
+  const loginEl = document.getElementById('userProfileLogin');
+  const avatarEl = document.getElementById('userProfileAvatar');
+  const descEl = document.getElementById('userProfileDescription');
+  const stickerEl = document.getElementById('userProfileSticker');
+  nameEl.textContent = displayNameOf(target); loginEl.textContent = '@' + target;
+  avatarEl.textContent = '…'; descEl.textContent = 'Загружаем профиль…';
+  descEl.classList.add('user-profile-empty'); stickerEl.classList.add('hidden');
+  overlay.classList.remove('hidden');
+  try {
+    const res = await fetch('/api/users/' + encodeURIComponent(target) + '/profile', { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.user) throw new Error(data.error || 'Не удалось загрузить профиль');
+    const p = data.user;
+    userProfiles[target] = { nickname:p.nickname||'', avatar_url:p.avatar_url||'', profile_description:p.profile_description||'', profile_sticker_url:p.profile_sticker_url||'' };
+    nameEl.textContent = p.nickname || p.username || target; loginEl.textContent = '@' + (p.username || target);
+    avatarEl.innerHTML = renderAvatarHtml(target);
+    const description = String(p.profile_description || '').trim();
+    descEl.textContent = description || 'Пользователь пока не добавил описание.';
+    descEl.classList.toggle('user-profile-empty', !description);
+    const sticker = String(p.profile_sticker_url || '');
+    if (sticker) {
+      stickerEl.innerHTML = sticker.startsWith('data:image/') ? '<img src="' + esc(sticker) + '" alt="Стикер профиля" style="max-width:72px;max-height:72px;border-radius:12px;" />' : esc(sticker);
+      stickerEl.classList.remove('hidden');
+    }
+  } catch (err) {
+    descEl.textContent = err.message || 'Ошибка загрузки профиля'; descEl.classList.add('user-profile-empty');
+    avatarEl.textContent = target.slice(0, 2).toUpperCase();
+  }
+}
+
+function closeUserProfile() {
+  const overlay = document.getElementById('userProfileOverlay');
+  if (overlay) overlay.classList.add('hidden');
 }
 
 function toggleProfilePopover(ev) {
