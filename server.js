@@ -395,7 +395,7 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
     const description = String(req.body.profile_description || '').trim().slice(0, 120);
     const stickerUrl = String(req.body.profile_sticker_url || '').trim();
     const profileBackground = String(req.body.profile_background || '').trim();
-    if (profileBackground.length > 480000 || (profileBackground && !(/^data:image\\/(jpeg|png);base64,/i.test(profileBackground) || /^linear-gradient\\(125deg,#[0-9a-f]{6},#[0-9a-f]{6}\\)$/i.test(profileBackground)))) return res.status(400).json({ error: 'Некорректный фон профиля или файл слишком большой' });
+    if (profileBackground.length > 480000 || (profileBackground && !(/^data:image\/(jpeg|png);base64,/i.test(profileBackground) || /^linear-gradient\(125deg,#[0-9a-f]{6},#[0-9a-f]{6}\)$/i.test(profileBackground)))) return res.status(400).json({ error: 'Некорректный фон профиля или файл слишком большой' });
     if (avatarUrl && !/^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(avatarUrl)) {
       return res.status(400).json({ error: 'Некорректный формат аватарки' });
     }
