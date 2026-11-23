@@ -47,6 +47,7 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_description TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_sticker_url TEXT NOT NULL DEFAULT '';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT NOT NULL DEFAULT '';`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS friendships (
@@ -357,7 +358,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
     if (!username || !password) return res.status(400).json({ error: 'Введите логин и пароль' });
 
     const result = await pool.query(
-      'SELECT id, username, password_hash, nickname, avatar_url, profile_description, profile_sticker_url FROM users WHERE LOWER(username) = LOWER($1)',
+      'SELECT id, username, password_hash, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE LOWER(username) = LOWER($1)',
       [username]
     );
     if (result.rows.length === 0) return res.status(401).json({ error: 'Неверный логин или пароль' });
@@ -368,7 +369,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
 
     return res.json({
       token: signToken(user),
-      user: { id: user.id, username: user.username, nickname: user.nickname || '', avatar_url: user.avatar_url || '', profile_description: user.profile_description || '', profile_sticker_url: user.profile_sticker_url || '' }
+      user: { id: user.id, username: user.username, nickname: user.nickname || '', avatar_url: user.avatar_url || '', profile_description: user.profile_description || '', profile_sticker_url: user.profile_sticker_url || '', profile_background: user.profile_background || '' }
     });
   } catch (err) {
     console.error('Login error:', err);
@@ -378,7 +379,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
 
 app.get('/api/me', authMiddleware, async (req, res) => {
   try {
-    const r = await pool.query('SELECT id, username, nickname, avatar_url, profile_description, profile_sticker_url FROM users WHERE id = $1', [req.user.id]);
+    const r = await pool.query('SELECT id, username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE id = $1', [req.user.id]);
     if (!r.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
     res.json(r.rows[0]);
   } catch (err) {
@@ -393,6 +394,8 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
     const avatarUrl = String(req.body.avatar_url || '').trim();
     const description = String(req.body.profile_description || '').trim().slice(0, 120);
     const stickerUrl = String(req.body.profile_sticker_url || '').trim();
+    const profileBackground = String(req.body.profile_background || '').trim();
+    if (profileBackground.length > 480000 || (profileBackground && !(/^data:image\\/(jpeg|png);base64,/i.test(profileBackground) || /^linear-gradient\\(125deg,#[0-9a-f]{6},#[0-9a-f]{6}\\)$/i.test(profileBackground)))) return res.status(400).json({ error: 'Некорректный фон профиля или файл слишком большой' });
     if (avatarUrl && !/^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(avatarUrl)) {
       return res.status(400).json({ error: 'Некорректный формат аватарки' });
     }
@@ -407,8 +410,8 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
       if (stickerUrl.length > 32) return res.status(400).json({ error: 'Слишком длинный стикер' });
     }
     const updated = await pool.query(
-      'UPDATE users SET nickname = $1, avatar_url = $2, profile_description = $3, profile_sticker_url = $4 WHERE id = $5 RETURNING id, username, nickname, avatar_url, profile_description, profile_sticker_url',
-      [nick, avatarUrl, description, stickerUrl, req.user.id]
+      'UPDATE users SET nickname = $1, avatar_url = $2, profile_description = $3, profile_sticker_url = $4, profile_background = $5 WHERE id = $6 RETURNING id, username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, profile_background',
+      [nick, avatarUrl, description, stickerUrl, profileBackground, req.user.id]
     );
     const user = updated.rows[0];
     res.json({ user });
