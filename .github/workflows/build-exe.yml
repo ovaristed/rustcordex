@@ -70,7 +70,7 @@ jobs:
           $file.Dispose()
 
           # Branded NSIS wizard sidebar: 164 x 314 BMP.
-          $side = New-Object System.Drawing.Bitmap(164, 314)
+          $side = New-Object System.Drawing.Bitmap(164, 314, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
           $g = [System.Drawing.Graphics]::FromImage($side)
           $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
           $rect = New-Object System.Drawing.Rectangle(0,0,164,314)
@@ -96,7 +96,7 @@ jobs:
           $g.Dispose(); $side.Save("build/installer-sidebar.bmp",[System.Drawing.Imaging.ImageFormat]::Bmp); $side.Dispose()
 
           # Compact branded header used by the NSIS wizard.
-          $header = New-Object System.Drawing.Bitmap(150,57)
+          $header = New-Object System.Drawing.Bitmap(150,57,[System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
           $hg = [System.Drawing.Graphics]::FromImage($header)
           $hg.Clear([System.Drawing.Color]::FromArgb(12,17,39))
           $hlogo = [System.Drawing.Image]::FromFile((Resolve-Path "build/rustcord-icon.png"))
