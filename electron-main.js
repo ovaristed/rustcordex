@@ -1,7 +1,10 @@
-const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Notification, Tray, nativeImage } = require('electron');
 const path = require('path');
 const http = require('http');
 const https = require('https');
+
+app.setName('Rustcord');
+if (process.platform === 'win32') app.setAppUserModelId('com.ovarist.rustcord');
 
 const DEFAULT_SERVER_URL = process.env.RUSTCORD_SERVER_URL || 'https://rustcord.hostless.app';
 const REQUEST_TIMEOUT_MS = 12000;
@@ -9,6 +12,8 @@ const REQUEST_TIMEOUT_MS = 12000;
 let mainWindow = null;
 let currentServerUrl = DEFAULT_SERVER_URL;
 let connectionAttempt = 0;
+let tray = null;
+let isQuitting = false;
 
 function normalizeUrl(rawUrl) {
   let cleaned = String(rawUrl || '').trim();
@@ -405,6 +410,29 @@ function setupIpc() {
   });
 }
 
+function showMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function createTray() {
+  if (tray) return;
+  const iconPath = path.join(__dirname, 'build', 'icon.png.jpg');
+  let icon = nativeImage.createFromPath(iconPath);
+  if (!icon || icon.isEmpty()) icon = nativeImage.createEmpty();
+  tray = new Tray(icon);
+  tray.setToolTip('Rustcord');
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: 'Открыть Rustcord', click: showMainWindow },
+    { type: 'separator' },
+    { label: 'Выйти из Rustcord', click: () => { isQuitting = true; app.quit(); } }
+  ]));
+  tray.on('click', showMainWindow);
+  tray.on('double-click', showMainWindow);
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1240,
@@ -418,7 +446,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-      backgroundThrottling: true
+      backgroundThrottling: false
     }
   });
 
