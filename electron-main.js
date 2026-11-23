@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Notification } = require('electron');
 const path = require('path');
 const http = require('http');
 const https = require('https');
@@ -381,6 +381,20 @@ function isStatusSender(event) {
 }
 
 function setupIpc() {
+  ipcMain.on('rustcord:notify', (event, payload) => {
+    if (!isOurOrigin((event.senderFrame && event.senderFrame.url) || '')) return;
+    if (!Notification.isSupported()) return;
+    const title = String(payload && payload.title || 'Rustcord').slice(0, 100);
+    const body = String(payload && payload.body || '').slice(0, 220);
+    const notification = new Notification({ title, body, silent: true, urgency: 'normal' });
+    notification.on('click', () => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    });
+    notification.show();
+  });
   ipcMain.on('retry-connection', (event, url) => {
     if (!isStatusSender(event)) return;
     connectToServer(url);
