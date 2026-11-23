@@ -1693,8 +1693,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <button id="inviteGroupBtn" type="button" class="sm-btn hidden" onclick="openGroupModal('invite')">+ Друзья в группу</button>
-        <button id="groupActionBtn" type="button" class="sm-btn danger hidden" onclick="onGroupAction()">Выйти из группы</button>
+        <button id="inviteGroupBtn" type="button" class="sm-btn hidden" onclick="openGroupModal('invite')">+ Добавить друзей</button>
         <button id="startCallBtn" type="button" class="call-pill hidden" onclick="startCallWithActiveChat()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span>Позвонить</span>
@@ -1706,7 +1705,7 @@
       <div class="call-meta-bar">
         <div id="callStatusWrap" class="calling-pulse">
           <span class="pulse-dot"></span>
-          <span id="callStatusText">Дозвон...</span>
+          <span id="callStatusText">Звоним...</span>
         </div>
         <span id="callTimer" class="call-timer-pill hidden">00:00</span>
       </div>
@@ -1751,7 +1750,6 @@
 
     <div id="emojiBar" class="emoji-bar hidden">
       <div id="recentStickersBox" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-      <span class="win-sticker-hint">Ctrl+V — скриншот • Win + . — стикеры</span>
     </div>
 
     <div id="gifPicker" class="gif-picker hidden">
@@ -1772,7 +1770,7 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
       </button>
       <span id="recTimer" class="item-sub hidden" style="color:#ff6961;font-weight:700;">0:00</span>
-      <input id="msgInput" placeholder="Написать сообщение, вставить скриншот (Ctrl+V) или стикер..." oninput="onMsgInput()" onkeydown="if(event.key==='Enter')sendChat()" />
+      <input id="msgInput" placeholder="Написать сообщение..." oninput="onMsgInput()" onkeydown="if(event.key==='Enter')sendChat()" />
       <button type="button" class="send-btn" title="Отправить" onclick="sendChat()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
       </button>
@@ -1973,13 +1971,6 @@
       <div class="field">
         <div class="lbl">Громкость микрофона: <span id="micGainVal">100%</span></div>
         <input id="micGainSlider" type="range" min="20" max="200" value="100" oninput="updateMicGain(this.value)" />
-      </div>
-
-      <div class="field">
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-          <input id="nsToggle" type="checkbox" style="width:auto;" onchange="toggleNoiseSuppression(this.checked)" />
-          <span>Подавление шума и эха (WebRTC)</span>
-        </label>
       </div>
 
       <div class="field">
@@ -2448,7 +2439,7 @@ let blockedUsers = new Set(JSON.parse(localStorage.getItem('rc_blocked_users') |
 let selectedMicId = localStorage.getItem('rc_mic_id') || '';
 let selectedSpkId = localStorage.getItem('rc_spk_id') || '';
 let micGainPercent = Number(localStorage.getItem('rc_mic_gain') || 100);
-let noiseSuppressionEnabled = localStorage.getItem('rc_ns') === 'true';
+let noiseSuppressionEnabled = false;
 
 let testStream = null, testCtx = null, testRaf = null;
 let mediaRecorder = null, voiceChunks = [], recInterval = null, recSeconds = 0;
@@ -3576,10 +3567,10 @@ function switchSettingsTab(tab) {
 
 async function openSettings() {
   closeProfilePopover();
+  switchSettingsTab('appearance');
   document.getElementById('settingsModal').classList.remove('hidden');
   document.getElementById('micGainSlider').value = micGainPercent;
   document.getElementById('micGainVal').textContent = micGainPercent + '%';
-  document.getElementById('nsToggle').checked = noiseSuppressionEnabled;
   loadProfileForm();
   await populateAudioDevices();
   const n = document.getElementById('desktopNotificationsToggle'); if (n) n.checked = desktopNotificationsEnabled;
@@ -3837,9 +3828,9 @@ async function toggleMicTest() {
     testStream = await navigator.mediaDevices.getUserMedia({
       audio: {
         deviceId: selectedMicId ? { exact: selectedMicId } : undefined,
-        echoCancellation: noiseSuppressionEnabled,
-        noiseSuppression: noiseSuppressionEnabled,
-        autoGainControl: noiseSuppressionEnabled
+        echoCancellation: true,
+        noiseSuppression: false,
+        autoGainControl: false
       }
     });
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -4175,13 +4166,6 @@ function renderLists() {
       el.addEventListener('click', () => openGroupChat(el.dataset.openGroup));
       el.addEventListener('contextmenu', ev => openGroupContextMenu(ev, el.dataset.openGroup));
     });
-    gBox.querySelectorAll('[data-group-menu]').forEach(btn => {
-      btn.addEventListener('click', ev => {
-        ev.preventDefault(); ev.stopPropagation();
-        const rect = btn.getBoundingClientRect();
-        openGroupContextMenu({ preventDefault(){}, stopPropagation(){}, clientX:rect.right, clientY:rect.bottom }, btn.dataset.groupMenu);
-      });
-    });
   }
 
   const cBox = document.getElementById('chatsList');
@@ -4337,12 +4321,6 @@ function updateActiveHeaderTitle() {
     const memberNames = members.map(displayNameOf).join(', ');
     document.getElementById('peerSub').textContent = cnt + ' ' + ruPlural(cnt, 'участник', 'участника', 'участников') + (memberNames ? ' • ' + memberNames : '');
     document.getElementById('inviteGroupBtn').classList.remove('hidden');
-    const gab = document.getElementById('groupActionBtn');
-    if (gab) {
-      const isOwner = !!(grp.owner && me && grp.owner === me.username);
-      gab.textContent = isOwner ? 'Удалить группу' : 'Выйти из группы';
-      gab.classList.remove('hidden');
-    }
   } else {
     const u = activeChat.id;
     document.getElementById('peerAv').className = 'avatar';
@@ -4350,8 +4328,6 @@ function updateActiveHeaderTitle() {
     document.getElementById('peerTitle').textContent = displayNameOf(u);
     document.getElementById('peerSub').textContent = '@' + u;
     document.getElementById('inviteGroupBtn').classList.add('hidden');
-    const gab = document.getElementById('groupActionBtn');
-    if (gab) gab.classList.add('hidden');
   }
   if (!inCall) document.getElementById('startCallBtn').classList.remove('hidden');
 }
@@ -4361,7 +4337,7 @@ function resetChatPane() {
   document.getElementById('peerAv').textContent = '?';
   document.getElementById('peerTitle').textContent = 'Выберите чат или друга';
   document.getElementById('peerSub').textContent = 'Личные сообщения, группы и звонки';
-  for (const id of ['inviteGroupBtn', 'groupActionBtn', 'startCallBtn', 'emojiBar', 'composer']) {
+  for (const id of ['inviteGroupBtn', 'startCallBtn', 'emojiBar', 'composer']) {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
   }
@@ -4953,7 +4929,7 @@ async function toggleVoiceRecord() {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { deviceId: selectedMicId ? { exact: selectedMicId } : undefined, echoCancellation: true, noiseSuppression: noiseSuppressionEnabled }
+      audio: { deviceId: selectedMicId ? { exact: selectedMicId } : undefined, echoCancellation: true, noiseSuppression: false, autoGainControl: false }
     });
     voiceChunks = [];
     const chosenMime = pickRecorderMimeType();
@@ -5221,9 +5197,9 @@ async function createCleanMicStream() {
   rawMicStream = await navigator.mediaDevices.getUserMedia({
     audio: {
       deviceId: selectedMicId ? { exact: selectedMicId } : undefined,
-      echoCancellation: noiseSuppressionEnabled,
-      noiseSuppression: noiseSuppressionEnabled,
-      autoGainControl: noiseSuppressionEnabled
+      echoCancellation: true,
+      noiseSuppression: false,
+      autoGainControl: false
     },
     video: false
   });
@@ -5336,7 +5312,7 @@ async function openCallUI(outgoing, targetUsers, sessionId = callSessionId, cont
   } else {
     const first = (targetUsers && targetUsers[0]) || '';
     document.getElementById('callStatusText').textContent = outgoing
-      ? 'Дозвон ' + displayNameOf(first) + '...'
+      ? 'Звоним ' + displayNameOf(first) + '...'
       : 'На связи с ' + displayNameOf(first);
   }
 
