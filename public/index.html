@@ -1857,8 +1857,8 @@
 
 <div id="voiceContextMenu" class="voice-ctx-menu hidden">
   <div class="voice-ctx-title"><span id="ctxTargetLabel">Пользователь</span></div>
-  <div class="voice-ctx-vol-row"><label for="ctxVolSlider">Громкость <span id="ctxVolPercent">100%</span></label><input id="ctxVolSlider" type="range" min="0" max="200" step="1" value="100" oninput="onCtxVolumeChange(this.value)"></div>
-  <button id="ctxMuteBtn" type="button" class="voice-ctx-btn" onclick="toggleCtxMuteUser()">Заглушить <span id="ctxMuteState"></span></button>
+  <div id="ctxVoiceVolumeControls" class="voice-ctx-vol-row hidden"><label for="ctxVolSlider">Громкость <span id="ctxVolPercent">100%</span></label><input id="ctxVolSlider" type="range" min="0" max="200" step="1" value="100" oninput="onCtxVolumeChange(this.value)"></div>
+  <button id="ctxMuteBtn" type="button" class="voice-ctx-btn hidden" onclick="toggleCtxMuteUser()">Заглушить <span id="ctxMuteState"></span></button>
   <button id="ctxBlockBtn" type="button" class="voice-ctx-btn danger" onclick="toggleCtxBlockUser()"><span id="ctxBlockLabel">Заблокировать</span><span id="ctxBlockState"></span></button>
   <button type="button" class="voice-ctx-btn" onclick="ctxClearChat()">Удалить чат</button>
   <button type="button" class="voice-ctx-btn danger" onclick="ctxRemoveFriend()">Удалить из друзей</button>
@@ -2823,6 +2823,10 @@ function openVoiceContextMenu(ev, username) {
   if(!target||(me&&target===me.username))return;
   ctxTargetUser=target;
   const menu=document.getElementById('voiceContextMenu'),blocked=isUserBlocked(target);
+  // Индивидуальная громкость и mute доступны только для реального участника текущего voice-соединения.
+  const inVoice = !!peerConnections.get(target) || !!remoteAudios.get(target) || !!document.getElementById('remoteTile_' + target);
+  document.getElementById('ctxVoiceVolumeControls').classList.toggle('hidden',!inVoice);
+  document.getElementById('ctxMuteBtn').classList.toggle('hidden',!inVoice);
   document.getElementById('ctxTargetLabel').textContent=displayNameOf(target);
   document.getElementById('ctxBlockBtn').classList.toggle('active',blocked);
   document.getElementById('ctxBlockLabel').textContent=blocked?'Разблокировать':'Заблокировать';
