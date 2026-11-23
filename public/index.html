@@ -298,7 +298,15 @@
   .user-profile-banner { height:132px; position:relative; background:linear-gradient(135deg,#c83e4d,var(--accent)); }
   .user-profile-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border:0; border-radius:50%; background:rgba(0,0,0,.32); color:#fff; cursor:pointer; font-size:18px; }
   .user-profile-content { padding:0 18px 20px; }
-  .user-profile-avatar { width:116px; height:116px; min-width:116px; flex:0 0 116px; aspect-ratio:1/1; margin-top:-58px; border:6px solid #17181c; border-radius:50%; overflow:hidden; display:block; position:relative; background:#252a36; font-size:26px; }
+  .user-profile-avatar { width:116px; height:116px; min-width:116px; flex:0 0 116px; aspect-ratio:1/1; margin-top:0; border:6px solid #17181c; border-radius:50%; overflow:hidden; display:block; position:relative; background:#252a36; font-size:26px; }
+  .user-profile-avatar-row { position:relative; display:flex; align-items:flex-end; min-height:58px; gap:10px; margin-top:-58px; }
+  .user-profile-avatar-row .user-profile-avatar { margin-top:0; }
+  .user-profile-thought { position:relative; align-self:center; max-width:210px; margin:0 0 12px 2px; padding:9px 12px; border-radius:16px 16px 16px 5px; background:#3f4149; color:#f2f3f5; font-size:13px; line-height:1.35; overflow-wrap:anywhere; box-shadow:0 5px 16px rgba(0,0,0,.22); }
+  .user-profile-thought:empty { display:none; }
+  .user-profile-presence { position:absolute; left:88px; bottom:4px; z-index:3; width:19px; height:19px; margin:0; padding:0; border:4px solid #17181c; border-radius:50%; background:#8e9297; }
+  .user-profile-presence .presence-dot { display:none; }
+  .user-profile-presence.is-online { background:#23a55a; }
+  .user-profile-presence.is-offline { background:#80848e; }
   .user-profile-avatar img { position:absolute; inset:0; display:block; width:100% !important; height:100% !important; max-width:none !important; max-height:none !important; object-fit:cover; object-position:center; border:0; border-radius:50%; transform:none; clip-path:circle(50% at 50% 50%); }
   .user-profile-name { margin:14px 0 2px; font-size:25px; font-weight:800; overflow-wrap:anywhere; }
   .user-profile-login { color:var(--muted); font-size:13px; }
@@ -1784,12 +1792,14 @@
   <section class="user-profile-card" role="dialog" aria-modal="true" aria-labelledby="userProfileName">
     <div class="user-profile-banner"><button class="user-profile-close" type="button" onclick="closeUserProfile()" aria-label="Закрыть">×</button></div>
     <div class="user-profile-content">
-      <div id="userProfileAvatar" class="user-profile-avatar">?</div>
+      <div class="user-profile-avatar-row">
+        <div id="userProfileAvatar" class="user-profile-avatar">?</div>
+        <div id="userProfileThought" class="user-profile-thought hidden"></div>
+        <div id="userProfileSticker" class="user-profile-sticker hidden"></div>
+        <div id="userProfilePresence" class="user-profile-presence"><span class="presence-dot"></span></div>
+      </div>
       <button id="userProfileName" class="user-profile-name profile-copy-field" type="button" onclick="copyProfileField('name')">Профиль</button>
       <button id="userProfileLogin" class="user-profile-login profile-copy-field" type="button" onclick="copyProfileField('login')">@username</button>
-      <div id="userProfilePresence" class="user-profile-presence"><span class="presence-dot"></span><span>Статус неизвестен</span></div>
-      <div id="userProfileDescription" class="user-profile-description user-profile-empty">Мысли пока не добавлены.</div>
-      <div id="userProfileSticker" class="user-profile-sticker hidden"></div>
     </div>
   </section>
 </div>
@@ -2168,9 +2178,10 @@ async function openUserProfile(username) {
   const avatarEl = document.getElementById('userProfileAvatar');
   const descEl = document.getElementById('userProfileDescription');
   const stickerEl = document.getElementById('userProfileSticker');
+  const thoughtEl = document.getElementById('userProfileThought');
   nameEl.textContent = displayNameOf(target); loginEl.textContent = '@' + target;
   avatarEl.textContent = '…'; descEl.textContent = 'Загружаем профиль…';
-  descEl.classList.add('user-profile-empty'); stickerEl.classList.add('hidden');
+  descEl.classList.add('user-profile-empty'); stickerEl.classList.add('hidden'); if (thoughtEl) { thoughtEl.textContent=''; thoughtEl.classList.add('hidden'); }
   overlay.classList.remove('hidden');
   try {
     const res = await fetch('/api/users/' + encodeURIComponent(target) + '/profile', { headers: { Authorization: 'Bearer ' + token } });
@@ -2179,12 +2190,14 @@ async function openUserProfile(username) {
     const p = data.user;
     userProfiles[target] = { nickname:p.nickname||'', avatar_url:p.avatar_url||'', profile_description:p.profile_description||'', profile_sticker_url:p.profile_sticker_url||'', profile_background:p.profile_background||'' };
     nameEl.textContent = p.nickname || p.username || target; loginEl.textContent = '@' + (p.username || target); setProfileBannerBackground();
-    const presenceEl = document.getElementById('userProfilePresence');
-    if (presenceEl) presenceEl.innerHTML = '<span class="presence-dot"></span><span>Статус пока не передаётся сервером</span>';
+    
     avatarEl.innerHTML = renderAvatarHtml(target);
-    const description = String(p.profile_description || '').trim();
+    const description = String(p.profile_description || '').trim().slice(0, 50);
+    if (thoughtEl) { thoughtEl.textContent = description; thoughtEl.classList.toggle('hidden', !description); }
     descEl.textContent = description || 'Мысли пока не добавлены.';
     descEl.classList.toggle('user-profile-empty', !description);
+    const presenceEl = document.getElementById('userProfilePresence');
+    if (presenceEl) { presenceEl.classList.toggle('is-online', !!p.online); presenceEl.classList.toggle('is-offline', !p.online); presenceEl.title = p.online ? 'В сети' : 'Не в сети'; presenceEl.setAttribute('aria-label', presenceEl.title); }
     const sticker = String(p.profile_sticker_url || '');
     if (sticker) {
       stickerEl.innerHTML = sticker.startsWith('data:image/') ? '<img src="' + esc(sticker) + '" alt="Стикер профиля" style="max-width:72px;max-height:72px;border-radius:12px;" />' : esc(sticker);
