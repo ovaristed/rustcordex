@@ -1879,8 +1879,7 @@
         </label>
       </div>
       <div class="field">
-        <div class="lbl">Масштаб интерфейса (Zoom): <span id="zoomVal">100%</span></div>
-        <input id="zoomSlider" type="range" min="80" max="130" step="5" value="100" oninput="setUiZoom(this.value / 100)" />
+
       </div>
 
       <div class="field">
@@ -1992,20 +1991,6 @@
       </div>
 
 
-      <div class="field">
-        <div class="lbl">Оформление профиля</div>
-        <div class="profile-bg-tools">
-          <div id="profileBgPreview" class="profile-bg-preview"><span>ПРЕДПРОСМОТР ПРОФИЛЯ</span></div>
-          <div class="profile-bg-heading"><span class="profile-bg-heading-icon">✦</span><span><b>Твой стиль</b><small>Градиент автоматически повторяет выбранную тему</small></span></div>
-          <div class="lbl">Добавь свой рисунок белой кистью</div>
-          <canvas id="profileBgCanvas" width="900" height="230" aria-label="Холст для рисования фона профиля"></canvas>
-          <div class="profile-bg-actions">
-            <button type="button" class="sm-btn" onclick="clearProfileBgCanvas()">Очистить холст</button>
-            <button type="button" class="sm-btn blue" onclick="useProfileBgDrawing()">Применить рисунок</button>
-            <button type="button" class="sm-btn red" onclick="resetProfileBg()">Вернуть фон темы</button>
-          </div>
-          <div class="item-sub">Градиент меняется вместе с темой. Рисунок можно добавить поверх него — он будет виден в твоём профиле другим пользователям.</div>
-        </div>>
       <div style="display:flex;align-items:center;gap:10px;">
         <button type="button" class="sm-btn green" onclick="saveProfile()">Сохранить профиль</button>
         <span id="profileStatus" class="item-sub"></span>
@@ -2099,8 +2084,7 @@ function syncProfilePopoverUi() {
   document.getElementById('popAv').innerHTML = renderAvatarHtml(me.username);
   const popBanner = document.querySelector('#profilePopover .pop-banner');
   if (popBanner) {
-    const drawing = String(me.profile_background || '');
-    popBanner.style.background = drawing.startsWith('data:image/') ? profileBgGradient() + ', center / cover no-repeat url("' + drawing + '")' : profileBgGradient();
+    popBanner.style.background = profileBgGradient();
   }
   const popDesc = document.getElementById('popDescription');
   if (popDesc) popDesc.textContent = me.profile_description || 'Здесь будет описание';
@@ -2171,7 +2155,7 @@ async function openUserProfile(username) {
     if (!res.ok || !data.user) throw new Error(data.error || 'Не удалось загрузить профиль');
     const p = data.user;
     userProfiles[target] = { nickname:p.nickname||'', avatar_url:p.avatar_url||'', profile_description:p.profile_description||'', profile_sticker_url:p.profile_sticker_url||'', profile_background:p.profile_background||'' };
-    nameEl.textContent = p.nickname || p.username || target; loginEl.textContent = '@' + (p.username || target); setProfileBannerBackground(p.profile_background||'');
+    nameEl.textContent = p.nickname || p.username || target; loginEl.textContent = '@' + (p.username || target); setProfileBannerBackground();
     avatarEl.innerHTML = renderAvatarHtml(target);
     const description = String(p.profile_description || '').trim();
     descEl.textContent = description || 'Пользователь пока не добавил описание.';
@@ -2253,7 +2237,7 @@ async function persistAvatarChange(nextAvatarUrl, doneMsg) {
     const res = await fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ nickname: me.nickname || '', avatar_url: me.avatar_url, profile_description: me.profile_description || '', profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgSaveValue() })
+      body: JSON.stringify({ nickname: me.nickname || '', avatar_url: me.avatar_url, profile_description: me.profile_description || '', profile_sticker_url: me.profile_sticker_url || '', profile_background: '' })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -2936,10 +2920,7 @@ function setUiZoom(val) {
   uiZoom = Math.round(clamped * 20) / 20;
   document.documentElement.style.setProperty('--ui-zoom', String(uiZoom));
   localStorage.setItem('rc_zoom', String(uiZoom));
-  const lbl = document.getElementById('zoomVal');
-  const sl = document.getElementById('zoomSlider');
-  if (lbl) lbl.textContent = Math.round(uiZoom * 100) + '%';
-  if (sl && Number(sl.value) !== Math.round(uiZoom * 100)) sl.value = String(Math.round(uiZoom * 100));
+
 }
 
 function setLiteMode(enabled) {
@@ -3275,8 +3256,6 @@ function applyTheme(name) {
   document.documentElement.style.setProperty('--accent', t.accent);
   document.documentElement.style.setProperty('--accent-rgb', hexToRgb(t.accent));
   document.documentElement.style.setProperty('--glow-2', t.glow2);
-  const profileBgCanvas = document.getElementById('profileBgCanvas');
-  if (profileBgCanvas && profileBgCanvas.dataset.ready && typeof refreshProfileBgTheme === 'function') refreshProfileBgTheme();
   localStorage.setItem('rc_theme', valid);
   document.querySelectorAll('.theme-swatch').forEach((el) => {
     el.classList.toggle('active', el.dataset.theme === valid);
@@ -3542,9 +3521,7 @@ function loadProfileForm() {
   document.getElementById('profileStickerPreview').innerHTML = stickerValue.startsWith('data:image/') ? '<img src="' + esc(stickerValue) + '" alt="Стикер профиля" />' : (stickerValue ? esc(stickerValue) : '＋');
   document.getElementById('profileAvPreview').innerHTML = renderAvatarHtml(me.username);
   document.getElementById('profileStatus').textContent = '';
-  profileBgValue = String(me.profile_background || '').startsWith('data:image/') ? me.profile_background : '';
-  initProfileBgCanvas();
-  updateProfileBgPreview();
+  
 }
 
 function onAvatarFileChange(ev) {
@@ -3625,27 +3602,8 @@ function clearProfileSticker() {
 }
 
 
-let profileBgValue = '';
-let profileBgDrawing = false;
-let profileBgLastPoint = null;
 function profileBgGradient(){const t=THEMES[activeThemeName]||THEMES.discord;return 'linear-gradient(125deg,'+t.bg+' 0%, '+t.accent+' 54%, '+t.bg+' 100%)';}
-function profileBgSaveValue(){return /^data:image\/(png|jpeg);base64,/i.test(String(profileBgValue||''))?profileBgValue:'';}
-function updateProfileBgPreview(value){const p=document.getElementById('profileBgPreview');if(!p)return;const img=value||(profileBgValue.startsWith('data:image/')?profileBgValue:'');p.style.background=img?profileBgGradient()+', center / cover no-repeat url("'+img+'")':profileBgGradient();}
-function paintProfileBgBase(ctx,c){ctx.clearRect(0,0,c.width,c.height);c.style.background=profileBgGradient();}
-function initProfileBgCanvas(){
- const c=document.getElementById('profileBgCanvas');if(!c||c.dataset.ready)return;const x=c.getContext('2d');if(!x)return;paintProfileBgBase(x,c);
- const pt=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};};
- c.addEventListener('pointerdown',e=>{e.preventDefault();profileBgDrawing=true;c.setPointerCapture(e.pointerId);const p=pt(e);profileBgLastPoint=p;x.beginPath();x.moveTo(p.x,p.y);x.lineCap='round';x.lineJoin='round';x.lineWidth=10;x.strokeStyle='#fff';x.shadowColor='rgba(255,255,255,.55)';x.shadowBlur=3;x.lineTo(p.x+.1,p.y+.1);x.stroke();});
- c.addEventListener('pointermove',e=>{if(!profileBgDrawing)return;e.preventDefault();const p=pt(e);if(!profileBgLastPoint)return;x.beginPath();x.moveTo(profileBgLastPoint.x,profileBgLastPoint.y);x.lineTo(p.x,p.y);x.lineWidth=10;x.lineCap='round';x.lineJoin='round';x.strokeStyle='#fff';x.stroke();profileBgLastPoint=p;});
- const stop=()=>{profileBgDrawing=false;profileBgLastPoint=null;x.closePath();};c.addEventListener('pointerup',stop);c.addEventListener('pointercancel',stop);c.addEventListener('lostpointercapture',stop);c.dataset.ready='1';
- if(profileBgValue.startsWith('data:image/')){const im=new Image();im.onload=()=>{x.clearRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);};im.src=profileBgValue;}
-}
-function clearProfileBgCanvas(){const c=document.getElementById('profileBgCanvas');if(!c)return;paintProfileBgBase(c.getContext('2d'),c);profileBgValue='';updateProfileBgPreview();}
-function useProfileBgDrawing(){const c=document.getElementById('profileBgCanvas');if(!c)return;profileBgValue=c.toDataURL('image/png');updateProfileBgPreview(profileBgValue);const st=document.getElementById('profileStatus');if(st){st.style.color='var(--accent)';st.textContent='Рисунок готов — нажми «Сохранить профиль»';}}
-function resetProfileBg(){profileBgValue='';if(me)me.profile_background='';const c=document.getElementById('profileBgCanvas');if(c)paintProfileBgBase(c.getContext('2d'),c);updateProfileBgPreview();const st=document.getElementById('profileStatus');if(st){st.style.color='var(--accent)';st.textContent='Будет использован фон выбранной темы';}}
-function refreshProfileBgTheme(){const c=document.getElementById('profileBgCanvas');if(c&&c.dataset.ready)c.style.background=profileBgGradient();updateProfileBgPreview();}
-document.addEventListener('DOMContentLoaded',()=>{initProfileBgCanvas();});
-function setProfileBannerBackground(value){const el=document.querySelector('.user-profile-banner');if(!el)return;el.style.background=value&&value.startsWith('data:image/')?profileBgGradient()+', center / cover no-repeat url("'+value+'")':profileBgGradient();}
+function setProfileBannerBackground(){const el=document.querySelector('.user-profile-banner');if(el)el.style.background=profileBgGradient();}
 
 async function saveProfile() {
   if (!me || !token) return;
