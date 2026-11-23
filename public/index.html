@@ -2131,7 +2131,7 @@ function syncProfilePopoverUi() {
     const label = acc.nickname || acc.username;
     const avInner = acc.avatar_url
       ? '<img src="' + esc(acc.avatar_url) + '" alt="' + esc(label) + '" />'
-      : esc(label.slice(0, 2).toUpperCase());
+      : '<span class="default-avatar-fox" role="img" aria-label="Базовый аватар Rustcord">🦊<span>😎</span></span>';
     return (
       '<div class="pop-acc-item ' + (isCurrent ? 'current' : '') + '" data-switch-user="' + esc(acc.username) + '">' +
         '<div class="item-left">' +
