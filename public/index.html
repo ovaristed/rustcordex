@@ -2925,10 +2925,10 @@ function notifyDesktop(title, body, tag) {
   } catch (err) { console.warn('Desktop notification failed:', err); }
 }
 
-async function setDesktopNotifications(enabled) {
+async function setDesktopNotifications(enabled, requestPermission = true) {
   desktopNotificationsEnabled = !!enabled;
   localStorage.setItem('rc_desktop_notifications', desktopNotificationsEnabled ? '1' : '0');
-  if (desktopNotificationsEnabled && 'Notification' in window && Notification.permission === 'default') {
+  if (requestPermission && desktopNotificationsEnabled && 'Notification' in window && Notification.permission === 'default') {
     try { await Notification.requestPermission(); } catch {}
   }
   const cb = document.getElementById('desktopNotificationsToggle');
@@ -3502,7 +3502,7 @@ async function openSettings() {
   await populateAudioDevices();
   const n = document.getElementById('desktopNotificationsToggle'); if (n) n.checked = desktopNotificationsEnabled;
   const snd = document.getElementById('notificationSoundsToggle'); if (snd) snd.checked = notificationSoundsEnabled;
-  await setDesktopNotifications(desktopNotificationsEnabled);
+  await setDesktopNotifications(desktopNotificationsEnabled, false);
 }
 
 function closeSettings() {
