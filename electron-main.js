@@ -461,6 +461,13 @@ function createWindow() {
     showConnectionError(`Не удалось открыть интерфейс (${desc || code}).`);
   });
 
+  mainWindow.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -473,15 +480,13 @@ if (!gotLock) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    showMainWindow();
   });
 
   app.whenReady().then(() => {
     setupMediaPermissions();
     setupIpc();
+    createTray();
     createWindow();
 
     app.on('activate', () => {
@@ -489,7 +494,6 @@ if (!gotLock) {
     });
   });
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
-  });
+  app.on('window-all-closed', () => { /* Rustcord remains available in the system tray. */ });
+  app.on('before-quit', () => { isQuitting = true; });
 }
