@@ -4098,7 +4098,10 @@ function renderLists() {
     ? dmRows.join('')
     : '<div class="item-sub" style="padding:6px;">Добавь друга во вкладке «Друзья»</div>';
 
-  cBox.querySelectorAll('[data-open-dm]').forEach((el) => el.addEventListener('click', () => openChat(el.dataset.openDm)));
+  cBox.querySelectorAll('[data-open-dm]').forEach((el) => {
+    el.addEventListener('click', () => openChat(el.dataset.openDm));
+    el.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, el.dataset.openDm));
+  });
   cBox.querySelectorAll('[data-profile-user]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(el.dataset.profileUser); }));
 
   const fBox = document.getElementById('friendsList');
@@ -4128,7 +4131,10 @@ function renderLists() {
     }).join('')
     : '<div class="item-sub" style="padding:8px;">Пока никого нет</div>';
 
-  fBox.querySelectorAll('[data-open-dm]').forEach((el) => el.addEventListener('click', () => openChat(el.dataset.openDm)));
+  fBox.querySelectorAll('[data-open-dm]').forEach((el) => {
+    el.addEventListener('click', () => openChat(el.dataset.openDm));
+    el.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, el.dataset.openDm));
+  });
   fBox.querySelectorAll('[data-profile-user]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(el.dataset.profileUser); }));
   fBox.querySelectorAll('[data-call-user]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
