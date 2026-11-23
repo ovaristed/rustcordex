@@ -1527,6 +1527,8 @@
     box-shadow:inset 0 1px 0 rgba(255,255,255,.17),0 0 22px rgba(255,255,255,.075);
   }
   html[data-theme="aurora-glass"] ::selection { background:rgba(255,255,255,.24);color:#fff; }
+  .default-avatar-fox{display:inline-flex;position:relative;align-items:center;justify-content:center;width:100%;height:100%;font-size:25px;line-height:1;overflow:hidden;background:linear-gradient(145deg,#273b59,#101827);border-radius:inherit}
+  .default-avatar-fox>span{position:absolute;font-size:12px;right:0;bottom:2px;filter:drop-shadow(0 1px 2px #000)}
 </style>
 </head>
 <body>
@@ -1897,6 +1899,20 @@
       </div>
     </div>
 
+      <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
+        <div class="lbl">Уведомления</div>
+        <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
+          <input id="desktopNotificationsToggle" type="checkbox" style="width:auto;" onchange="setDesktopNotifications(this.checked)" />
+          <span>Показывать уведомления Windows о звонках и сообщениях</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
+          <input id="notificationSoundsToggle" type="checkbox" style="width:auto;" onchange="setNotificationSounds(this.checked)" />
+          <span>Звуки уведомлений</span>
+        </label>
+        <div id="notificationPermissionStatus" class="item-sub">Разрешение на системные уведомления</div>
+      </div>
+    </div>
+
     <div id="sPanelAudio" class="s-section hidden">
       <div class="field">
         <div class="lbl">Устройство ввода (Микрофон)</div>
@@ -2038,6 +2054,8 @@ let token = localStorage.getItem('rc_token') || '';
 let me = null;
 let ws = null;
 let wsAuthenticated = false;
+let desktopNotificationsEnabled = localStorage.getItem('rc_desktop_notifications') !== '0';
+let notificationSoundsEnabled = localStorage.getItem('rc_notification_sounds') !== '0';
 let wsReconnectTimer = null;
 
 // activeChat = { kind: 'dm' | 'group', id: string }
@@ -2895,6 +2913,37 @@ function playTone(freq, startOffset, duration, type = 'sine', volume = 0.09, end
   }
 }
 
+function playNotificationSound(name) {
+  if (notificationSoundsEnabled) playDiscordSfx(name);
+}
+
+function notifyDesktop(title, body, tag) {
+  if (!desktopNotificationsEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const note = new Notification(title || 'Rustcord', { body: body || '', tag: tag || 'rustcord', silent: true, icon: '/favicon.ico' });
+    note.onclick = () => { try { window.focus(); note.close(); } catch {} };
+  } catch (err) { console.warn('Desktop notification failed:', err); }
+}
+
+async function setDesktopNotifications(enabled) {
+  desktopNotificationsEnabled = !!enabled;
+  localStorage.setItem('rc_desktop_notifications', desktopNotificationsEnabled ? '1' : '0');
+  if (desktopNotificationsEnabled && 'Notification' in window && Notification.permission === 'default') {
+    try { await Notification.requestPermission(); } catch {}
+  }
+  const cb = document.getElementById('desktopNotificationsToggle');
+  if (cb) cb.checked = desktopNotificationsEnabled;
+  const status = document.getElementById('notificationPermissionStatus');
+  if (status) status.textContent = !('Notification' in window) ? 'Системные уведомления недоступны в этом окружении' : (Notification.permission === 'denied' ? 'Разрешите уведомления в настройках браузера/Windows' : (Notification.permission === 'granted' ? 'Уведомления разрешены' : 'Нужно разрешить уведомления при запросе'));
+}
+
+function setNotificationSounds(enabled) {
+  notificationSoundsEnabled = !!enabled;
+  localStorage.setItem('rc_notification_sounds', notificationSoundsEnabled ? '1' : '0');
+  const cb = document.getElementById('notificationSoundsToggle');
+  if (cb) cb.checked = notificationSoundsEnabled;
+}
+
 function playDiscordSfx(name) {
   if (deafened && name !== 'undeaf') return;
   if (name === 'join') {
@@ -3335,7 +3384,7 @@ function renderAvatarHtml(username) {
   const url = avatarUrlOf(username);
   const title = displayNameOf(username);
   if (url) return '<img src="' + esc(url) + '" alt="' + esc(title) + '" />';
-  return esc(title.slice(0, 2));
+  return '<span class="default-avatar-fox" role="img" aria-label="Базовый аватар Rustcord">🦊<span>😎</span></span>';
 }
 
 function setMode(m) {
@@ -3451,6 +3500,9 @@ async function openSettings() {
   document.getElementById('nsToggle').checked = noiseSuppressionEnabled;
   loadProfileForm();
   await populateAudioDevices();
+  const n = document.getElementById('desktopNotificationsToggle'); if (n) n.checked = desktopNotificationsEnabled;
+  const snd = document.getElementById('notificationSoundsToggle'); if (snd) snd.checked = notificationSoundsEnabled;
+  await setDesktopNotifications(desktopNotificationsEnabled);
 }
 
 function closeSettings() {
@@ -3478,10 +3530,11 @@ function showIncomingCallModal(callerUsername, ctxObj, callId) {
   document.getElementById('incomingMeAv').innerHTML = me ? renderAvatarHtml(me.username) : 'Я';
   document.getElementById('incomingCallModal').classList.remove('hidden');
   stopIncomingRing();
-  playDiscordSfx('incoming');
+  notifyDesktop('Входящий звонок', displayNameOf(callerUsername) + ' звонит вам', 'call-' + callerUsername);
+  playNotificationSound('incoming');
   ringTimer = setInterval(() => {
     if (!pendingCaller) return stopIncomingRing();
-    playDiscordSfx('incoming');
+    playNotificationSound('incoming');
   }, 2200);
 }
 
@@ -4425,7 +4478,7 @@ function endGroupCallWhenLeavingChat(nextChat) {
 
 async function openChat(username) {
   const requestedChat = { kind: 'dm', id: username };
-  endGroupCallWhenLeavingChat(requestedChat);
+  // Переключение чата не должно завершать текущий звонок.
   activeChat = requestedChat;
   renderLists();
   updateActiveHeaderTitle();
@@ -4461,7 +4514,7 @@ async function openChat(username) {
 
 async function openGroupChat(groupId) {
   const requestedChat = { kind: 'group', id: groupId };
-  endGroupCallWhenLeavingChat(requestedChat);
+  // Звонок остаётся активным при переходе между чатами и группами.
   if (!getGroupById(groupId)) {
     upsertGroup({ id: groupId, members: [me && me.username].filter(Boolean) });
   }
@@ -4905,14 +4958,20 @@ function connectWS() {
       const m = data.message;
       const other = m.sender === me.username ? m.recipient : m.sender;
       if (m.sender !== me.username && isUserBlocked(m.sender)) return;
-      if (m.sender !== me.username && !String(m.text || '').startsWith('__CALL__:')) playDiscordSfx('message');
+      if (m.sender !== me.username && !String(m.text || '').startsWith('__CALL__:')) {
+        playNotificationSound('message');
+        if (!(document.hasFocus() && activeChat && activeChat.kind === 'dm' && activeChat.id === other)) notifyDesktop(displayNameOf(m.sender), String(m.text || 'Новое сообщение').slice(0, 180), 'dm-' + m.sender);
+      }
       if (activeChat && activeChat.kind === 'dm' && activeChat.id === other) appendMsg(m);
       scheduleSocialRefresh();
     } else if (data.type === 'group-dm' && data.message) {
       const m = data.message;
       const gId = m.groupId || data.groupId;
       if (m.sender !== me.username && isUserBlocked(m.sender)) return;
-      if (m.sender !== me.username && !String(m.text || '').startsWith('__CALL__:')) playDiscordSfx('message');
+      if (m.sender !== me.username && !String(m.text || '').startsWith('__CALL__:')) {
+        playNotificationSound('message');
+        if (!(document.hasFocus() && activeChat && activeChat.kind === 'group' && activeChat.id === gId)) notifyDesktop('Группа: ' + getGroupTitle(getGroupById(gId)), displayNameOf(m.sender) + ': ' + String(m.text || 'Новое сообщение').slice(0, 150), 'group-' + gId);
+      }
       const gObj = getGroupById(gId);
       if (gObj && m.text) { gObj.lastMessage = m.text; saveCachedGroups(); renderLists(); }
       if (activeChat && activeChat.kind === 'group' && activeChat.id === gId) appendMsg(m);
