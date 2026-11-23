@@ -252,6 +252,24 @@
   .app-toast.error { border-color:rgba(255,69,58,.55); }
   .profile-open-target { cursor:pointer; }
   .profile-open-target:hover { filter:brightness(1.12); }
+  .profile-bg-tools { display:flex; flex-direction:column; gap:13px; padding:15px; border:1px solid rgba(var(--accent-rgb),.2); border-radius:18px; background:linear-gradient(145deg,rgba(var(--panel-rgb),.62),rgba(var(--panel-rgb),.28)); box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 12px 30px rgba(0,0,0,.14); }
+  .profile-bg-preview { position:relative; display:flex; align-items:flex-end; min-height:108px; overflow:hidden; padding:13px; border-radius:13px; background:linear-gradient(125deg,var(--bg),var(--accent),var(--bg)); border:1px solid rgba(255,255,255,.2); box-shadow:inset 0 1px 0 rgba(255,255,255,.2); background-size:cover; }
+  .profile-bg-preview span { font-size:10px; font-weight:800; letter-spacing:.16em; color:rgba(255,255,255,.82); text-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .profile-bg-heading { display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.045); }
+  .profile-bg-heading-icon { display:grid; place-items:center; width:34px; height:34px; border-radius:11px; color:var(--accent); background:rgba(var(--accent-rgb),.13); font-size:18px; }
+  .profile-bg-heading b,.profile-bg-heading small { display:block; }
+  .profile-bg-heading b { font-size:13px; }
+  .profile-bg-heading small { margin-top:3px; color:var(--muted); font-size:11px; }
+  #profileBgCanvas { display:block; width:100%; height:160px; border-radius:13px; border:1px solid rgba(255,255,255,.22); background:var(--bg); box-shadow:inset 0 1px 8px rgba(0,0,0,.25); cursor:crosshair; touch-action:none; }
+  .profile-bg-actions { display:flex; flex-wrap:wrap; gap:8px; }
+  .profile-bg-actions .sm-btn { flex:1 1 120px; min-height:36px; border-radius:10px; }
+  .profile-bg-tools .item-sub { line-height:1.55; }
+  .voice-ctx-menu { width:220px; padding:9px; gap:6px; border-radius:15px; }
+  .voice-ctx-title { padding:8px 9px 10px; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:3px; }
+  .voice-ctx-btn { min-height:38px; border-radius:10px; padding:9px 10px; }
+  .voice-ctx-btn:hover { background:rgba(255,255,255,.08); transform:translateX(2px); }
+  .voice-ctx-btn.danger:hover { background:rgba(255,69,58,.13); }
+  .lite-mode #profileBgCanvas { box-shadow:none; }
   /* Единая лёгкая motion-система интерфейса */
   @keyframes rcFadeUp { from { opacity:0; transform:translateY(9px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
   @keyframes rcFadeIn { from { opacity:0; } to { opacity:1; } }
@@ -1791,26 +1809,9 @@
 </div>
 
 <div id="voiceContextMenu" class="voice-ctx-menu hidden">
-  <div class="voice-ctx-title">
-    <span id="ctxTargetLabel">Пользователь</span>
-    <span id="ctxVolPercent">100%</span>
-  </div>
-  <div class="voice-ctx-vol-row">
-    <span style="font-size:12.5px;font-weight:600;">Громкость пользователя</span>
-    <input id="ctxVolSlider" type="range" min="0" max="200" step="1" value="100" oninput="onCtxVolumeChange(this.value)" />
-  </div>
-  <div class="voice-ctx-sep"></div>
-  <button id="ctxMuteBtn" type="button" class="voice-ctx-btn" onclick="toggleCtxMuteUser()">
-    <span>Заглушить</span>
-    <span id="ctxMuteState"></span>
-  </button>
-  <div class="voice-ctx-sep"></div>
-  <button id="ctxBlockBtn" type="button" class="voice-ctx-btn danger" onclick="toggleCtxBlockUser()">
-    <span>Заблокировать</span><span id="ctxBlockState"></span>
-  </button>
-  <div class="voice-ctx-sep"></div>
-  <button type="button" class="voice-ctx-btn" onclick="ctxOpenProfile()">Открыть профиль ↗</button>
-  <button type="button" class="voice-ctx-btn" onclick="ctxClearChat()">Очистить переписку</button>
+  <div class="voice-ctx-title"><span id="ctxTargetLabel">Пользователь</span></div>
+  <button id="ctxBlockBtn" type="button" class="voice-ctx-btn danger" onclick="toggleCtxBlockUser()"><span id="ctxBlockLabel">Заблокировать</span><span id="ctxBlockState"></span></button>
+  <button type="button" class="voice-ctx-btn" onclick="ctxClearChat()">Удалить чат</button>
   <button type="button" class="voice-ctx-btn danger" onclick="ctxRemoveFriend()">Удалить из друзей</button>
 </div>
 
@@ -1993,28 +1994,19 @@
 
 
       <div class="field">
-        <div class="lbl">Фон профиля — настрой свой стиль</div>
+        <div class="lbl">Оформление профиля</div>
         <div class="profile-bg-tools">
-          <div id="profileBgPreview" class="profile-bg-preview"></div>
-          <div class="profile-bg-colors">
-            <label>Цвет 1 <input id="profileBgColor1" type="color" value="#39445c" oninput="updateProfileBgPreview()" /></label>
-            <label>Цвет 2 <input id="profileBgColor2" type="color" value="#9b6a86" oninput="updateProfileBgPreview()" /></label>
-            <button type="button" class="sm-btn blue" onclick="applyProfileBgPalette()">Применить градиент</button>
-          </div>
-          <div class="lbl">Или нарисуй свой фон</div>
-          <canvas id="profileBgCanvas" width="640" height="180"></canvas>
-          <div class="profile-bg-colors">
-            <label>Кисть <input id="profileBgBrushColor" type="color" value="#ffffff" /></label>
-            <label>Размер <input id="profileBgBrushSize" type="range" min="2" max="48" value="12" style="width:110px;" /></label>
-          </div>
+          <div id="profileBgPreview" class="profile-bg-preview"><span>ПРЕДПРОСМОТР ПРОФИЛЯ</span></div>
+          <div class="profile-bg-heading"><span class="profile-bg-heading-icon">✦</span><span><b>Твой стиль</b><small>Градиент автоматически повторяет выбранную тему</small></span></div>
+          <div class="lbl">Добавь свой рисунок белой кистью</div>
+          <canvas id="profileBgCanvas" width="900" height="230" aria-label="Холст для рисования фона профиля"></canvas>
           <div class="profile-bg-actions">
-            <button type="button" class="sm-btn" onclick="clearProfileBgCanvas()">Очистить рисунок</button>
-            <button type="button" class="sm-btn" onclick="useProfileBgDrawing()">Использовать рисунок</button>
-            <button type="button" class="sm-btn red" onclick="resetProfileBg()">Сбросить фон</button>
+            <button type="button" class="sm-btn" onclick="clearProfileBgCanvas()">Очистить холст</button>
+            <button type="button" class="sm-btn blue" onclick="useProfileBgDrawing()">Применить рисунок</button>
+            <button type="button" class="sm-btn red" onclick="resetProfileBg()">Вернуть фон темы</button>
           </div>
-          <div class="item-sub">Фон будет виден всем, кто открывает твой профиль. Рисунок сохраняется как изображение.</div>
-        </div>
-      </div>
+          <div class="item-sub">Градиент меняется вместе с темой. Рисунок можно добавить поверх него — он будет виден в твоём профиле другим пользователям.</div>
+        </div>>
       <div style="display:flex;align-items:center;gap:10px;">
         <button type="button" class="sm-btn green" onclick="saveProfile()">Сохранить профиль</button>
         <span id="profileStatus" class="item-sub"></span>
@@ -2257,7 +2249,7 @@ async function persistAvatarChange(nextAvatarUrl, doneMsg) {
     const res = await fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ nickname: me.nickname || '', avatar_url: me.avatar_url, profile_description: me.profile_description || '', profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgValue || me.profile_background || '' })
+      body: JSON.stringify({ nickname: me.nickname || '', avatar_url: me.avatar_url, profile_description: me.profile_description || '', profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgSaveValue() })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -2756,34 +2748,19 @@ function applyRemotePeerAudioSettings(username) {
 }
 
 function openVoiceContextMenu(ev, username) {
-  ev.preventDefault();
-  ev.stopPropagation();
-  closeProfilePopover();
-  const target = username || (activeChat && activeChat.kind === 'dm' ? activeChat.id : null);
-  if (!target || (me && target === me.username)) return;
-  ctxTargetUser = target;
-
-  const menu = document.getElementById('voiceContextMenu');
-  const vol = getPeerVolume(target);
-  const muted = isPeerMuted(target);
-  const blocked = isUserBlocked(target);
-
-  document.getElementById('ctxTargetLabel').textContent = displayNameOf(target);
-  document.getElementById('ctxVolPercent').textContent = vol + '%';
-  document.getElementById('ctxVolSlider').value = String(vol);
-  document.getElementById('ctxMuteBtn').classList.toggle('active', muted);
-  document.getElementById('ctxMuteState').textContent = muted ? '✓' : '';
-  document.getElementById('ctxBlockBtn').classList.toggle('active', blocked);
-  document.getElementById('ctxBlockState').textContent = blocked ? '✓' : '';
-
+  ev.preventDefault(); ev.stopPropagation(); closeProfilePopover();
+  const target=username||(activeChat&&activeChat.kind==='dm'?activeChat.id:null);
+  if(!target||(me&&target===me.username))return;
+  ctxTargetUser=target;
+  const menu=document.getElementById('voiceContextMenu'),blocked=isUserBlocked(target);
+  document.getElementById('ctxTargetLabel').textContent=displayNameOf(target);
+  document.getElementById('ctxBlockBtn').classList.toggle('active',blocked);
+  document.getElementById('ctxBlockLabel').textContent=blocked?'Разблокировать':'Заблокировать';
+  document.getElementById('ctxBlockState').textContent=blocked?'✓':'';
   menu.classList.remove('hidden');
-  const pad = 10;
-  const mw = menu.offsetWidth || 245;
-  const mh = menu.offsetHeight || 190;
-  const x = Math.max(pad, Math.min(window.innerWidth - mw - pad, ev.clientX));
-  const y = Math.max(pad, Math.min(window.innerHeight - mh - pad, ev.clientY));
-  menu.style.left = x + 'px';
-  menu.style.top = y + 'px';
+  const pad=10,mw=menu.offsetWidth||220,mh=menu.offsetHeight||150;
+  menu.style.left=Math.max(pad,Math.min(window.innerWidth-mw-pad,ev.clientX))+'px';
+  menu.style.top=Math.max(pad,Math.min(window.innerHeight-mh-pad,ev.clientY))+'px';
 }
 
 function closeVoiceContextMenu() {
@@ -2829,6 +2806,7 @@ function toggleCtxBlockUser() {
   localStorage.setItem('rc_blocked_users', JSON.stringify([...blockedUsers]));
   const blocked = isUserBlocked(target);
   document.getElementById('ctxBlockBtn').classList.toggle('active', blocked);
+  document.getElementById('ctxBlockLabel').textContent = blocked ? 'Разблокировать' : 'Заблокировать';
   document.getElementById('ctxBlockState').textContent = blocked ? '✓' : '';
   applyRemotePeerAudioSettings(target);
   renderLists();
@@ -3297,6 +3275,7 @@ function applyTheme(name) {
   document.documentElement.style.setProperty('--accent', t.accent);
   document.documentElement.style.setProperty('--accent-rgb', hexToRgb(t.accent));
   document.documentElement.style.setProperty('--glow-2', t.glow2);
+  if (typeof refreshProfileBgTheme === 'function') refreshProfileBgTheme();
   localStorage.setItem('rc_theme', valid);
   document.querySelectorAll('.theme-swatch').forEach((el) => {
     el.classList.toggle('active', el.dataset.theme === valid);
@@ -3562,8 +3541,9 @@ function loadProfileForm() {
   document.getElementById('profileStickerPreview').innerHTML = stickerValue.startsWith('data:image/') ? '<img src="' + esc(stickerValue) + '" alt="Стикер профиля" />' : (stickerValue ? esc(stickerValue) : '＋');
   document.getElementById('profileAvPreview').innerHTML = renderAvatarHtml(me.username);
   document.getElementById('profileStatus').textContent = '';
-  profileBgValue = me.profile_background || '';
-  updateProfileBgPreview(profileBgValue ? (profileBgValue.startsWith('data:image/') ? 'url("'+profileBgValue+'")' : profileBgValue) : profileBgGradient());
+  profileBgValue = String(me.profile_background || '').startsWith('data:image/') ? me.profile_background : '';
+  initProfileBgCanvas();
+  updateProfileBgPreview();
 }
 
 function onAvatarFileChange(ev) {
@@ -3646,29 +3626,24 @@ function clearProfileSticker() {
 
 let profileBgValue = '';
 let profileBgDrawing = false;
-function profileBgGradient() {
-  const c1=document.getElementById('profileBgColor1')?.value||'#39445c';
-  const c2=document.getElementById('profileBgColor2')?.value||'#9b6a86';
-  return 'linear-gradient(125deg,'+c1+','+c2+')';
-}
-function updateProfileBgPreview(value) {
-  const preview=document.getElementById('profileBgPreview');
-  if(preview) preview.style.background= value || profileBgGradient();
-}
-function applyProfileBgPalette(){profileBgValue=profileBgGradient();updateProfileBgPreview(profileBgValue);}
+function profileBgGradient(){const t=THEMES[activeThemeName]||THEMES.discord;return 'linear-gradient(125deg,'+t.bg+' 0%, '+t.accent+' 54%, '+t.bg+' 100%)';}
+function profileBgSaveValue(){return /^data:image\/(png|jpeg);base64,/i.test(String(profileBgValue||''))?profileBgValue:'';}
+function updateProfileBgPreview(value){const p=document.getElementById('profileBgPreview');if(!p)return;const img=value||(profileBgValue.startsWith('data:image/')?profileBgValue:'');p.style.background=img?profileBgGradient()+', center / cover no-repeat url("'+img+'")':profileBgGradient();}
+function paintProfileBgBase(ctx,c){const t=THEMES[activeThemeName]||THEMES.discord,g=ctx.createLinearGradient(0,0,c.width,c.height);g.addColorStop(0,t.bg);g.addColorStop(.54,t.accent);g.addColorStop(1,t.bg);ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle=g;ctx.fillRect(0,0,c.width,c.height);}
 function initProfileBgCanvas(){
-  const canvas=document.getElementById('profileBgCanvas');if(!canvas||canvas.dataset.ready)return;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#20232b';ctx.fillRect(0,0,canvas.width,canvas.height);
-  const point=e=>{const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};};
-  canvas.addEventListener('pointerdown',e=>{profileBgDrawing=true;canvas.setPointerCapture(e.pointerId);const p=point(e);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=document.getElementById('profileBgBrushColor').value;ctx.lineWidth=Number(document.getElementById('profileBgBrushSize').value);ctx.lineTo(p.x+.1,p.y+.1);ctx.stroke();});
-  canvas.addEventListener('pointermove',e=>{if(!profileBgDrawing)return;const p=point(e);ctx.strokeStyle=document.getElementById('profileBgBrushColor').value;ctx.lineWidth=Number(document.getElementById('profileBgBrushSize').value);ctx.lineTo(p.x,p.y);ctx.stroke();});
-  const stop=()=>{profileBgDrawing=false;};canvas.addEventListener('pointerup',stop);canvas.addEventListener('pointercancel',stop);canvas.dataset.ready='1';
+ const c=document.getElementById('profileBgCanvas');if(!c||c.dataset.ready)return;const x=c.getContext('2d');if(!x)return;paintProfileBgBase(x,c);
+ const pt=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};};
+ c.addEventListener('pointerdown',e=>{e.preventDefault();profileBgDrawing=true;c.setPointerCapture(e.pointerId);const p=pt(e);x.beginPath();x.moveTo(p.x,p.y);x.lineCap='round';x.lineJoin='round';x.lineWidth=10;x.strokeStyle='#fff';x.shadowColor='rgba(255,255,255,.55)';x.shadowBlur=3;x.lineTo(p.x+.1,p.y+.1);x.stroke();});
+ c.addEventListener('pointermove',e=>{if(!profileBgDrawing)return;e.preventDefault();const p=pt(e);x.lineWidth=10;x.strokeStyle='#fff';x.lineTo(p.x,p.y);x.stroke();});
+ const stop=()=>{profileBgDrawing=false;x.closePath();};c.addEventListener('pointerup',stop);c.addEventListener('pointercancel',stop);c.addEventListener('lostpointercapture',stop);c.dataset.ready='1';
+ if(profileBgValue.startsWith('data:image/')){const im=new Image();im.onload=()=>{paintProfileBgBase(x,c);x.drawImage(im,0,0,c.width,c.height);};im.src=profileBgValue;}
 }
-function clearProfileBgCanvas(){const c=document.getElementById('profileBgCanvas');if(!c)return;const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.fillStyle='#20232b';x.fillRect(0,0,c.width,c.height);}
-function useProfileBgDrawing(){const c=document.getElementById('profileBgCanvas');if(!c)return;profileBgValue=c.toDataURL('image/jpeg',.82);updateProfileBgPreview('url('+profileBgValue+')');}
-function resetProfileBg(){profileBgValue='';me.profile_background='';updateProfileBgPreview(profileBgGradient());}
+function clearProfileBgCanvas(){const c=document.getElementById('profileBgCanvas');if(!c)return;paintProfileBgBase(c.getContext('2d'),c);profileBgValue='';updateProfileBgPreview();}
+function useProfileBgDrawing(){const c=document.getElementById('profileBgCanvas');if(!c)return;profileBgValue=c.toDataURL('image/png');updateProfileBgPreview(profileBgValue);const st=document.getElementById('profileStatus');if(st){st.style.color='var(--accent)';st.textContent='Рисунок готов — нажми «Сохранить профиль»';}}
+function resetProfileBg(){profileBgValue='';if(me)me.profile_background='';const c=document.getElementById('profileBgCanvas');if(c)paintProfileBgBase(c.getContext('2d'),c);updateProfileBgPreview();const st=document.getElementById('profileStatus');if(st){st.style.color='var(--accent)';st.textContent='Будет использован фон выбранной темы';}}
+function refreshProfileBgTheme(){const c=document.getElementById('profileBgCanvas');if(c&&c.dataset.ready&&!profileBgValue.startsWith('data:image/'))paintProfileBgBase(c.getContext('2d'),c);updateProfileBgPreview();}
 document.addEventListener('DOMContentLoaded',()=>{initProfileBgCanvas();});
-function setProfileBannerBackground(value){const el=document.querySelector('.user-profile-banner');if(!el)return;el.style.background=value&&value.startsWith('data:image/')?'center/cover no-repeat url("'+value+'")':(value||'linear-gradient(135deg,#c83e4d,var(--accent))');}
+function setProfileBannerBackground(value){const el=document.querySelector('.user-profile-banner');if(!el)return;el.style.background=value&&value.startsWith('data:image/')?profileBgGradient()+', center / cover no-repeat url("'+value+'")':profileBgGradient();}
 
 async function saveProfile() {
   if (!me || !token) return;
@@ -3679,7 +3654,7 @@ async function saveProfile() {
     const res = await fetch('/api/profile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ nickname: nick, avatar_url: me.avatar_url || '', profile_description: document.getElementById('profileDescriptionInput').value.trim().slice(0, 120), profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgValue || me.profile_background || '' })
+      body: JSON.stringify({ nickname: nick, avatar_url: me.avatar_url || '', profile_description: document.getElementById('profileDescriptionInput').value.trim().slice(0, 120), profile_sticker_url: me.profile_sticker_url || '', profile_background: profileBgSaveValue() })
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
