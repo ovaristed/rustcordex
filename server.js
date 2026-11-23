@@ -1023,6 +1023,34 @@ wss.on('connection', (ws) => {
       return;
     }
 
+    if (data.type === 'call-end' && data.callContext && data.callContext.kind === 'group' && data.callId) {
+      // Group call termination is authoritative on the server: use the live
+      // membership table instead of the caller's possibly stale local cache.
+      const groupId = String(data.callContext.id || '');
+      if (!groupId) return;
+      try {
+        const membership = await pool.query(
+          'SELECT 1 FROM group_members WHERE group_id = $1 AND username = $2',
+          [groupId, ws.username]
+        );
+        if (!membership.rows.length) return;
+        const members = await pool.query(
+          'SELECT username FROM group_members WHERE group_id = $1 AND username <> $2',
+          [groupId, ws.username]
+        );
+        const payload = {
+          type: 'call-end',
+          from: ws.username,
+          callContext: { kind: 'group', id: groupId },
+          callId: String(data.callId)
+        };
+        for (const member of members.rows) sendToUser(member.username, payload);
+      } catch (err) {
+        console.error('Group call termination error:', err);
+      }
+      return;
+    }
+
     if (data.type === 'call-invite' || data.type === 'call-accept' || data.type === 'call-reject' || data.type === 'call-end') {
       if (data.to && data.callId) {
         try { if (!(await canContact(ws.username, String(data.to)))) return; } catch { return; }
