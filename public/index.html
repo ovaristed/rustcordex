@@ -5004,6 +5004,10 @@ async function openCallUI(outgoing, targetUsers, sessionId = callSessionId, cont
       : 'На связи с ' + displayNameOf(first);
   }
 
+  // A new call must never inherit participant tiles from a previous session.
+  // endCall normally removes them; this sweep also covers invitees that never
+  // established a peer connection and therefore were absent from peerConnections.
+  document.querySelectorAll('#callGrid [id^="remoteTile_"]').forEach((tile) => tile.remove());
   for (const u of (targetUsers || [])) {
     ensureRemoteTile(u);
   }
@@ -5068,6 +5072,12 @@ function endCall(notify = true, postLog = true) {
   for (const u of [...peerConnections.keys()]) {
     cleanupPeerConnection(u);
   }
+  // Also remove tiles for group invitees who never connected: they have no
+  // peerConnections entry, but their stale DOM tiles would reappear in the next DM call.
+  document.querySelectorAll('#callGrid [id^="remoteTile_"]').forEach((tile) => tile.remove());
+  remoteStreams.clear();
+  remoteAudios.forEach((audio) => { try { audio.pause(); audio.srcObject = null; audio.remove(); } catch {} });
+  remoteAudios.clear();
 
   [rawMicStream, micStream, camStream, scrStream].forEach((s) => s && s.getTracks().forEach((t) => t.stop()));
   rawMicStream = null; micStream = null; camStream = null; scrStream = null;
