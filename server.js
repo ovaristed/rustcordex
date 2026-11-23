@@ -410,7 +410,7 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
       if (stickerUrl.length > 32) return res.status(400).json({ error: 'Слишком длинный стикер' });
     }
     const updated = await pool.query(
-      'UPDATE users SET nickname = $1, avatar_url = $2, profile_description = $3, profile_sticker_url = $4, profile_background = $5 WHERE id = $6 RETURNING id, username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, profile_background',
+      'UPDATE users SET nickname = $1, avatar_url = $2, profile_description = $3, profile_sticker_url = $4, profile_background = $5 WHERE id = $6 RETURNING id, username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background',
       [nick, avatarUrl, description, stickerUrl, profileBackground, req.user.id]
     );
     const user = updated.rows[0];
@@ -425,7 +425,7 @@ app.get('/api/users/:username/profile', authMiddleware, async (req, res) => {
   try {
     const username = String(req.params.username || '').trim();
     if (!username) return res.status(400).json({ error: 'Не указан логин пользователя' });
-    const result = await pool.query('SELECT username, nickname, avatar_url, profile_description, profile_sticker_url FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+    const result = await pool.query('SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE LOWER(username) = LOWER($1)', [username]);
     if (!result.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
     return res.json({ user: result.rows[0] });
   } catch (err) {
@@ -444,7 +444,7 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
     if (!friendNames.length) return res.json({ friends: [], chats: [] });
 
     const profRows = await pool.query(
-      'SELECT username, nickname, avatar_url, profile_description, profile_sticker_url FROM users WHERE username = ANY($1::text[])',
+      'SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE username = ANY($1::text[])',
       [friendNames]
     );
     const profByName = new Map(profRows.rows.map((r) => [r.username, r]));
@@ -466,7 +466,7 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
         nickname: prof.nickname || '',
         avatar_url: prof.avatar_url || '',
         profile_description: prof.profile_description || '',
-        profile_sticker_url: prof.profile_sticker_url || '',
+        profile_sticker_url: prof.profile_sticker_url || '', profile_background: prof.profile_background || '',
         lastMessage: lastByName.get(name) || ''
       };
     });
