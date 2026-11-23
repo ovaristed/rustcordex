@@ -2526,9 +2526,9 @@ function openGroupModal(nextMode) {
     picker.innerHTML = candidates.map((f) => (
       '<div class="member-pick-row" data-pick-user="' + esc(f.username) + '">' +
         '<div class="item-left">' +
-          '<div class="avatar">' + renderAvatarHtml(f.username) + '</div>' +
+          '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + '</div>' +
           '<div>' +
-            '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
+            '<div class="item-name profile-open-target" data-profile-user="' + esc(f.username) + '">' + esc(displayNameOf(f.username)) + '</div>' +
             '<div class="item-sub">@' + esc(f.username) + '</div>' +
           '</div>' +
         '</div>' +
@@ -3963,9 +3963,9 @@ function renderLists() {
     return (
       '<div class="list-item ' + (isAct ? 'active' : '') + '" data-open-dm="' + esc(c.username) + '">' +
         '<div class="item-left">' +
-          '<div class="avatar">' + renderAvatarHtml(c.username) + '</div>' +
+          '<div class="avatar profile-open-target" data-profile-user="' + esc(c.username) + '">' + renderAvatarHtml(c.username) + '</div>' +
           '<div style="min-width:0">' +
-            '<div class="item-name">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
+            '<div class="item-name profile-open-target" data-profile-user="' + esc(c.username) + '">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
             '<div class="item-sub">' + esc(blocked ? 'Пользователь заблокирован' : formatPreviewText(c.lastMessage)) + '</div>' +
           '</div>' +
         '</div>' +
@@ -3977,9 +3977,8 @@ function renderLists() {
     ? dmRows.join('')
     : '<div class="item-sub" style="padding:6px;">Добавь друга во вкладке «Друзья»</div>';
 
-  cBox.querySelectorAll('[data-open-dm]').forEach((el) => {
-    el.addEventListener('click', () => openChat(el.dataset.openDm));
-  });
+  cBox.querySelectorAll('[data-open-dm]').forEach((el) => el.addEventListener('click', () => openChat(el.dataset.openDm)));
+  cBox.querySelectorAll('[data-profile-user]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(el.dataset.profileUser); }));
 
   const fBox = document.getElementById('friendsList');
   const friendRows = getAllKnownFriends();
@@ -4008,9 +4007,8 @@ function renderLists() {
     }).join('')
     : '<div class="item-sub" style="padding:8px;">Пока никого нет</div>';
 
-  fBox.querySelectorAll('[data-open-dm]').forEach((el) => {
-    el.addEventListener('click', () => openChat(el.dataset.openDm));
-  });
+  fBox.querySelectorAll('[data-open-dm]').forEach((el) => el.addEventListener('click', () => openChat(el.dataset.openDm)));
+  fBox.querySelectorAll('[data-profile-user]').forEach((el) => el.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(el.dataset.profileUser); }));
   fBox.querySelectorAll('[data-call-user]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -4553,11 +4551,11 @@ function appendMsg(m) {
   const authorLabel = isMine ? 'Вы' : displayNameOf(m.sender);
 
   el.innerHTML = (
-    '<div class="avatar">' + renderAvatarHtml(m.sender) + '</div>' +
+    '<div class="avatar profile-open-target" data-profile-user="' + esc(m.sender || '') + '">' + renderAvatarHtml(m.sender) + '</div>' +
     '<div class="msg-bubble">' +
       (purePhotoGif ? '' : (
         '<div class="msg-head">' +
-          '<span class="msg-author">' + esc(authorLabel) + '</span>' +
+          '<span class="msg-author profile-open-target" data-profile-user="' + esc(m.sender || '') + '">' + esc(authorLabel) + '</span>' +
           '<span class="msg-time">' + hh + ':' + mm + (m.edited_at ? ' · изм.' : '') + '</span>' +
         '</div>'
       )) +
@@ -4566,6 +4564,7 @@ function appendMsg(m) {
   );
   box.appendChild(el);
 
+  if (m.sender) el.querySelectorAll('[data-profile-user]').forEach((target) => target.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(target.dataset.profileUser); }));
   if (!isMine && m.sender) {
     el.querySelector('.avatar').addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, m.sender));
   }
