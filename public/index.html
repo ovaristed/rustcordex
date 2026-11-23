@@ -835,13 +835,19 @@
     border-color: rgba(255, 255, 255, 0.1);
   }
   .user-trigger {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    flex: 1;
-    cursor: pointer;
+    display: flex; align-items: center; gap: 11px;
+    min-width: 0; flex: 1; cursor: pointer;
+    padding: 3px 4px; border-radius: 12px;
+    transition: background .16s ease, transform .16s ease;
   }
+  .user-trigger:hover { background: rgba(var(--accent-rgb),.10); }
+  .user-trigger:active { transform:scale(.985); }
+  .user-trigger #meAv { width:42px; height:42px; min-width:42px; flex:0 0 42px; font-size:16px; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.24); }
+  .user-trigger > div:last-child { display:flex; flex-direction:column; justify-content:center; gap:3px; }
+  #meName { display:flex; align-items:center; gap:0; min-width:0; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal !important; word-break:normal !important; letter-spacing:normal; }
+  #meName .profile-name-label { overflow:hidden; text-overflow:ellipsis; flex:0 1 auto; }
+  #meName .profile-name-emoji { flex:0 0 auto; margin-left:6px; }
+  #meLoginSub { font-size:10.5px; line-height:1.2; opacity:.85; }
 
   .modal-backdrop {
     inset: 0;
