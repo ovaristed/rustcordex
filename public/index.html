@@ -360,18 +360,11 @@
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   }
   .pop-identity {
-    position:absolute;
-    top:-76px;
-    left:108px;
-    right:18px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-    gap:2px;
-    pointer-events:auto;
+    position:absolute; top:-76px; left:108px; right:18px;
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center; gap:2px; pointer-events:auto; min-width:0;
   }
-  .pop-nick { max-width:100%; padding:0; border:0; background:transparent; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.4); font:inherit; font-size:23px; font-weight:850; letter-spacing:-.025em; line-height:1.2; cursor:pointer; }
+  .pop-nick { display:flex; align-items:center; justify-content:center; gap:0; max-width:100%; min-width:0; padding:0; border:0; background:transparent; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,.4); font:inherit; font-size:23px; font-weight:850; letter-spacing:normal; line-height:1.2; white-space:nowrap; overflow:visible; user-select:text; cursor:default; }
   .pop-nick:hover { text-shadow:0 0 16px rgba(255,255,255,.32); }
   .pop-login-row { appearance:none; -webkit-appearance:none; justify-content:center; padding:1px 0; border:0 !important; outline:0; box-shadow:none !important; border-radius:0; background:transparent !important; color:var(--muted); cursor:pointer; }
   .pop-login-row:focus,.pop-login-row:focus-visible { outline:0; box-shadow:none !important; }
@@ -1554,12 +1547,14 @@
     color:#fff !important;
     animation:rcNickNudge .32s ease-in-out;
   }
-  .profile-name-emoji {
-    display:inline-block;
-    margin-left:7px;
-    white-space:nowrap;
-    vertical-align:baseline;
-  }
+  .profile-name-emoji { display:inline-flex; flex:0 0 auto; margin-left:7px; white-space:nowrap; vertical-align:middle; }
+  .profile-name-label { display:inline-block; min-width:0; white-space:nowrap; }
+  #meName { display:flex; align-items:center; gap:0; min-width:0; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal !important; word-break:normal !important; letter-spacing:normal; }
+  .user-trigger { min-width:0; }
+  .user-trigger > div:last-child { min-width:0; flex:1; overflow:hidden; }
+  .user-trigger #meName { font-size:13px; line-height:1.25; font-weight:750; }
+  .pop-nick, .user-profile-name { letter-spacing:normal !important; overflow-wrap:normal !important; word-break:normal !important; }
+  .user-profile-name { display:flex; align-items:center; gap:0; width:auto; max-width:100%; white-space:nowrap; cursor:default; user-select:text; }
   .user-profile-presence {
     width:25px !important;
     height:25px !important;
@@ -1786,7 +1781,7 @@
     </div>
 
     <div class="pop-identity">
-      <button id="popNick" type="button" class="pop-nick" title="Нажми, чтобы скопировать логин" onclick="copyMyLogin()">User</button>
+      <div id="popNick" class="pop-nick" aria-label="Имя пользователя">User</div>
       <button type="button" class="pop-login-row" title="Нажми, чтобы скопировать логин" onclick="copyMyLogin()">
         <span id="popLoginText" class="pop-login-val">@user</span>
       </button>
@@ -1827,7 +1822,7 @@
         <div id="userProfileSticker" class="user-profile-sticker hidden"></div>
         <div id="userProfilePresence" class="user-profile-presence"><span class="presence-dot"></span></div>
       </div>
-      <button id="userProfileName" class="user-profile-name profile-copy-field" type="button" onclick="copyProfileField('name')">Профиль</button>
+      <div id="userProfileName" class="user-profile-name" aria-label="Имя пользователя">Профиль</div>
       <button id="userProfileLogin" class="user-profile-login profile-copy-field" type="button" onclick="copyProfileField('login')">@username</button>
     </div>
   </section>
@@ -2192,11 +2187,11 @@ function syncProfilePopoverUi() {
 }
 
 function formatProfileDisplayName(value) {
-  const raw = String(value || 'Профиль');
-  const match = raw.match(/([\\p{Extended_Pictographic}\\uFE0F\\u200D]+)$/u);
-  if (!match) return esc(raw);
+  const raw = String(value || 'Профиль').trim();
+  const match = raw.match(/(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)$/u);
+  if (!match) return '<span class="profile-name-label">' + esc(raw) + '</span>';
   const label = raw.slice(0, -match[1].length).trimEnd();
-  return esc(label) + '<span class="profile-name-emoji">' + esc(match[1]) + '</span>';
+  return '<span class="profile-name-label">' + esc(label) + '</span><span class="profile-name-emoji">' + esc(match[1]) + '</span>';
 }
 
 async function openUserProfile(username) {
@@ -2208,7 +2203,7 @@ async function openUserProfile(username) {
   const avatarEl = document.getElementById('userProfileAvatar');
   const stickerEl = document.getElementById('userProfileSticker');
   const thoughtEl = document.getElementById('userProfileThought');
-  nameEl.textContent = displayNameOf(target); loginEl.textContent = '@' + target;
+  nameEl.innerHTML = formatProfileDisplayName(displayNameOf(target)); loginEl.textContent = '@' + target;
   avatarEl.textContent = '…'; stickerEl.classList.add('hidden'); if (thoughtEl) { thoughtEl.textContent='Загружаем профиль…'; thoughtEl.classList.remove('hidden'); }
   overlay.classList.remove('hidden');
   try {
@@ -3527,7 +3522,7 @@ function logout() {
 function refreshMeUi() {
   if (!me) return;
   userProfiles[me.username] = { nickname: me.nickname || '', avatar_url: me.avatar_url || '' };
-  document.getElementById('meName').textContent = displayNameOf(me.username);
+  document.getElementById('meName').innerHTML = formatProfileDisplayName(displayNameOf(me.username));
   document.getElementById('meLoginSub').textContent = '@' + me.username;
   document.getElementById('meAv').innerHTML = renderAvatarHtml(me.username);
   document.getElementById('localTag').textContent = displayNameOf(me.username) + ' (Вы)';
