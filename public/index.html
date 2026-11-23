@@ -1810,6 +1810,8 @@
 
 <div id="voiceContextMenu" class="voice-ctx-menu hidden">
   <div class="voice-ctx-title"><span id="ctxTargetLabel">Пользователь</span></div>
+  <div class="voice-ctx-vol-row"><label for="ctxVolSlider">Громкость <span id="ctxVolPercent">100%</span></label><input id="ctxVolSlider" type="range" min="0" max="200" step="1" value="100" oninput="onCtxVolumeChange(this.value)"></div>
+  <button id="ctxMuteBtn" type="button" class="voice-ctx-btn" onclick="toggleCtxMuteUser()">Заглушить <span id="ctxMuteState"></span></button>
   <button id="ctxBlockBtn" type="button" class="voice-ctx-btn danger" onclick="toggleCtxBlockUser()"><span id="ctxBlockLabel">Заблокировать</span><span id="ctxBlockState"></span></button>
   <button type="button" class="voice-ctx-btn" onclick="ctxClearChat()">Удалить чат</button>
   <button type="button" class="voice-ctx-btn danger" onclick="ctxRemoveFriend()">Удалить из друзей</button>
@@ -2344,6 +2346,7 @@ let ringAudioCtx = null;
 const peerConnections = new Map();
 const remoteAudios = new Map();
 const remoteStreams = new Map();
+const remoteAudioAnalysers = new Map();
 
 let rawMicStream = null, micStream = null, camStream = null, scrStream = null;
 let micAudioCtx = null, micGainNode = null, micAnalyser = null, speakRaf = null;
@@ -2745,6 +2748,11 @@ function openVoiceContextMenu(ev, username) {
   document.getElementById('ctxBlockBtn').classList.toggle('active',blocked);
   document.getElementById('ctxBlockLabel').textContent=blocked?'Разблокировать':'Заблокировать';
   document.getElementById('ctxBlockState').textContent=blocked?'✓':'';
+  const vol=getPeerVolume(target), slider=document.getElementById('ctxVolSlider');
+  slider.value=String(vol); document.getElementById('ctxVolPercent').textContent=vol+'%';
+  const muted=isPeerMuted(target);
+  document.getElementById('ctxMuteBtn').classList.toggle('active',muted);
+  document.getElementById('ctxMuteState').textContent=muted?'✓':'';
   menu.classList.remove('hidden');
   const pad=10,mw=menu.offsetWidth||220,mh=menu.offsetHeight||150;
   menu.style.left=Math.max(pad,Math.min(window.innerWidth-mw-pad,ev.clientX))+'px';
@@ -5059,6 +5067,8 @@ function cleanupPeerConnection(username) {
   pcState.delete(username);
   const aud = remoteAudios.get(username);
   if (aud) { aud.srcObject = null; try { aud.remove(); } catch {} remoteAudios.delete(username); }
+  const analyserState=remoteAudioAnalysers.get(username);
+  if (analyserState) { try { analyserState.context.close(); } catch {} remoteAudioAnalysers.delete(username); }
   remoteStreams.delete(username);
 
   const tile = document.getElementById('remoteTile_' + username);
@@ -5118,6 +5128,17 @@ function startSpeakingLoop() {
       lastLocalSpoke = localSpeaking;
       document.getElementById('localTile').classList.toggle('speaking', localSpeaking);
       document.getElementById('meAv').classList.toggle('speaking-ring', localSpeaking);
+    }
+    for (const [username, state] of remoteAudioAnalysers) {
+      const tile=document.getElementById('remoteTile_'+username);
+      if (!tile || !state.analyser) continue;
+      state.analyser.getByteFrequencyData(state.buffer);
+      const avg=state.buffer.reduce((a,b)=>a+b,0)/state.buffer.length;
+      const speaking=avg>18;
+      if (speaking!==state.speaking) {
+        state.speaking=speaking;
+        tile.classList.toggle('speaking',speaking);
+      }
     }
 
     speakRaf = requestAnimationFrame(tick);
@@ -5313,6 +5334,18 @@ function ensurePC(peerUser) {
         remoteAudios.set(peerUser, aud);
       }
       aud.srcObject = stream;
+      const AudioCtx=window.AudioContext||window.webkitAudioContext;
+      if (AudioCtx && !remoteAudioAnalysers.has(peerUser)) {
+        try {
+          const context=new AudioCtx();
+          const source=context.createMediaStreamSource(stream);
+          const analyser=context.createAnalyser();
+          analyser.fftSize=256;
+          source.connect(analyser);
+          remoteAudioAnalysers.set(peerUser,{context,source,analyser,buffer:new Uint8Array(analyser.frequencyBinCount),speaking:false});
+          if (context.state==='suspended') context.resume().catch(()=>{});
+        } catch(err) { console.warn('[voice] remote speaking analyser failed',peerUser,err); }
+      }
       applyOutputDeviceToAll();
       applyRemotePeerAudioSettings(peerUser);
     } else if (e.track.kind === 'video') {
