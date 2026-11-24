@@ -1,4 +1,4 @@
-name: Deploy Rustcord to Hostless
+name: Deploy Auralis to Hostless
 
 on:
   push:
@@ -10,12 +10,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: rustcord-hostless-deploy
+  group: auralis-hostless-deploy
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Trigger Hostless deployment
+    name: Trigger Auralis deployment
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
