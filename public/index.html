@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="theme-color" content="#090b12" />
 <link rel="icon" href="/auralis-icon.svg" type="image/svg+xml" />
@@ -2935,6 +2935,32 @@ html[data-theme="glasscord"] .pop-profile-strip {
   }
 </style>
 
+<style id="auralis-android-mobile-polish-v2519">
+  @media (max-width:760px) {
+    html,body { min-height:100%; height:100%; height:100dvh; }
+    body { -webkit-text-size-adjust:100%; }
+    .sidebar { padding-top:max(8px,env(safe-area-inset-top)) !important; }
+    .chat-header { padding-left: max(12px,env(safe-area-inset-left)) !important; padding-right:max(12px,env(safe-area-inset-right)) !important; }
+    .messages { padding-left:max(11px,env(safe-area-inset-left)) !important; padding-right:max(11px,env(safe-area-inset-right)) !important; }
+    .composer { padding-left:max(9px,env(safe-area-inset-left)) !important; padding-right:max(9px,env(safe-area-inset-right)) !important; }
+    .composer input[type="text"],.composer input:not([type]) { min-width:0; }
+    .send-btn,.rec-btn,.call-ctrls .round-btn,.mobile-back-btn { flex-shrink:0; }
+    .top-tabs { padding-bottom:max(8px,env(safe-area-inset-bottom)) !important; }
+    .gif-picker { min-height:0; max-height:min(44dvh,380px) !important; }
+    .gif-head { min-width:0; }
+    .gif-head input { min-width:0; flex:1 1 auto; font-size:16px !important; }
+    .gif-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:7px !important; min-height:0; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+    .gif-card { min-width:0; aspect-ratio:1.18; border-radius:12px; }
+    .gif-card img { object-fit:cover; }
+    .gif-card.is-sending { opacity:.55; pointer-events:none; }
+    #stickerPicker { max-height:min(48dvh,430px) !important; }
+    #stickerPicker .sticker-picker-grid { min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+    .modal-card,.incoming-card,.app-dialog { padding-bottom:max(18px,env(safe-area-inset-bottom)) !important; }
+    .call-stage { flex-shrink:0; }
+  }
+  .gif-state { grid-column:1/-1; padding:12px 8px; text-align:center; line-height:1.45; }
+  @media (prefers-reduced-motion:reduce) { .gif-card { transition:none !important; } }
+</style>
 </head>
 <body>
 
@@ -5650,30 +5676,62 @@ function debouncedSearchGifs(q) {
   gifDebounceTimer = setTimeout(() => searchGifs(trimmed || 'trending'), 300);
 }
 
+let gifSearchSequence = 0;
+let gifSearchAbortController = null;
+
 async function searchGifs(query) {
   const grid = document.getElementById('gifResultsGrid');
   if (!grid) return;
-  grid.innerHTML = '<div class="item-sub">Поиск гифок...</div>';
+  const searchId = ++gifSearchSequence;
+  if (gifSearchAbortController) gifSearchAbortController.abort();
+  const controller = new AbortController();
+  gifSearchAbortController = controller;
+  const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+  grid.innerHTML = '<div class="item-sub gif-state">Ищем GIF…</div>';
   try {
-    const res = await fetch('/api/gifs?q=' + encodeURIComponent(query), {
-      headers: token ? { Authorization: 'Bearer ' + token } : {}
+    const res = await fetch('/api/gifs?q=' + encodeURIComponent(String(query || 'trending').trim() || 'trending'), {
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+      signal: controller.signal,
+      cache: 'no-store'
     });
-    const data = await res.json().catch(() => ({}));
-    const list = Array.isArray(data.results) ? data.results.filter((g) => g && isSafeHttpUrl(g.url)) : [];
+    if (!res.ok) throw new Error('GIF search HTTP ' + res.status);
+    const data = await res.json();
+    if (searchId !== gifSearchSequence) return;
+    const list = Array.isArray(data.results)
+      ? data.results.filter((g) => g && isSafeHttpUrl(g.url))
+      : [];
     if (!list.length) {
-      grid.innerHTML = '<div class="item-sub">Ничего не найдено — вставь любую https://...gif ссылку и жми Enter</div>';
+      grid.innerHTML = '<div class="item-sub gif-state">Ничего не найдено. Можно вставить прямую ссылку на GIF.</div>';
       return;
     }
-    grid.innerHTML = list.map((g) =>
-      '<button type="button" class="gif-card" data-gif-url="' + esc(g.url) + '" data-gif-title="' + esc(g.title || 'gif') + '">' +
-        '<img src="' + esc(isSafeHttpUrl(g.preview) ? g.preview : g.url) + '" alt="' + esc(g.title || 'GIF') + '" loading="lazy" />' +
-      '</button>'
-    ).join('');
-    grid.querySelectorAll('[data-gif-url]').forEach((btn) => {
-      btn.addEventListener('click', () => sendGifUrl(btn.dataset.gifUrl, btn.dataset.gifTitle));
+    grid.innerHTML = list.map((g) => {
+      const url = esc(g.url);
+      const preview = esc(isSafeHttpUrl(g.preview) ? g.preview : g.url);
+      const title = esc(g.title || 'GIF');
+      return '<button type="button" class="gif-card" data-gif-url="' + url + '" data-gif-title="' + title + '" aria-label="Отправить GIF: ' + title + '">' +
+        '<img src="' + preview + '" data-full-src="' + url + '" alt="' + title + '" loading="lazy" decoding="async" />' +
+      '</button>';
+    }).join('');
+    grid.querySelectorAll('.gif-card').forEach((btn) => {
+      const img = btn.querySelector('img');
+      if (img) img.addEventListener('error', () => {
+        if (img.dataset.fullSrc && img.src !== img.dataset.fullSrc) img.src = img.dataset.fullSrc;
+      }, { once: true });
+      btn.addEventListener('click', () => {
+        if (btn.dataset.sending === '1') return;
+        btn.dataset.sending = '1';
+        btn.classList.add('is-sending');
+        Promise.resolve(sendGifUrl(btn.dataset.gifUrl, btn.dataset.gifTitle))
+          .finally(() => { btn.dataset.sending = '0'; btn.classList.remove('is-sending'); });
+      });
     });
-  } catch {
-    grid.innerHTML = '<div class="item-sub">Ошибка загрузки GIF</div>';
+  } catch (err) {
+    if (searchId !== gifSearchSequence) return;
+    if (err && err.name === 'AbortError' && controller.signal.aborted && gifSearchAbortController !== controller) return;
+    grid.innerHTML = '<div class="item-sub gif-state">Не удалось загрузить GIF. Проверь соединение и попробуй ещё раз.</div>';
+  } finally {
+    window.clearTimeout(timeoutId);
+    if (gifSearchAbortController === controller) gifSearchAbortController = null;
   }
 }
 
@@ -5703,12 +5761,13 @@ async function sendOutboundMessageText(encodedText) {
   return true;
 }
 
-function sendGifUrl(url, title) {
-  if (!url || !isSafeHttpUrl(url)) return;
+async function sendGifUrl(url, title) {
+  if (!url || !isSafeHttpUrl(url)) return false;
   const safeName = String(title || 'animation').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'animation';
   const payload = JSON.stringify({ name: safeName + '.gif', size: 0, mime: 'image/gif', dataUrl: url });
-  sendOutboundMessageText('__FILE__:' + payload);
-  toggleGifPicker(false);
+  const sent = await sendOutboundMessageText('__FILE__:' + payload);
+  if (sent) toggleGifPicker(false);
+  return !!sent;
 }
 
 function normalizeUserEntry(entry) {
@@ -7873,10 +7932,14 @@ checkSession();
   function placePicker(){
     if(!picker||!trigger||picker.classList.contains('hidden')) return;
     const r=trigger.getBoundingClientRect();
-    const w=picker.getBoundingClientRect().width || Math.min(380,window.innerWidth-24);
+    const viewport=window.visualViewport;
+    const viewTop=viewport ? viewport.offsetTop : 0;
+    const viewHeight=viewport ? viewport.height : window.innerHeight;
+    const viewWidth=viewport ? viewport.width : window.innerWidth;
+    const w=picker.getBoundingClientRect().width || Math.min(420,viewWidth-20);
     const h=picker.getBoundingClientRect().height;
-    const left=Math.max(10,Math.min(window.innerWidth-w-10,r.left+(r.width-w)/2));
-    const top=Math.max(8,r.top-h-10);
+    const left=Math.max(10,Math.min(viewWidth-w-10,r.left+(r.width-w)/2));
+    const top=Math.max(viewTop+8,Math.min(r.top-h-10,viewTop+viewHeight-h-10));
     picker.style.position='fixed';
     picker.style.left=Math.round(left)+'px';
     picker.style.right='auto';
