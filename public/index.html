@@ -1597,6 +1597,34 @@
     background:linear-gradient(135deg,rgba(73,181,214,.24),rgba(133,128,235,.22)) !important;
     border-color:rgba(165,222,255,.22) !important;
   }
+  /* Stickers are standalone artwork, not glass message cards. */
+  html[data-theme="glasscord"] .msg.sticker-only {
+    max-width:none;
+    width:auto;
+    align-items:flex-end;
+    gap:0;
+  }
+  html[data-theme="glasscord"] .msg.sticker-only .avatar,
+  html[data-theme="glasscord"] .msg.sticker-only .msg-head {
+    display:none !important;
+  }
+  html[data-theme="glasscord"] .msg.sticker-only .msg-bubble,
+  html[data-theme="glasscord"] .msg.mine.sticker-only .msg-bubble,
+  html[data-theme="glasscord"] .msg.other.sticker-only .msg-bubble {
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+    padding:0 !important;
+    min-width:0 !important;
+    border-radius:0 !important;
+  }
+  html[data-theme="glasscord"] .msg-sticker-big {
+    font-size:76px;
+    line-height:1.08;
+    filter:drop-shadow(0 5px 12px rgba(0,0,0,.24));
+  }
   html[data-theme="glasscord"] .composer, html[data-theme="glasscord"] .channelTextArea,
   html[data-theme="glasscord"] .scrollableContainer { border-radius:18px; }
   html[data-theme="glasscord"] input, html[data-theme="glasscord"] textarea,
@@ -2245,7 +2273,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.2</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.3</div>
   </div>
 </div>
 
