@@ -134,6 +134,11 @@
   .app-version-link{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:14px;padding:12px 8px 5px;border-top:1px solid var(--border);text-align:center;text-decoration:none;color:var(--muted);font-size:11px;letter-spacing:.2px;opacity:.86;transition:opacity .18s ease,color .18s ease}
   .app-version-link:hover{opacity:1;color:var(--accent)}
   .app-version-hint{font-size:10px;letter-spacing:0;opacity:.8}
+  .desktop-update-panel{display:flex;flex-direction:column;align-items:center;gap:7px;margin-top:8px;padding:8px 6px 2px;width:100%}
+  .desktop-update-status{font-size:10px;line-height:1.35;text-align:center;color:var(--muted);max-width:210px}
+  .desktop-update-button{min-height:32px;padding:0 12px;font-size:11px}
+  @media(max-width:760px){.desktop-update-panel{display:none!important}}
+
     .mobile-accent-field{display:none}
   .accent-picker{display:flex;align-items:center;gap:14px;margin-top:10px}
   .accent-choice{position:relative;width:44px;height:44px;min-width:44px;border:2px solid rgba(255,255,255,.22);border-radius:50%;padding:4px;background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
@@ -3439,10 +3444,72 @@ html[data-theme="glasscord"] .pop-profile-strip {
       <span>Auralis · версия <span id="appVersion">2.3.1</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
+    <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
+      <div id="desktopUpdateStatus" class="desktop-update-status">Проверка обновлений доступна в Windows-приложении</div>
+      <button id="desktopUpdateButton" type="button" class="sm-btn blue desktop-update-button" onclick="handleDesktopUpdateAction()">Проверить обновления</button>
+    </div>
   </div>
 </div>
 
 <script>
+let desktopUpdateAction = 'check';
+let desktopUpdateBusy = false;
+function setDesktopUpdateUi(status, buttonText, action, disabled = false) {
+  const statusEl = document.getElementById('desktopUpdateStatus');
+  const button = document.getElementById('desktopUpdateButton');
+  if (statusEl) statusEl.textContent = status || '';
+  if (button) { button.textContent = buttonText || 'Проверить обновления'; button.disabled = !!disabled; }
+  if (action) desktopUpdateAction = action;
+}
+async function handleDesktopUpdateAction() {
+  const bridge = window.rustcordDesktop;
+  if (!bridge || desktopUpdateBusy) return;
+  desktopUpdateBusy = true;
+  const action = desktopUpdateAction;
+  setDesktopUpdateUi(action === 'download' ? 'Загружаем обновление…' : action === 'install' ? 'Перезапускаем Auralis…' : 'Проверяем наличие новой версии…', action === 'download' ? 'Загрузка…' : action === 'install' ? 'Установка…' : 'Проверка…', action, true);
+  try {
+    if (action === 'install') { bridge.installUpdate(); return; }
+    if (action === 'download') {
+      await bridge.downloadUpdate();
+      setDesktopUpdateUi('Загрузка обновления началась…', 'Загрузка…', 'download', true);
+      return;
+    }
+    const result = await bridge.checkForUpdates();
+    if (!result || result.supported === false) {
+      setDesktopUpdateUi(result && result.reason || 'Автообновление доступно только в Windows.', 'Проверить обновления', 'check', false);
+    } else if (result.updateAvailable) {
+      setDesktopUpdateUi('Доступна версия ' + result.availableVersion + '. Нажми, чтобы скачать её.', 'Скачать обновление', 'download', false);
+    } else {
+      setDesktopUpdateUi('Установлена последняя версия (' + (result.version || 'актуальная') + ').', 'Проверить ещё раз', 'check', false);
+    }
+  } catch (error) {
+    setDesktopUpdateUi('Не удалось проверить обновление: ' + String(error && error.message || error).slice(0, 130), 'Повторить', 'check', false);
+  } finally { desktopUpdateBusy = false; }
+}
+function initDesktopUpdater() {
+  const bridge = window.rustcordDesktop;
+  const panel = document.getElementById('desktopUpdatePanel');
+  if (!bridge || !panel) return;
+  panel.hidden = false;
+  bridge.getVersion().then((version) => {
+    const label = document.getElementById('appVersion');
+    if (label && version) label.textContent = version;
+  }).catch(() => {});
+  if (typeof bridge.onUpdateState === 'function') {
+    bridge.onUpdateState((event) => {
+      if (!event) return;
+      if (event.state === 'checking') setDesktopUpdateUi('Проверяем обновления…', 'Проверка…', 'check', true);
+      if (event.state === 'available') setDesktopUpdateUi('Найдена версия ' + event.version + '.', 'Скачать обновление', 'download', false);
+      if (event.state === 'current') setDesktopUpdateUi('Установлена последняя версия (' + (event.version || '') + ').', 'Проверить ещё раз', 'check', false);
+      if (event.state === 'downloading') setDesktopUpdateUi('Загрузка обновления: ' + (event.percent || 0) + '%', 'Загрузка…', 'download', true);
+      if (event.state === 'downloaded') setDesktopUpdateUi('Обновление загружено. Можно установить.', 'Перезапустить и установить', 'install', false);
+      if (event.state === 'error') setDesktopUpdateUi('Ошибка обновления: ' + String(event.message || '').slice(0, 130), 'Повторить', 'check', false);
+    });
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDesktopUpdater);
+else initDesktopUpdater();
+
 function openExternalSite(event, url) {
   if (event) event.preventDefault();
   const target = String(url || 'https://rustcord.hostless.app/download/');
