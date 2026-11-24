@@ -41,8 +41,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.version.outputs.tag }}
         run: |
-          gh release view $env:TAG --repo ${{ github.repository }} *> $null
-          if ($LASTEXITCODE -eq 0) {
+          $releases = gh release list --repo ${{ github.repository }} --limit 100 --json tagName | ConvertFrom-Json
+          if ($releases.tagName -contains $env:TAG) {
             "should_build=false" >> $env:GITHUB_OUTPUT
             Write-Host "Release $env:TAG already exists; bump package.json version to publish another update."
           } else {
