@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Rustcord</title>
 <style>
-* { box-sizing: border-box; }
+* { box-sizing: border-box; scrollbar-width:none; -ms-overflow-style:none; }
+*::-webkit-scrollbar { display:none !important; width:0 !important; height:0 !important; }
   :root {
     --bg: #07090f;
     --theme-wallpaper: none;
@@ -1263,6 +1264,7 @@
   }
 
   .call-ctrls {
+    position:relative; z-index:100; isolation:isolate; pointer-events:auto;
     display: flex;
     justify-content: center;
     gap: 12px;
@@ -1553,7 +1555,8 @@
 
   /* Glasscord-inspired Rustcord skin: custom liquid-glass treatment for native app components. */
   html[data-theme="glasscord"] body {
-    background:radial-gradient(ellipse at 8% 8%,rgba(83,220,220,.20),transparent 34%),radial-gradient(ellipse at 92% 12%,rgba(150,132,255,.22),transparent 38%),radial-gradient(ellipse at 55% 100%,rgba(77,151,220,.18),transparent 42%),linear-gradient(135deg,#07121f 0%,#101b2c 48%,#0a1424 100%) !important;
+    background:linear-gradient(rgba(4,10,16,.38),rgba(4,10,16,.38)),var(--theme-wallpaper),radial-gradient(ellipse at 8% 8%,rgba(83,220,220,.16),transparent 34%),radial-gradient(ellipse at 92% 12%,rgba(150,132,255,.16),transparent 38%),linear-gradient(135deg,#07121f 0%,#101b2c 48%,#0a1424 100%) !important;
+     background-size:cover,cover,auto,auto,auto !important;background-position:center,center,center,center,center !important;background-repeat:no-repeat !important;background-attachment:fixed !important;
   }
   html[data-theme="glasscord"] .app { padding:14px; gap:9px; }
   html[data-theme="glasscord"] .sidebar, html[data-theme="glasscord"] .main {
@@ -1937,7 +1940,7 @@
     min-width:0 !important;
     min-height:220px !important;
     max-width:100% !important;
-    max-height:min(75vh, calc(100vh - 260px)) !important;
+    max-height:min(75vh, calc(100dvh - 360px)) !important;
     overflow:auto;
     flex:0 0 auto;
     align-self:stretch;
@@ -1997,7 +2000,7 @@
     padding:6px 14px;
     overflow-x:auto;
     overflow-y:hidden;
-    scrollbar-width:thin;
+    scrollbar-width:none;
   }
   html[data-theme="glasscord"] #recentStickersBox {
     display:flex !important;
@@ -2049,46 +2052,12 @@
   }
 
 
-  /* v1.7 — curated, license-checked wallpaper gallery */
-  .wallpaper-field { border-top:1px solid var(--border); padding-top:15px; }
-  .wallpaper-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
-  .wallpaper-head .lbl { margin-bottom:3px; }
-  .wallpaper-reset { flex:0 0 auto; white-space:nowrap; font-size:11px; padding:7px 9px; }
-  .wallpaper-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
-  .wallpaper-card {
-    position:relative; isolation:isolate; display:flex; flex-direction:column; justify-content:flex-end;
-    align-items:flex-start; text-align:left; gap:3px; min-width:0; min-height:118px; overflow:hidden;
-    padding:10px; border-radius:14px; border:1px solid rgba(255,255,255,.20);
-    color:#fff; background:#17212a; cursor:pointer; box-shadow:0 5px 16px rgba(0,0,0,.18);
-    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
-  }
-  .wallpaper-card::before { content:""; position:absolute; inset:0; z-index:-2; background-image:var(--wallpaper-image); background-size:cover; background-position:center; transition:transform .35s ease; }
-  .wallpaper-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg,rgba(3,7,12,.02) 10%,rgba(3,7,12,.22) 42%,rgba(3,7,12,.82) 100%); }
-  .wallpaper-card:hover { transform:translateY(-2px); border-color:rgba(255,255,255,.55); box-shadow:0 9px 22px rgba(0,0,0,.28); }
-  .wallpaper-card:hover::before { transform:scale(1.055); }
-  .wallpaper-card.active { border:2px solid var(--accent); padding:9px; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.18),0 8px 22px rgba(0,0,0,.28); }
-  .wallpaper-card-title { font-size:12px; font-weight:750; line-height:1.2; text-shadow:0 1px 8px rgba(0,0,0,.65); }
-  .wallpaper-card-tag { font-size:10px; color:rgba(255,255,255,.83); }
-  .wallpaper-credit { margin-top:3px; font-size:9px; color:rgba(255,255,255,.76); }
-  .wallpaper-check { position:absolute; right:8px; top:8px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:rgba(5,10,16,.55); border:1px solid rgba(255,255,255,.45); opacity:0; transform:scale(.8); transition:all .16s ease; }
-  .wallpaper-card.active .wallpaper-check { opacity:1; transform:scale(1); background:var(--accent); border-color:rgba(255,255,255,.65); }
-
-  .wallpaper-item { min-width:0; display:flex; flex-direction:column; gap:5px; }
-  .wallpaper-source { align-self:flex-start; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:9px; text-decoration:none; }
-  .wallpaper-source:hover { color:var(--text); text-decoration:underline; }
-  .wallpaper-license { margin-top:9px; color:var(--muted); font-size:10px; line-height:1.45; }
-  @media(max-width:420px) {
-    .wallpaper-grid { gap:7px; }
-    .wallpaper-card { min-height:104px; padding:8px; }
-    .wallpaper-card-title { font-size:11px; }
-    .wallpaper-reset { font-size:10px; padding:6px 7px; }
-  }
 
 
   /* v1.8 — call controls, participant state indicators and safe resize bounds */
-  .call-stage { min-height:300px !important; }
+  .call-stage { min-height:300px !important; max-height:calc(100dvh - 360px) !important; }
   .call-ctrls { position:relative; z-index:12; pointer-events:auto; }
-  .call-ctrls .round-btn { position:relative; z-index:13; pointer-events:auto !important; cursor:pointer; }
+  .call-ctrls .round-btn { position:relative; z-index:101; pointer-events:auto !important; cursor:pointer; touch-action:manipulation; }
   .call-ctrls .round-btn.off, html[data-theme="glasscord"] .call-ctrls .round-btn.off {
     background:#ff453a !important; border:1px solid rgba(255,255,255,.42) !important; color:#fff !important;
     box-shadow:0 0 0 3px rgba(255,69,58,.20),0 5px 16px rgba(0,0,0,.22) !important;
@@ -2102,7 +2071,7 @@
   .call-state-badge.deaf { background:rgba(126,35,55,.94); }
   html[data-theme="glasscord"] .call-state-badge { background:rgba(190,35,35,.88) !important; color:#fff !important; }
   html[data-theme="glasscord"] .call-state-badge.deaf { background:rgba(126,35,55,.94) !important; }
-  @media(max-width:640px) { .call-stage { min-height:280px !important; } }
+  @media(max-width:640px) { .call-stage { min-height:280px !important; max-height:calc(100dvh - 330px) !important; } }
 
 </style>
 </head>
@@ -2257,7 +2226,7 @@
       </div>
 
       <div class="call-ctrls">
-        <button id="cMic" type="button" class="round-btn" title="Микрофон" onclick="toggleMic()">
+        <button id="cMic" type="button" class="round-btn" title="Микрофон" aria-label="Микрофон">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
         <button id="cCam" type="button" class="round-btn" title="Вебкамера" onclick="toggleCam()">
@@ -2266,7 +2235,7 @@
         <button id="cScr" type="button" class="round-btn" title="Демонстрация экрана" onclick="toggleScreen()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </button>
-        <button id="cDeaf" type="button" class="round-btn" title="Выключить звук и микрофон" onclick="toggleDeaf()">
+        <button id="cDeaf" type="button" class="round-btn" title="Выключить звук и микрофон" aria-label="Выключить звук и микрофон">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
         </button>
         <button type="button" class="round-btn end" title="Завершить / отменить вызов" onclick="endCall()">
@@ -2454,50 +2423,6 @@
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
         </div>
       </div>
-      <div class="field wallpaper-field">
-        <div class="wallpaper-head">
-          <div>
-            <div class="lbl">Галерея обоев</div>
-            <div class="item-sub">Подобранные природные фотографии для спокойного, атмосферного интерфейса</div>
-          </div>
-          <button type="button" class="sm-btn wallpaper-reset" onclick="selectWallpaper('')">Стандартный фон</button>
-        </div>
-        <div class="wallpaper-grid">
-          <div class="wallpaper-item">
-            <button type="button" class="wallpaper-card" data-wallpaper="meadow" onclick="selectWallpaper('meadow')" aria-label="Установить фон: Альпийский луг" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=1400&q=82')">
-              <span class="wallpaper-card-title">Альпийский луг</span>
-              <span class="wallpaper-card-tag">Цветущие поля</span>
-              <span class="wallpaper-check" aria-hidden="true">✓</span>
-            </button>
-            <a class="wallpaper-source" href="https://unsplash.com/photos/a-grassy-field-with-flowers-and-mountains-in-the-background-YoY3nTtre7I" target="_blank" rel="noopener noreferrer">Фото: Tomáš Hirsch · Unsplash ↗</a>
-          </div>
-          <div class="wallpaper-item">
-            <button type="button" class="wallpaper-card" data-wallpaper="forest" onclick="selectWallpaper('forest')" aria-label="Установить фон: Тихий лес" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1712921675029-f455ad17bfc6?auto=format&fit=crop&w=1400&q=82')">
-              <span class="wallpaper-card-title">Тихий лес</span>
-              <span class="wallpaper-card-tag">Зелень и туман</span>
-              <span class="wallpaper-check" aria-hidden="true">✓</span>
-            </button>
-            <a class="wallpaper-source" href="https://unsplash.com/photos/a-lush-green-forest-filled-with-lots-of-trees-GhZ0Qr7-fpI" target="_blank" rel="noopener noreferrer">Фото: William Warby · Unsplash ↗</a>
-          </div>
-          <div class="wallpaper-item">
-            <button type="button" class="wallpaper-card" data-wallpaper="ocean" onclick="selectWallpaper('ocean')" aria-label="Установить фон: Морская гладь" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1575503588201-2ec789aa72a3?auto=format&fit=crop&w=1400&q=82')">
-              <span class="wallpaper-card-title">Морская гладь</span>
-              <span class="wallpaper-card-tag">Вода и волны</span>
-              <span class="wallpaper-check" aria-hidden="true">✓</span>
-            </button>
-            <a class="wallpaper-source" href="https://unsplash.com/photos/sea-waves-stpi6rLRQx0" target="_blank" rel="noopener noreferrer">Фото: Ivan Bandura · Unsplash ↗</a>
-          </div>
-          <div class="wallpaper-item">
-            <button type="button" class="wallpaper-card" data-wallpaper="blossom" onclick="selectWallpaper('blossom')" aria-label="Установить фон: Розовый лепесток" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1749307918200-5e37c3b2fbc4?auto=format&fit=crop&w=1400&q=82')">
-              <span class="wallpaper-card-title">Розовый лепесток</span>
-              <span class="wallpaper-card-tag">Нежная сакура</span>
-              <span class="wallpaper-check" aria-hidden="true">✓</span>
-            </button>
-            <a class="wallpaper-source" href="https://unsplash.com/photos/a-pink-flower-floats-on-a-pink-background-4tl-lotlvEg" target="_blank" rel="noopener noreferrer">Фото: Danielle Suijkerbuijk · Unsplash ↗</a>
-          </div>
-        </div>
-        <div class="wallpaper-license">Фотографии опубликованы под лицензией Unsplash. Авторы указаны с ссылками на оригиналы.</div>
-      </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
         <div class="lbl">Производительность</div>
         <label style="display:flex;align-items:flex-start;gap:9px;font-size:13px;cursor:pointer;">
@@ -2505,10 +2430,6 @@
           <span><b>⚡ Режим для слабых ПК</b><br><span class="item-sub">Отключает анимации, размытие и фоновые эффекты. Включается только вручную.</span></span>
         </label>
       </div>
-      <div class="field">
-
-      </div>
-
       <div class="field">
         <div class="lbl">Кэш и данные сессии</div>
         <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
@@ -2629,7 +2550,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.8</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.9</div>
   </div>
 </div>
 
@@ -3932,7 +3853,7 @@ const THEMES = {
   },
   'glasscord': {
     bg: '#06121d', panelRgb: '44, 91, 112', accent: '#72e4df',
-    glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: 'none',
+    glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: "url('https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=2000&q=88')",
     overlay: 'rgba(4, 13, 24, 0.12)', effect: 'none'
   }
 };
@@ -3950,30 +3871,8 @@ function syncThemeEffect() {
   setBgEffect(liteMode ? 'none' : (t.effect || 'none'));
 }
 
-const RC_WALLPAPERS = [{"id":"meadow","name":"Альпийский луг","author":"Tomáš Hirsch","photo":"https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/a-grassy-field-with-flowers-and-mountains-in-the-background-YoY3nTtre7I","tag":"Цветущие поля"},{"id":"forest","name":"Тихий лес","author":"William Warby","photo":"https://images.unsplash.com/photo-1712921675029-f455ad17bfc6?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/a-lush-green-forest-filled-with-lots-of-trees-GhZ0Qr7-fpI","tag":"Зелень и туман"},{"id":"ocean","name":"Морская гладь","author":"Ivan Bandura","photo":"https://images.unsplash.com/photo-1575503588201-2ec789aa72a3?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/sea-waves-stpi6rLRQx0","tag":"Вода и волны"},{"id":"blossom","name":"Розовый лепесток","author":"Danielle Suijkerbuijk","photo":"https://images.unsplash.com/photo-1749307918200-5e37c3b2fbc4?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/a-pink-flower-floats-on-a-pink-background-4tl-lotlvEg","tag":"Нежная сакура"}];
-let selectedWallpaper = '';
-try { selectedWallpaper = localStorage.getItem('rc_wallpaper') || ''; } catch {}
-function syncWallpaperBackground() {
-  const item = RC_WALLPAPERS.find((x) => x.id === selectedWallpaper);
-  if (item) {
-    const overlay = activeThemeName === 'glasscord' ? 'rgba(5,8,14,.40)' : 'rgba(5,8,14,.48)';
-    document.body.style.setProperty('background', 'linear-gradient('+overlay+','+overlay+'), url("'+item.photo+'") center center / cover fixed no-repeat', 'important');
-  } else {
-    document.body.style.removeProperty('background');
-  }
-  document.querySelectorAll('.wallpaper-card').forEach((el) => {
-    el.classList.toggle('active', el.dataset.wallpaper === selectedWallpaper);
-    el.setAttribute('aria-pressed', el.dataset.wallpaper === selectedWallpaper ? 'true' : 'false');
-  });
-}
-function selectWallpaper(id) {
-  selectedWallpaper = RC_WALLPAPERS.some((x) => x.id === id) ? id : '';
-  try {
-    if (selectedWallpaper) localStorage.setItem('rc_wallpaper', selectedWallpaper);
-    else localStorage.removeItem('rc_wallpaper');
-  } catch {}
-  syncWallpaperBackground();
-}
+
+try { localStorage.removeItem('rc_wallpaper'); } catch {}
 
 function applyTheme(name) {
   const requested = name === 'aurora-glass' || name === 'aurora' || name === 'liquid' ? 'glasscord' : name;
@@ -4004,7 +3903,6 @@ function applyTheme(name) {
     el.classList.toggle('active', el.dataset.theme === valid);
   });
   syncThemeEffect();
-  syncWallpaperBackground();
 }
 
 function setSidebarWidth(px) {
@@ -6543,6 +6441,46 @@ async function toggleScreen() {
 }
 
 checkSession();
+
+/* v1.9: bind voice toggles directly so Glasscord visual layers cannot swallow inline actions. */
+(function bindCallToggleButtons() {
+  const mic = document.getElementById('cMic');
+  const deaf = document.getElementById('cDeaf');
+  if (mic && !mic.dataset.boundCallToggle) {
+    mic.dataset.boundCallToggle = '1';
+    mic.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); toggleMic(); });
+  }
+  if (deaf && !deaf.dataset.boundCallToggle) {
+    deaf.dataset.boundCallToggle = '1';
+    deaf.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); toggleDeaf(); });
+  }
+})();
+
+/* Keep the resizable call stage inside the exact vertical space above the message composer. */
+(function bindCallStageBounds() {
+  const stage = document.getElementById('callStage');
+  const composer = document.getElementById('composer');
+  if (!stage || !composer) return;
+  const update = () => {
+    if (stage.classList.contains('hidden')) return;
+    const top = stage.getBoundingClientRect().top;
+    const composerTop = composer.getBoundingClientRect().top;
+    if (!Number.isFinite(top) || !Number.isFinite(composerTop) || composerTop <= top) return;
+    const available = Math.max(280, Math.floor(composerTop - top - 10));
+    stage.style.maxHeight = available + 'px';
+  };
+  window.addEventListener('resize', update, {passive:true});
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(update);
+    ro.observe(composer);
+    const main = document.querySelector('.main');
+    if (main) ro.observe(main);
+  }
+  const observer = new MutationObserver(update);
+  observer.observe(stage, {attributes:true,attributeFilter:['class']});
+  observer.observe(composer, {attributes:true,attributeFilter:['class','style']});
+  requestAnimationFrame(update);
+})();
 </script>
 </body>
 </html>
