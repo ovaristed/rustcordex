@@ -2133,13 +2133,7 @@ input,textarea,select { accent-color:var(--accent); }
 
 /* Auralis mobile navigation: Discord-inspired compact bottom tab bar */
 @media(max-width:760px){
-  .top-tabs::before {
-    content:"A" !important; display:grid !important; place-items:center !important;
-    width:42px; height:42px; flex:0 0 42px; margin:0 0 12px;
-    border-radius:15px; color:#fff; font-size:21px; font-weight:850;
-    letter-spacing:-.07em; background:linear-gradient(145deg,#a9a7ff,#6d8bff 58%,#65c6dc);
-    box-shadow:0 7px 22px rgba(112,126,255,.30),inset 0 1px 0 rgba(255,255,255,.45);
-  }
+  .top-tabs::before { content:none !important; display:none !important; }
   .top-tabs { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
   .sidebar{
     display:flex;
@@ -2777,11 +2771,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
   }
   html[data-theme="violet"] #panelChats #groupsList,
   html[data-theme="violet"] #panelChats #chatsList { background:rgba(var(--panel-rgb),var(--groups-opacity))!important; }
-  @media(max-width:760px) {
-    #settingsModal {padding:8px!important;align-items:flex-end!important;justify-content:center!important;}
-    #settingsModal .modal-card {width:100%;max-height:88vh;}
-    .sticker-picker {right:12px;bottom:82px;width:min(390px,calc(100vw - 24px));}
-  }
+  
 </style>
 
 
