@@ -2690,6 +2690,48 @@ html[data-theme="glasscord"] .pop-profile-strip {
   background-color: rgba(228,243,255,calc(var(--panel-alpha) * .08)) !important;
 }
 </style>
+<style id="auralis-brand-and-shell-polish">
+  /* The A mark always follows the active theme or user-selected accent. */
+  .top-tabs::before {
+    color:#fff !important;
+    background:linear-gradient(145deg,
+      rgba(var(--accent-rgb),1),
+      rgba(var(--accent-rgb),.72)) !important;
+    border:1px solid rgba(255,255,255,.22);
+    box-shadow:0 7px 20px rgba(var(--accent-rgb),.28),
+      inset 0 1px 0 rgba(255,255,255,.34) !important;
+    text-shadow:0 1px 2px rgba(0,0,0,.16);
+  }
+
+  /* Keep one clean outer contour; inner sidebar areas must not look like nested cards. */
+  .sidebar {
+    border-radius:18px !important;
+    overflow:hidden !important;
+    clip-path:inset(0 round 18px);
+  }
+  .sidebar .sidebar-top,
+  .sidebar .top-tabs,
+  .sidebar .panel-body,
+  .sidebar .bottom-dock {
+    border-radius:0 !important;
+    box-shadow:none;
+  }
+  .sidebar .top-tabs {
+    border-top-left-radius:0 !important;
+    border-bottom-left-radius:0 !important;
+  }
+  .sidebar .panel-body {
+    background:transparent !important;
+  }
+  .sidebar .bottom-dock {
+    border-bottom-left-radius:0 !important;
+    border-bottom-right-radius:0 !important;
+  }
+  @media(max-width:760px) {
+    .sidebar { border-radius:0 !important; clip-path:none; }
+    .sidebar .top-tabs,.sidebar .panel-body,.sidebar .bottom-dock { border-radius:0 !important; }
+  }
+</style>
 <style id="auralis-menu-opacity-controls">
   :root { --sidebar-opacity:.78; --nav-opacity:.22; --dock-opacity:.24; --popup-opacity:.92; }
   .sidebar { background:rgba(var(--panel-rgb),var(--sidebar-opacity)) !important; }
@@ -3193,7 +3235,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">2.3.4</span></span>
+      <span>Auralis · версия <span id="appVersion">2.3.6</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
