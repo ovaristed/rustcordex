@@ -5617,7 +5617,7 @@ async function openGroupChat(groupId) {
       if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
       box.innerHTML = '';
       if (!list.length) box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
-      else (liteMode ? list.slice(-40) : list).forEach(appendMsg);
+      else list.forEach(appendMsg);
       writeChatCache('group', groupId, list);
     } else {
       box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
