@@ -8249,5 +8249,175 @@ checkSession();
   }
 </style>
 
+
+<style id="auralis-249-liquidglass-call-stickers">
+  /* 2.4.9: screen sharing occupies the existing call tile instead of enlarging it. */
+  .call-stage .tile.screen-mode {
+    width:100% !important;
+    min-width:0 !important;
+    height:clamp(150px,28vh,220px) !important;
+    min-height:clamp(150px,28vh,220px) !important;
+    max-height:220px !important;
+    aspect-ratio:auto !important;
+    padding:8px !important;
+    overflow:hidden !important;
+    flex:0 0 auto !important;
+  }
+  .call-stage .tile.screen-mode video {
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:100% !important;
+    max-height:100% !important;
+    object-fit:contain !important;
+    object-position:center !important;
+  }
+  .call-stage .tile.screen-mode .big-av { display:none !important; }
+  @media(max-width:640px) {
+    .call-stage .tile.screen-mode {
+      width:100% !important;
+      height:clamp(145px,26vh,205px) !important;
+      min-height:clamp(145px,26vh,205px) !important;
+      max-height:205px !important;
+    }
+  }
+
+  /* Liquid Glass: reduce the white haze; retain a subtle neutral glass effect. */
+  html[data-theme="liquidglass"] {
+    --text:#edf2f8 !important;
+    --muted:rgba(224,232,242,.62) !important;
+    --border:rgba(220,232,244,.105) !important;
+    --glass:rgba(16,22,31,.22) !important;
+    --glass-solid:rgba(18,24,34,.48) !important;
+    --glass-2:rgba(18,25,36,.20) !important;
+    --glass-hover:rgba(210,225,240,.075) !important;
+    --input-bg:rgba(12,18,28,.24) !important;
+    --input-focus-bg:rgba(18,26,38,.38) !important;
+    --icon-color:rgba(225,236,248,.88) !important;
+    --icon-muted:rgba(210,224,240,.58) !important;
+  }
+  html[data-theme="liquidglass"] .sidebar,
+  html[data-theme="liquidglass"] .top-tabs,
+  html[data-theme="liquidglass"] .bottom-dock,
+  html[data-theme="liquidglass"] .panel-body,
+  html[data-theme="liquidglass"] .chat-header,
+  html[data-theme="liquidglass"] .composer,
+  html[data-theme="liquidglass"] .call-stage,
+  html[data-theme="liquidglass"] #settingsModal .modal-card,
+  html[data-theme="liquidglass"] .modal-card,
+  html[data-theme="liquidglass"] .profile-popover,
+  html[data-theme="liquidglass"] .sticker-picker,
+  html[data-theme="liquidglass"] .gif-picker,
+  html[data-theme="liquidglass"] .context-menu,
+  html[data-theme="liquidglass"] [role="dialog"],
+  html[data-theme="liquidglass"] [role="menu"] {
+    background-color:rgba(14,20,29,.34) !important;
+    border-color:rgba(218,231,244,.11) !important;
+    box-shadow:inset 0 1px 0 rgba(225,238,250,.065),0 12px 34px rgba(0,0,0,.24) !important;
+    backdrop-filter:blur(26px) saturate(118%) !important;
+    -webkit-backdrop-filter:blur(26px) saturate(118%) !important;
+  }
+  html[data-theme="liquidglass"] .msg-bubble,
+  html[data-theme="liquidglass"] .message-bubble,
+  html[data-theme="liquidglass"] .list-item,
+  html[data-theme="liquidglass"] .field input:not([type="checkbox"]):not([type="range"]),
+  html[data-theme="liquidglass"] .field select,
+  html[data-theme="liquidglass"] .field textarea {
+    background-color:rgba(15,22,32,.22) !important;
+    border-color:rgba(218,231,244,.085) !important;
+    box-shadow:inset 0 1px 0 rgba(225,238,250,.045) !important;
+  }
+  html[data-theme="liquidglass"] button:hover,
+  html[data-theme="liquidglass"] .icon-btn:hover,
+  html[data-theme="liquidglass"] .list-item:hover {
+    background-color:rgba(220,233,246,.075) !important;
+  }
+
+  /* Picker is positioned by its trigger and measured after it becomes visible. */
+  #stickerPicker:not(.hidden) {
+    position:fixed !important;
+    z-index:10000 !important;
+    width:min(380px,calc(100vw - 24px)) !important;
+    max-height:min(420px,55vh) !important;
+    overflow:hidden !important;
+    margin:0 !important;
+    pointer-events:auto !important;
+  }
+  #stickerPicker .sticker-picker-grid,
+  #stickerPicker .sticker-picker-head,
+  #stickerPicker .sticker-picker-item { pointer-events:auto !important; }
+  @media(max-width:760px) {
+    #stickerPicker:not(.hidden) {
+      width:min(380px,calc(100vw - 20px)) !important;
+      max-height:min(48dvh,390px) !important;
+      left:auto;
+      right:auto;
+      bottom:auto;
+    }
+  }
+</style>
+<script id="auralis-249-runtime-fixes">
+(function auralis249RuntimeFixes(){
+  const picker=document.getElementById('stickerPicker');
+  const trigger=document.getElementById('stickerPickerBtn');
+  function placePicker(){
+    if(!picker||!trigger||picker.classList.contains('hidden')) return;
+    const r=trigger.getBoundingClientRect();
+    const w=picker.getBoundingClientRect().width || Math.min(380,window.innerWidth-24);
+    const h=picker.getBoundingClientRect().height;
+    const left=Math.max(10,Math.min(window.innerWidth-w-10,r.left+(r.width-w)/2));
+    const top=Math.max(8,r.top-h-10);
+    picker.style.position='fixed';
+    picker.style.left=Math.round(left)+'px';
+    picker.style.right='auto';
+    picker.style.top=Math.round(top)+'px';
+    picker.style.bottom='auto';
+    picker.style.zIndex='10000';
+  }
+  window.toggleStickerPicker=function(forceState){
+    if(!picker) return;
+    if(picker.parentElement!==document.body) document.body.appendChild(picker);
+    const open=typeof forceState==='boolean'?forceState:picker.classList.contains('hidden');
+    if(open){
+      picker.classList.remove('hidden');
+      if(Array.isArray(window.recentStickers)&&!window.recentStickers.length) window.recentStickers=['🔥','😂','😎','🐸','💀','🎉','67','777','52','48'];
+      if(typeof window.setStickerPickerMode==='function') window.setStickerPickerMode(window.stickerPickerMode||'stickers');
+      placePicker();
+      requestAnimationFrame(placePicker);
+    }else{
+      picker.classList.add('hidden');
+    }
+    if(trigger) trigger.setAttribute('aria-expanded',open?'true':'false');
+  };
+  if(picker&&!picker.dataset.auralis249PositionBound){
+    picker.dataset.auralis249PositionBound='1';
+    picker.addEventListener('click',e=>e.stopPropagation());
+    document.addEventListener('click',e=>{
+      if(picker.classList.contains('hidden')) return;
+      if(picker.contains(e.target)||trigger?.contains(e.target)) return;
+      window.toggleStickerPicker(false);
+    });
+    window.addEventListener('resize',placePicker,{passive:true});
+    window.addEventListener('scroll',placePicker,true);
+  }
+  const tile=document.getElementById('localTile');
+  const video=document.getElementById('localVideo');
+  function syncScreenTile(){
+    if(!tile||!video||!tile.classList.contains('screen-mode')) return;
+    const vw=video.videoWidth, vh=video.videoHeight;
+    if(vw>0&&vh>0) tile.style.setProperty('--screen-ratio',(vw/vh).toFixed(5));
+    else tile.style.removeProperty('--screen-ratio');
+  }
+  if(video){
+    video.addEventListener('loadedmetadata',syncScreenTile);
+    video.addEventListener('resize',syncScreenTile);
+    if(tile&&typeof MutationObserver!=='undefined'){
+      new MutationObserver(syncScreenTile).observe(tile,{attributes:true,attributeFilter:['class']});
+      new MutationObserver(syncScreenTile).observe(video,{attributes:true,attributeFilter:['class']});
+    }
+  }
+})();
+</script>
+
 </body>
 </html>
