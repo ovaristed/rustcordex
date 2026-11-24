@@ -4468,7 +4468,7 @@ function playTone(freq, startOffset, duration, type = 'sine', volume = 0.09, end
 }
 
 function playNotificationSound(name) {
-  if (notificationSoundsEnabled) playDiscordSfx(name);
+  if (notificationSoundsEnabled) playAuralisSfx(name);
 }
 
 function notifyDesktop(title, body, tag, kind = 'message') {
@@ -4530,7 +4530,7 @@ function setNotificationSounds(enabled) {
   if (cb) cb.checked = notificationSoundsEnabled;
 }
 
-function playDiscordSfx(name) {
+function playAuralisSfx(name) {
   if (deafened && name !== 'undeaf') return;
   if (name === 'join') {
     playTone(659.25, 0, 0.055, 'sine', 0.10);
@@ -5303,7 +5303,7 @@ async function acceptIncomingCall() {
   if (!pendingCaller) return;
   const { username: caller, callContext: ctxObj, callId } = pendingCaller;
   hideIncomingCallModal();
-  playDiscordSfx('join');
+  playAuralisSfx('join');
   const sessionId = ++callSessionId;
   const contextSnapshot = ctxObj || { kind: 'dm', id: caller };
   callSessionToken = callId || null;
@@ -5323,7 +5323,7 @@ function rejectIncomingCall() {
   const rejectedContext = pendingCaller.callContext || null;
   const rejectedCallId = pendingCaller.callId || null;
   hideIncomingCallModal();
-  playDiscordSfx('leave');
+  playAuralisSfx('leave');
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: 'call-reject', to: caller, callContext: rejectedContext, callId: rejectedCallId }));
   }
@@ -6889,7 +6889,7 @@ function connectWS() {
       isRingingOutgoing = false;
       stopRingTone();
       if (!callConnectedAt) startCallTimer();
-      playDiscordSfx('join');
+      playAuralisSfx('join');
       ensureRemoteTile(data.from);
       document.getElementById('callStatusText').textContent = 'В голосовом звонке';
       await sendOfferTo(data.from);
@@ -6910,7 +6910,7 @@ function connectWS() {
           endCall(false, callInitiator === (me && me.username));
         }
       } else {
-        playDiscordSfx('leave');
+        playAuralisSfx('leave');
         endCall(false, callInitiator === (me && me.username));
       }
     } else if (data.type === 'call-state') {
@@ -7200,7 +7200,7 @@ function endCall(notify = true, postLog = true) {
   const wasConnected = !!callConnectedAt;
   const elapsedSec = wasConnected ? Math.floor((Date.now() - callConnectedAt) / 1000) : 0;
 
-  if (notify) playDiscordSfx('leave');
+  if (notify) playAuralisSfx('leave');
   if (notify && ws && ws.readyState === WebSocket.OPEN) {
     const sigType = (ctxAtEnd && ctxAtEnd.kind === 'group') ? 'call-end' : (isRingingOutgoing ? 'call-reject' : 'call-end');
     if (ctxAtEnd && ctxAtEnd.kind === 'group') {
@@ -7491,7 +7491,7 @@ function applyMicMuteState() {
 
 function toggleMic() {
   micMuted = !micMuted;
-  playDiscordSfx(micMuted ? 'mute' : 'unmute');
+  playAuralisSfx(micMuted ? 'mute' : 'unmute');
   if (!micMuted && deafened) {
     deafened = false;
     peerConnections.forEach((_, u) => applyRemotePeerAudioSettings(u));
@@ -7503,7 +7503,7 @@ function toggleMic() {
 
 function toggleDeaf() {
   deafened = !deafened;
-  playDiscordSfx(deafened ? 'deaf' : 'undeaf');
+  playAuralisSfx(deafened ? 'deaf' : 'undeaf');
   if (deafened) { micMutedBeforeDeaf = micMuted; micMuted = true; }
   else { micMuted = micMutedBeforeDeaf; }
   peerConnections.forEach((_, u) => applyRemotePeerAudioSettings(u));
@@ -8543,6 +8543,128 @@ checkSession();
       -webkit-backdrop-filter:none !important;
       background-color:rgba(var(--panel-rgb),.88) !important;
     }
+  }
+</style>
+
+
+<style id="auralis-255-discord-inspired-layout">
+  /* Auralis dark chat layout: familiar compact hierarchy, original details and frosted surfaces. */
+  :root {
+    --discord-shell: 32,34,37;
+    --discord-panel: 43,45,49;
+    --discord-main: 49,51,56;
+    --discord-line: rgba(255,255,255,.075);
+    --discord-hover: rgba(255,255,255,.075);
+    --discord-selected: rgba(88,101,242,.22);
+    --discord-accent: #5865f2;
+  }
+  #app { background:rgba(var(--discord-main),.78) !important; }
+  #app > .sidebar {
+    background:rgba(var(--discord-shell),.82) !important;
+    border-right:1px solid var(--discord-line) !important;
+    backdrop-filter:blur(24px) saturate(120%) !important;
+    -webkit-backdrop-filter:blur(24px) saturate(120%) !important;
+  }
+  .sidebar-top { background:transparent !important; }
+  .top-tabs {
+    display:flex !important; gap:6px !important;
+    padding:10px 10px 12px !important;
+    background:rgba(var(--discord-panel),.72) !important;
+    border-bottom:1px solid var(--discord-line) !important;
+  }
+  .top-tabs .tab-btn {
+    min-height:38px !important; border-radius:9px !important;
+    background:transparent !important; color:rgba(219,222,225,.72) !important;
+  }
+  .top-tabs .tab-btn:hover { background:var(--discord-hover) !important; color:#fff !important; }
+  .top-tabs .tab-btn.active {
+    background:rgba(88,101,242,.20) !important;
+    color:#fff !important; box-shadow:inset 0 0 0 1px rgba(88,101,242,.26) !important;
+  }
+  .panel-body { background:transparent !important; padding:12px 9px !important; }
+  .sec-row { padding:7px 8px 5px !important; }
+  .sec-lbl,.lbl {
+    color:rgba(219,222,225,.62) !important;
+    font-weight:750 !important; letter-spacing:.055em !important;
+    text-transform:uppercase !important; font-size:10.5px !important;
+  }
+  .list-stack { gap:3px !important; }
+  .list-item {
+    min-height:42px !important; margin:0 !important; padding:7px 9px !important;
+    border-radius:8px !important; border:1px solid transparent !important;
+    background:rgba(255,255,255,.018) !important;
+    transition:background .12s ease,border-color .12s ease,transform .12s ease !important;
+  }
+  .list-item:hover { background:rgba(255,255,255,.075) !important; transform:none !important; }
+  .list-item.active,.list-item.selected {
+    background:rgba(88,101,242,.22) !important;
+    border-color:rgba(115,126,255,.23) !important;
+  }
+  .bottom-dock {
+    background:rgba(var(--discord-panel),.88) !important;
+    border-top:1px solid var(--discord-line) !important;
+    backdrop-filter:blur(22px) !important;
+    -webkit-backdrop-filter:blur(22px) !important;
+  }
+  .user-bar { min-height:58px !important; padding:7px 9px !important; }
+  .user-trigger { border-radius:8px !important; }
+  #app > .main {
+    background:rgba(var(--discord-main),.76) !important;
+    backdrop-filter:blur(18px) !important;
+    -webkit-backdrop-filter:blur(18px) !important;
+  }
+  .main > .chat-header {
+    min-height:58px !important; padding:0 18px !important;
+    background:rgba(var(--discord-main),.86) !important;
+    border-bottom:1px solid var(--discord-line) !important;
+    box-shadow:0 1px 0 rgba(0,0,0,.08) !important;
+  }
+  .main > .messages {
+    background:rgba(var(--discord-main),.48) !important;
+    padding-left:clamp(14px,3vw,30px) !important;
+    padding-right:clamp(14px,3vw,30px) !important;
+  }
+  .msg-bubble,.message-bubble {
+    border-radius:12px !important;
+    background:rgba(35,36,40,.40) !important;
+    border:1px solid rgba(255,255,255,.055) !important;
+  }
+  .main > .composer {
+    margin:0 16px 16px !important;
+    border-radius:12px !important;
+    background:rgba(56,58,64,.82) !important;
+    border:1px solid rgba(255,255,255,.08) !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.12) !important;
+  }
+  .main > .composer:focus-within {
+    border-color:rgba(88,101,242,.50) !important;
+    box-shadow:0 0 0 2px rgba(88,101,242,.12) !important;
+  }
+  .field input:not([type=checkbox]):not([type=range]),
+  .field select,.field textarea {
+    background:rgba(20,21,24,.42) !important;
+    border:1px solid rgba(255,255,255,.09) !important;
+    border-radius:8px !important;
+  }
+  button.primary-btn,.send-btn,.sm-btn.blue,.call-pill {
+    background:#5865f2 !important; border-color:#5865f2 !important;
+    color:white !important; border-radius:8px !important;
+  }
+  button.primary-btn:hover,.send-btn:hover,.sm-btn.blue:hover,.call-pill:hover {
+    background:#4752c4 !important;
+  }
+  .modal-card,.profile-popover,.user-profile-card,.context-menu,
+  .sticker-picker,.gif-picker,.emoji-picker,.voice-ctx-menu,.group-ctx-menu {
+    background:rgba(35,36,40,.88) !important;
+    border:1px solid rgba(255,255,255,.10) !important;
+    border-radius:14px !important;
+    backdrop-filter:blur(28px) saturate(125%) !important;
+    -webkit-backdrop-filter:blur(28px) saturate(125%) !important;
+  }
+  @media(max-width:760px) {
+    .main > .composer { margin:0 8px 8px !important; }
+    .main > .chat-header { padding:0 12px !important; }
+    .bottom-dock { background:rgba(var(--discord-panel),.94) !important; }
   }
 </style>
 
