@@ -2467,6 +2467,96 @@ body.lite-mode html[data-theme="discord"] .main{
   #sPanelBinds { display: none !important; }
   .settings-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 }
+
+/* Auralis Android redesign pass: native-feeling Discord-style mobile surfaces. */
+@media (max-width: 760px) {
+  .sidebar {
+    padding: max(8px, env(safe-area-inset-top)) 0 0 !important;
+    background: #313338 !important;
+  }
+  .sidebar-top { min-height: 0; }
+  .panel-body {
+    padding: 14px 12px 12px !important;
+    background: transparent !important;
+  }
+  .sec-row { min-height: 42px; padding: 2px 3px 8px; }
+  .sec-lbl {
+    font-size: 12px;
+    letter-spacing: .055em;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #b5bac1;
+  }
+  .list-stack { gap: 5px !important; }
+  .list-item {
+    min-height: 60px !important;
+    padding: 9px 10px !important;
+    border-radius: 12px !important;
+    background: transparent !important;
+    border: 0 !important;
+  }
+  .list-item:active, .list-item.active { background: #3f4148 !important; }
+  .top-tabs {
+    padding: 6px 12px max(7px, env(safe-area-inset-bottom)) !important;
+    gap: 6px !important;
+    background: #232428 !important;
+    border-top: 1px solid rgba(255,255,255,.07) !important;
+  }
+  .tab-btn { min-height: 52px !important; height: 52px !important; }
+  .bottom-dock {
+    padding: 5px 10px max(5px, env(safe-area-inset-bottom)) !important;
+    background: #1e1f22 !important;
+    border-top: 1px solid rgba(255,255,255,.06) !important;
+  }
+  .user-bar { min-height: 52px !important; padding: 3px 5px !important; }
+  .user-trigger { gap: 9px !important; }
+  .user-trigger #meAv { width: 36px !important; height: 36px !important; min-width: 36px !important; flex-basis: 36px !important; }
+  .item-actions .icon-btn { width: 40px; height: 40px; }
+
+  /* Profile menu becomes a proper bottom sheet instead of covering the tab bar. */
+  .profile-popover {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: min(84dvh, 760px) !important;
+    border-radius: 24px 24px 0 0 !important;
+    border: 1px solid rgba(255,255,255,.12) !important;
+    border-bottom: 0 !important;
+    padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    background: #232428 !important;
+    box-shadow: 0 -14px 44px rgba(0,0,0,.42) !important;
+    z-index: 90 !important;
+  }
+  .pop-banner { height: 112px !important; }
+  .pop-body { padding: 0 16px 16px !important; gap: 12px !important; }
+  .pop-av { border-color: #232428 !important; }
+  .pop-card { border-radius: 16px !important; overflow: hidden; }
+  .pop-menu-btn { min-height: 54px !important; padding: 12px 14px !important; }
+
+  /* Settings and dialogs use the same bottom-sheet interaction pattern. */
+  .modal-backdrop, .app-dialog-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal-card, .incoming-card, .app-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 90dvh !important;
+    border-radius: 24px 24px 0 0 !important;
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom)) !important;
+  }
+  .modal-head { position: sticky; top: -18px; z-index: 2; padding: 4px 0 12px; background: #313338; }
+  .settings-tabs { position: sticky; top: 42px; z-index: 2; background: #232428 !important; }
+  .s-tab { min-height: 44px !important; font-size: 13px !important; }
+  .s-section { padding-bottom: 12px; }
+  .field { gap: 9px; }
+  .field input:not([type="checkbox"]), .field select, .field textarea {
+    min-height: 46px;
+    font-size: 16px !important;
+  }
+}
 </style>
 </head>
 <body>
