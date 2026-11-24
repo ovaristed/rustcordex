@@ -2684,10 +2684,10 @@ html[data-theme="discord"] .main{
   .sticker-picker {
     display:flex;
     flex-direction:column;
-    position:absolute;
+    position:fixed;
     z-index:45;
     left:8px; right:8px;
-    bottom:calc(100% + 7px);
+    bottom:calc(env(safe-area-inset-bottom) + 72px);
     max-height:34dvh;
     padding:9px 10px 11px;
     border:1px solid var(--border);
