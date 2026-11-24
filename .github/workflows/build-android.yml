@@ -61,7 +61,7 @@ jobs:
           for (const permission of permissions) {
             const tag = '<uses-permission android:name="' + permission + '" />';
             if (!xml.includes('android:name="' + permission + '"')) {
-              xml = xml.replace(/<manifest\\b[^>]*>/, match => match + '\\n    ' + tag);
+              xml = xml.replace(/<manifest\b[^>]*>/, match => match + '\n    ' + tag);
             }
           }
           fs.writeFileSync(file, xml);
