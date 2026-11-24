@@ -1096,11 +1096,25 @@
 
   .call-stage {
     padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 14px;
     background: rgba(11, 15, 26, 0.45);
     display: flex;
     flex-direction: column;
     gap: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 260px;
+    min-height: 220px;
+    max-width: 100%;
+    max-height: 75vh;
+    overflow: auto;
+    resize: both;
+    align-self: flex-start;
+  }
+  .call-stage .call-grid { min-width: 0; }
+  @media (max-width: 640px) {
+    .call-stage { resize: vertical; min-width: 0; width: 100%; }
   }
   .call-meta-bar {
     display: flex;
@@ -2097,7 +2111,7 @@
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Rustcord</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
-          <button type="button" class="theme-swatch" data-theme="glasscord" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff)"></span>Glasscord</button>
+          <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
         </div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
@@ -2231,7 +2245,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.1</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.2</div>
   </div>
 </div>
 
@@ -4711,6 +4725,21 @@ function writeChatCache(kind, id, messages) {
   } catch {}
 }
 
+function mergeChatMessages(kind, id, incoming) {
+  const byId = new Map();
+  for (const m of [...(Array.isArray(incoming) ? incoming : []), ...readChatCache(kind, id)]) {
+    if (!m || m.id == null) continue;
+    byId.set(String(m.id), m);
+  }
+  return [...byId.values()].sort((a, b) => Number(a.id) - Number(b.id)).slice(-100);
+}
+
+function cacheLiveChatMessage(kind, id, message) {
+  if (!id || !message || message.id == null) return;
+  const merged = mergeChatMessages(kind, id, [message]);
+  writeChatCache(kind, id, merged);
+}
+
 function endGroupCallWhenLeavingChat(nextChat) {
   if (!inCall || !callContext || callContext.kind !== 'group') return;
   const staysInSameGroup = nextChat && nextChat.kind === 'group' &&
@@ -4749,7 +4778,7 @@ async function openChat(username) {
       headers: { Authorization: 'Bearer ' + token }
     });
     if (res.ok) {
-      const list = await res.json();
+      const list = mergeChatMessages('dm', username, await res.json());
       if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
       box.innerHTML = '';
       if (!list.length) box.innerHTML = '<div class="empty-chat">Сообщений пока нет — напиши первым!</div>';
@@ -4785,7 +4814,7 @@ async function openGroupChat(groupId) {
       headers: { Authorization: 'Bearer ' + token }
     });
     if (res.ok) {
-      const list = await res.json();
+      const list = mergeChatMessages('group', groupId, await res.json());
       if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
       box.innerHTML = '';
       if (!list.length) box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
@@ -5205,6 +5234,7 @@ function connectWS() {
       const m = data.message;
       const other = m.sender === me.username ? m.recipient : m.sender;
       if (m.sender !== me.username && isUserBlocked(m.sender)) return;
+      cacheLiveChatMessage('dm', other, m);
       if (m.sender !== me.username && !String(m.text || '').startsWith('__CALL__:')) {
         playNotificationSound('message');
         if (!(document.hasFocus() && activeChat && activeChat.kind === 'dm' && activeChat.id === other)) notifyDesktop(displayNameOf(m.sender), String(m.text || 'Новое сообщение').slice(0, 180), 'dm-' + m.sender);
@@ -5215,6 +5245,7 @@ function connectWS() {
       const m = data.message;
       const gId = m.groupId || data.groupId;
       if (m.sender !== me.username && isUserBlocked(m.sender)) return;
+      cacheLiveChatMessage('group', gId, m);
       if (m.sender !== me.username && !String(m.text || '').startsWith('__CALL__:')) {
         playNotificationSound('message');
         if (!(document.hasFocus() && activeChat && activeChat.kind === 'group' && activeChat.id === gId)) notifyDesktop('Группа: ' + getGroupTitle(getGroupById(gId)), displayNameOf(m.sender) + ': ' + String(m.text || 'Новое сообщение').slice(0, 150), 'group-' + gId);
