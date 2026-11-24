@@ -1941,6 +1941,7 @@
     overflow:auto;
     flex:0 0 auto;
     align-self:stretch;
+    container-type:inline-size;
   }
   .call-stage .call-grid {
     width:100%;
@@ -1950,12 +1951,12 @@
   }
   .call-stage .tile {
     min-width:0;
-    min-height:clamp(112px, 18vw, 165px);
+    min-height:clamp(112px, 25cqi, 165px);
     padding:clamp(6px,1.4vw,12px);
   }
   .call-stage .tile .big-av {
-    width:clamp(42px, 8vw, 64px);
-    height:clamp(42px, 8vw, 64px);
+    width:clamp(42px, 12cqi, 64px);
+    height:clamp(42px, 12cqi, 64px);
     flex:0 0 auto;
   }
   .call-stage .tile video { max-width:100%; max-height:clamp(110px,28vh,260px); }
