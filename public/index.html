@@ -2743,6 +2743,58 @@ html[data-theme="glasscord"] .pop-profile-strip {
   #sPanelAppearance input[type="range"][id$="OpacitySlider"] { width:100%;margin:0 0 5px; }
   html[data-theme="discord"] body { background:var(--bg) !important; }
 </style>
+
+<style id="auralis-floating-panels-v2">
+  :root {
+    --groups-opacity:.30; --header-opacity:.48; --composer-opacity:.48;
+    --auralis-mark-rgb:var(--accent-rgb);
+  }
+  /* Main conversation is a transparent stage; each working surface floats above it. */
+  .main {
+    display:flex !important; flex-direction:column !important; gap:12px !important;
+    padding:12px !important; overflow:visible !important;
+    background:transparent !important; border:0 !important; border-radius:0 !important;
+    min-width:0;
+  }
+  .main > .chat-header {
+    flex:0 0 auto; min-height:58px; height:auto;
+    border:1px solid var(--border) !important; border-radius:18px !important;
+    background:rgba(var(--panel-rgb),var(--header-opacity)) !important;
+    box-shadow:0 9px 26px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  }
+  .main > .messages {
+    min-height:0; flex:1 1 auto; border:1px solid rgba(255,255,255,.055);
+    border-radius:18px; background:rgba(var(--panel-rgb),.10);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+  }
+  .main > .composer {
+    flex:0 0 auto; min-height:62px; margin:0 !important;
+    border:1px solid var(--border) !important; border-radius:18px !important;
+    background:rgba(var(--panel-rgb),var(--composer-opacity)) !important;
+    box-shadow:0 9px 26px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.07);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  }
+  #panelChats #groupsList {
+    padding:7px; margin:0 -2px 4px; border:1px solid rgba(255,255,255,.07);
+    border-radius:14px; background:rgba(var(--panel-rgb),var(--groups-opacity));
+    box-shadow:0 5px 16px rgba(0,0,0,.12);
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  }
+  .top-tabs::before {
+    color:#fff !important;
+    background:linear-gradient(145deg,rgba(var(--auralis-mark-rgb),1),rgba(var(--auralis-mark-rgb),.70)) !important;
+    border:1px solid rgba(255,255,255,.25) !important;
+    box-shadow:0 7px 22px rgba(var(--auralis-mark-rgb),.42),inset 0 1px 0 rgba(255,255,255,.38) !important;
+    text-shadow:0 1px 3px rgba(0,0,0,.28);
+  }
+  @media(max-width:760px) {
+    .main {padding:8px !important;gap:8px !important;}
+    .main > .chat-header,.main > .composer {border-radius:15px !important;}
+    .main > .messages {border-radius:15px;}
+  }
+</style>
+
 </head>
 <body>
 
@@ -3123,6 +3175,12 @@ html[data-theme="glasscord"] .pop-profile-strip {
         <input id="dockOpacitySlider" type="range" min="0" max="100" value="24" oninput="setMenuOpacity('dock',this.value)" />
         <label class="menu-opacity-row" for="popupOpacitySlider"><span>Всплывающие меню</span><b id="popupOpacityValue">92%</b></label>
         <input id="popupOpacitySlider" type="range" min="0" max="100" value="92" oninput="setMenuOpacity('popup',this.value)" />
+        <label class="menu-opacity-row" for="groupsOpacitySlider"><span>Список групп и бесед</span><b id="groupsOpacityValue">30%</b></label>
+        <input id="groupsOpacitySlider" type="range" min="0" max="100" value="30" oninput="setMenuOpacity('groups',this.value)" />
+        <label class="menu-opacity-row" for="headerOpacitySlider"><span>Верхняя панель чата</span><b id="headerOpacityValue">48%</b></label>
+        <input id="headerOpacitySlider" type="range" min="0" max="100" value="48" oninput="setMenuOpacity('header',this.value)" />
+        <label class="menu-opacity-row" for="composerOpacitySlider"><span>Нижняя панель ввода</span><b id="composerOpacityValue">48%</b></label>
+        <input id="composerOpacitySlider" type="range" min="0" max="100" value="48" oninput="setMenuOpacity('composer',this.value)" />
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
          <div class="lbl">Уведомления</div>
@@ -4708,6 +4766,7 @@ function applyTheme(name) {
    document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + Math.min(0.92, Number(panelAlpha) + 0.12) + ')');
   document.documentElement.style.setProperty('--accent', t.accent);
   document.documentElement.style.setProperty('--accent-rgb', hexToRgb(t.accent));
+  document.documentElement.style.setProperty('--auralis-mark-rgb', hexToRgb(t.accent));
   document.documentElement.style.setProperty('--glow-2', t.glow2);
   localStorage.setItem('rc_theme', valid);
   document.querySelectorAll('.theme-swatch').forEach((el) => {
@@ -4721,6 +4780,7 @@ function applyAccentColor(color, persist = true) {
   const value = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? String(color).toLowerCase() : '#30d158';
   document.documentElement.style.setProperty('--accent', value);
   document.documentElement.style.setProperty('--accent-rgb', hexToRgb(value));
+  document.documentElement.style.setProperty('--auralis-mark-rgb', hexToRgb(value));
   if (persist) localStorage.setItem('rc_accent_color', value);
   document.querySelectorAll('.accent-choice').forEach((el) => {
     el.classList.toggle('active', el.dataset.accent === value);
@@ -4728,8 +4788,8 @@ function applyAccentColor(color, persist = true) {
 
 }
 
-const MENU_OPACITY_DEFAULTS = { sidebar: 78, nav: 22, dock: 24, popup: 92 };
-const MENU_OPACITY_VARS = { sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity', popup: '--popup-opacity' };
+const MENU_OPACITY_DEFAULTS = { sidebar: 78, nav: 22, dock: 24, popup: 92, groups: 30, header: 48, composer: 48 };
+const MENU_OPACITY_VARS = { sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity', popup: '--popup-opacity', groups: '--groups-opacity', header: '--header-opacity', composer: '--composer-opacity' };
 function setMenuOpacity(section, rawValue, persist = true) {
   const key = String(section || '');
   const cssVar = MENU_OPACITY_VARS[key];
@@ -4765,7 +4825,8 @@ function setSidebarWidth(px) {
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
   const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
   applyTheme(isMobileAppearance ? 'emerald' : (savedTheme || 'discord'));
-  if (isMobileAppearance) applyAccentColor(localStorage.getItem('rc_accent_color') || '#30d158', false);
+  const savedAccent = localStorage.getItem('rc_accent_color');
+  if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
