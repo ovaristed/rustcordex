@@ -2133,7 +2133,13 @@ input,textarea,select { accent-color:var(--accent); }
 
 /* Auralis mobile navigation: Discord-inspired compact bottom tab bar */
 @media(max-width:760px){
-  .top-tabs::before { content:none !important; display:none !important; }
+  .top-tabs::before {
+    content:"A" !important; display:grid !important; place-items:center !important;
+    width:42px; height:42px; flex:0 0 42px; margin:0 0 12px;
+    border-radius:15px; color:#fff; font-size:21px; font-weight:850;
+    letter-spacing:-.07em; background:linear-gradient(145deg,#a9a7ff,#6d8bff 58%,#65c6dc);
+    box-shadow:0 7px 22px rgba(112,126,255,.30),inset 0 1px 0 rgba(255,255,255,.45);
+  }
   .top-tabs { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
   .sidebar{
     display:flex;
@@ -2842,6 +2848,87 @@ html[data-theme="glasscord"] .pop-profile-strip {
   }
 </style>
 
+
+<style id="auralis-desktop-controls-242">
+  :root { --call-stage-height:380px; --call-stage-opacity:.48; }
+  /* Compact centered settings dialog. */
+  #settingsModal {
+    align-items:center !important; justify-content:center !important;
+    padding:18px !important; background:rgba(3,8,16,.34) !important;
+    backdrop-filter:blur(5px) !important; -webkit-backdrop-filter:blur(5px) !important;
+  }
+  #settingsModal .modal-card {
+    width:min(540px,calc(100vw - 36px)) !important;
+    max-height:min(78vh,760px) !important; margin:auto !important;
+    border-radius:20px !important;
+    background:rgba(var(--panel-rgb),.88) !important;
+    backdrop-filter:blur(24px) saturate(145%) !important;
+    -webkit-backdrop-filter:blur(24px) saturate(145%) !important;
+  }
+  #settingsModal .modal-head { padding:14px 18px !important; }
+  #settingsModal .settings-tabs { padding:0 14px !important; }
+  #settingsModal .s-section { padding:12px 18px 18px !important; }
+  #settingsModal .field { margin-bottom:12px !important; }
+  #settingsModal .theme-grid { gap:7px !important; }
+  #settingsModal .theme-swatch { min-height:38px !important; padding:7px 9px !important; }
+  #settingsModal .desktop-effects-field select { width:100%; }
+  /* A resizable call panel owns its own size context. Screen-share tiles can
+     never size themselves from the full viewport anymore. */
+  .call-stage {
+    height:var(--call-stage-height) !important;
+    min-height:240px !important;
+    max-height:min(78vh,calc(100vh - 220px)) !important;
+    overflow:auto !important;
+    resize:vertical !important;
+    container-type:size;
+    background:rgba(var(--panel-rgb),var(--call-stage-opacity)) !important;
+  }
+  .call-grid { min-height:0; grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr)); }
+  .tile { container-type:inline-size; min-width:0; }
+  .tile.screen-mode {
+    width:100% !important; min-width:0 !important;
+    height:clamp(170px,54cqh,560px) !important;
+    min-height:0 !important; max-height:100% !important;
+    padding:clamp(5px,1.2cqi,10px) !important;
+  }
+  .tile.screen-mode video {
+    width:100% !important; height:100% !important;
+    max-height:100% !important; object-fit:contain !important;
+  }
+  .tile .big-av {
+    width:clamp(46px,18cqi,88px) !important;
+    height:clamp(46px,18cqi,88px) !important;
+    font-size:clamp(17px,5cqi,28px) !important;
+  }
+  .call-ctrls {
+    container-type:inline-size;
+    gap:clamp(5px,1.5cqi,12px) !important;
+    flex-wrap:wrap;
+  }
+  .call-ctrls .round-btn {
+    width:clamp(38px,5cqi,52px) !important;
+    height:clamp(38px,5cqi,52px) !important;
+    flex:0 0 clamp(38px,5cqi,52px) !important;
+  }
+  .call-ctrls .round-btn.end {
+    width:clamp(42px,5.6cqi,58px) !important;
+    flex-basis:clamp(42px,5.6cqi,58px) !important;
+  }
+  .call-ctrls .round-btn svg {
+    width:clamp(17px,2.25cqi,24px) !important;
+    height:clamp(17px,2.25cqi,24px) !important;
+  }
+  @media(max-width:760px) {
+    /* No wallpaper or animated effects on phones. */
+    body { background:var(--bg) !important; background-image:none !important; }
+    #bgCanvas { display:none !important; }
+    #settingsModal { align-items:center !important; justify-content:center !important; padding:10px !important; }
+    #settingsModal .modal-card { width:100% !important; max-height:84dvh !important; }
+    .desktop-effects-field { display:none !important; }
+    .call-stage { height:auto !important; max-height:62dvh !important; container-type:normal; }
+    .tile.screen-mode { height:min(48dvh,420px) !important; min-height:190px !important; }
+  }
+</style>
 </head>
 <body>
 
@@ -3218,24 +3305,45 @@ html[data-theme="glasscord"] .pop-profile-strip {
         <div class="item-sub">Выбери один из готовых акцентных цветов.</div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
-        <div class="lbl">Прозрачность меню</div>
-        <div class="item-sub" style="margin:0 0 10px;">Настраивается отдельно для каждой области. 0% — прозрачнее, 100% — плотный фон.</div>
+        <div class="lbl">Общая прозрачность меню</div>
+        <div class="item-sub" style="margin:0 0 10px;">Один ползунок задаёт одинаковую прозрачность всем панелям. Диапазон у всех меню единый: 8–92%.</div>
+        <label class="menu-opacity-row" for="allMenuOpacitySlider"><span>Все меню одновременно</span><b id="allMenuOpacityValue">48%</b></label>
+        <input id="allMenuOpacitySlider" type="range" min="8" max="92" value="48" oninput="setAllMenuOpacity(this.value)" />
         <label class="menu-opacity-row" for="sidebarOpacitySlider"><span>Боковая панель</span><b id="sidebarOpacityValue">78%</b></label>
-        <input id="sidebarOpacitySlider" type="range" min="0" max="100" value="78" oninput="setMenuOpacity('sidebar',this.value)" />
+        <input id="sidebarOpacitySlider" type="range" min="8" max="92" value="78" oninput="setMenuOpacity('sidebar',this.value)" />
         <label class="menu-opacity-row" for="navOpacitySlider"><span>Навигация и вкладки</span><b id="navOpacityValue">22%</b></label>
-        <input id="navOpacitySlider" type="range" min="0" max="100" value="22" oninput="setMenuOpacity('nav',this.value)" />
+        <input id="navOpacitySlider" type="range" min="8" max="92" value="22" oninput="setMenuOpacity('nav',this.value)" />
         <label class="menu-opacity-row" for="dockOpacitySlider"><span>Нижняя панель профиля</span><b id="dockOpacityValue">24%</b></label>
-        <input id="dockOpacitySlider" type="range" min="0" max="100" value="24" oninput="setMenuOpacity('dock',this.value)" />
+        <input id="dockOpacitySlider" type="range" min="8" max="92" value="24" oninput="setMenuOpacity('dock',this.value)" />
         <label class="menu-opacity-row" for="popupOpacitySlider"><span>Всплывающие меню</span><b id="popupOpacityValue">92%</b></label>
-        <input id="popupOpacitySlider" type="range" min="0" max="100" value="92" oninput="setMenuOpacity('popup',this.value)" />
+        <input id="popupOpacitySlider" type="range" min="8" max="92" value="92" oninput="setMenuOpacity('popup',this.value)" />
         <label class="menu-opacity-row" for="groupsOpacitySlider"><span>Список групп и бесед</span><b id="groupsOpacityValue">30%</b></label>
-        <input id="groupsOpacitySlider" type="range" min="0" max="100" value="30" oninput="setMenuOpacity('groups',this.value)" />
+        <input id="groupsOpacitySlider" type="range" min="8" max="92" value="30" oninput="setMenuOpacity('groups',this.value)" />
         <label class="menu-opacity-row" for="headerOpacitySlider"><span>Верхняя панель чата</span><b id="headerOpacityValue">48%</b></label>
-        <input id="headerOpacitySlider" type="range" min="0" max="100" value="48" oninput="setMenuOpacity('header',this.value)" />
+        <input id="headerOpacitySlider" type="range" min="8" max="92" value="48" oninput="setMenuOpacity('header',this.value)" />
         <label class="menu-opacity-row" for="composerOpacitySlider"><span>Нижняя панель ввода</span><b id="composerOpacityValue">48%</b></label>
-        <input id="composerOpacitySlider" type="range" min="0" max="100" value="48" oninput="setMenuOpacity('composer',this.value)" />
+        <input id="composerOpacitySlider" type="range" min="8" max="92" value="48" oninput="setMenuOpacity('composer',this.value)" />
         <label class="menu-opacity-row" for="messagesOpacitySlider"><span>Центральная область переписки</span><b id="messagesOpacityValue">18%</b></label>
-        <input id="messagesOpacitySlider" type="range" min="0" max="100" value="18" oninput="setMenuOpacity('messages',this.value)" />
+        <input id="messagesOpacitySlider" type="range" min="8" max="92" value="18" oninput="setMenuOpacity('messages',this.value)" />
+        <div class="field" style="padding:10px 0 0;border-top:1px solid var(--border);">
+          <div class="lbl">Размер панели звонка</div>
+          <label class="menu-opacity-row" for="callStageSizeSlider"><span>Высота панели и демонстрации</span><b id="callStageSizeValue">380 px</b></label>
+          <input id="callStageSizeSlider" type="range" min="280" max="640" step="10" value="380" oninput="setCallStageHeight(this.value)" />
+          <div class="item-sub">Превью экрана и кнопки управления подстраиваются под размер панели.</div>
+        </div>
+        <div class="field desktop-effects-field" style="padding:10px 0 0;border-top:1px solid var(--border);">
+          <div class="lbl">Анимированный эффект фона · только ПК</div>
+          <select id="desktopBgEffectSelect" onchange="setDesktopBgEffect(this.value)">
+            <option value="auto">Авто по теме</option>
+            <option value="aurora">Северное сияние</option>
+            <option value="leaves">Падающие листья</option>
+            <option value="sakura">Лепестки сакуры</option>
+            <option value="embers">Светящиеся частицы</option>
+            <option value="rain">Неоновый дождь</option>
+            <option value="none">Без эффекта</option>
+          </select>
+          <div class="item-sub">Эффекты работают только в настольной версии и не включаются на телефоне.</div>
+        </div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
          <div class="lbl">Уведомления</div>
@@ -4609,6 +4717,14 @@ function spawnParticle(canvas, effect, randomY = true) {
       vx: -1.1 - Math.random() * 0.8, a: 0.38 + Math.random() * 0.42
     };
   }
+  if (effect === 'aurora') {
+    return {
+      x: Math.random() * w, y: h * (.18 + Math.random() * .48),
+      w: w * (.16 + Math.random() * .22), h: 26 + Math.random() * 56,
+      vx: (Math.random() - .5) * .22, phase: Math.random() * Math.PI * 2,
+      speed: .002 + Math.random() * .003, a: .12 + Math.random() * .10
+    };
+  }
   if (effect === 'embers') {
     return {
       x: Math.random() * w, y: randomY ? Math.random() * h : h + 10,
@@ -4630,7 +4746,7 @@ function rebuildBgParticles() {
   }
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  const count = bgEffect === 'rain' ? 20 : (bgEffect === 'leaves' ? 13 : 14);
+  const count = bgEffect === 'rain' ? 20 : (bgEffect === 'aurora' ? 7 : (bgEffect === 'leaves' ? 13 : 14));
   for (let i = 0; i < count; i++) {
     const p = spawnParticle(canvas, bgEffect, true);
     if (p) bgParticles.push(p);
@@ -4654,8 +4770,45 @@ function renderBgLoop(ts = 0) {
   const w = canvas.width;
   const h = canvas.height;
   const accentRgb = getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '10, 132, 255';
+  if (bgEffect === 'aurora') {
+    const t = ts * .00018;
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = 0; i < bgParticles.length; i++) {
+      const p = bgParticles[i];
+      p.phase += p.speed;
+      p.x += p.vx;
+      if (p.x < -p.w * 1.5) p.x = w + p.w;
+      if (p.x > w + p.w * 1.5) p.x = -p.w;
+      const sway = Math.sin(t + p.phase) * 34;
+      const gradient = ctx.createLinearGradient(p.x - p.w, p.y, p.x + p.w, p.y);
+      gradient.addColorStop(0, 'rgba(50,180,210,0)');
+      gradient.addColorStop(.28, 'rgba(65,220,205,' + p.a + ')');
+      gradient.addColorStop(.55, 'rgba(116,120,255,' + (p.a * .82) + ')');
+      gradient.addColorStop(.78, 'rgba(86,225,190,' + (p.a * .72) + ')');
+      gradient.addColorStop(1, 'rgba(50,180,210,0)');
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = p.h;
+      ctx.lineCap = 'round';
+      ctx.shadowBlur = 34;
+      ctx.shadowColor = 'rgba(74,220,210,.38)';
+      ctx.beginPath();
+      ctx.moveTo(p.x - p.w, p.y + sway);
+      ctx.bezierCurveTo(p.x - p.w * .42, p.y - p.h * 1.7 - sway, p.x + p.w * .38, p.y + p.h * 1.8 + sway, p.x + p.w, p.y - sway);
+      ctx.stroke();
+      ctx.globalAlpha = .45;
+      ctx.lineWidth = p.h * .28;
+      ctx.beginPath();
+      ctx.moveTo(p.x - p.w * .8, p.y + sway + 8);
+      ctx.bezierCurveTo(p.x - p.w * .25, p.y - p.h * 1.2, p.x + p.w * .32, p.y + p.h * 1.3, p.x + p.w * .85, p.y - sway - 8);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+  }
   for (let i = 0; i < bgParticles.length; i++) {
     const p = bgParticles[i];
+    if (bgEffect === 'aurora') continue;
     if (bgEffect === 'sakura' || bgEffect === 'leaves') {
       p.phase += 0.025; p.rot += p.vrot;
       p.x += p.vx + Math.sin(p.phase) * 0.5; p.y += p.vy;
@@ -4798,7 +4951,7 @@ const THEMES = {
   aurora: {
     bg: '#06121b', panelRgb: '10, 30, 40', accent: '#66e7d2',
     glow2: 'rgba(70, 220, 202, 0.28)', wallpaper: "url('/backgrounds/aurora.svg')",
-    overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.62, effect: 'none'
+    overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.62, effect: 'aurora'
   },
 };
 
@@ -4811,7 +4964,23 @@ function hexToRgb(hex) {
 let activeThemeName = 'discord';
 function syncThemeEffect() {
   const t = THEMES[activeThemeName] || THEMES.discord;
-  setBgEffect((window.matchMedia && window.matchMedia('(max-width: 760px)').matches) ? 'none' : (t.effect || 'none'));
+  let override = 'auto';
+  try { override = localStorage.getItem('rc_desktop_bg_effect') || 'auto'; } catch {}
+  const effect = override === 'auto' ? (t.effect || 'none') : override;
+  setBgEffect((window.matchMedia && window.matchMedia('(max-width: 760px)').matches) ? 'none' : effect);
+}
+function setDesktopBgEffect(value) {
+  const valid = ['auto','aurora','leaves','sakura','embers','rain','none'].includes(value) ? value : 'auto';
+  try { localStorage.setItem('rc_desktop_bg_effect', valid); } catch {}
+  const select = document.getElementById('desktopBgEffectSelect');
+  if (select) select.value = valid;
+  syncThemeEffect();
+}
+function initDesktopBgEffect() {
+  let value = 'auto';
+  try { value = localStorage.getItem('rc_desktop_bg_effect') || 'auto'; } catch {}
+  const select = document.getElementById('desktopBgEffectSelect');
+  if (select) select.value = value;
 }
 
 
@@ -4824,15 +4993,16 @@ function applyTheme(name) {
   document.documentElement.dataset.theme = valid;
   const t = THEMES[valid];
   document.documentElement.style.setProperty('--bg', t.bg);
-  document.documentElement.style.setProperty('--theme-wallpaper', t.wallpaper || 'none');
-  if (t.wallpaper && t.wallpaper !== 'none') {
+  const desktopThemeVisuals = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
+  document.documentElement.style.setProperty('--theme-wallpaper', desktopThemeVisuals ? (t.wallpaper || 'none') : 'none');
+  if (desktopThemeVisuals && t.wallpaper && t.wallpaper !== 'none') {
     const wallpaperUrl = t.wallpaper.slice(5, -2);
     if (wallpaperUrl) {
       const cached = window.__rcWallpaperCache || (window.__rcWallpaperCache = new Set());
       if (!cached.has(wallpaperUrl)) { cached.add(wallpaperUrl); const preload = new Image(); preload.decoding = 'async'; preload.src = wallpaperUrl; }
     }
   }
-  document.documentElement.style.setProperty('--theme-overlay', t.overlay || 'rgba(7, 9, 15, 0.52)');
+  document.documentElement.style.setProperty('--theme-overlay', desktopThemeVisuals ? (t.overlay || 'rgba(7, 9, 15, 0.52)') : 'rgba(0,0,0,0)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
    const panelAlpha = String(t.panelAlpha || 0.66);
    document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
@@ -4862,13 +5032,15 @@ function applyAccentColor(color, persist = true) {
 
 }
 
+const MENU_OPACITY_MIN = 8;
+const MENU_OPACITY_MAX = 92;
 const MENU_OPACITY_DEFAULTS = { sidebar: 78, nav: 22, dock: 24, popup: 92, groups: 30, header: 48, composer: 48, messages: 18 };
 const MENU_OPACITY_VARS = { sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity', popup: '--popup-opacity', groups: '--groups-opacity', header: '--header-opacity', composer: '--composer-opacity', messages: '--messages-opacity' };
 function setMenuOpacity(section, rawValue, persist = true) {
   const key = String(section || '');
   const cssVar = MENU_OPACITY_VARS[key];
   if (!cssVar) return;
-  const value = Math.max(0, Math.min(100, Number(rawValue) || 0));
+  const value = Math.max(MENU_OPACITY_MIN, Math.min(MENU_OPACITY_MAX, Number(rawValue) || MENU_OPACITY_MIN));
   document.documentElement.style.setProperty(cssVar, String(value / 100));
   const slider = document.getElementById(key + 'OpacitySlider');
   const label = document.getElementById(key + 'OpacityValue');
@@ -4876,14 +5048,45 @@ function setMenuOpacity(section, rawValue, persist = true) {
   if (label) label.textContent = value + '%';
   if (persist) { try { localStorage.setItem('rc_menu_opacity_' + key, String(value)); } catch {} }
 }
-function initMenuOpacity() {
-  Object.keys(MENU_OPACITY_DEFAULTS).forEach((key) => {
-    let value = MENU_OPACITY_DEFAULTS[key];
-    try { const saved = localStorage.getItem('rc_menu_opacity_' + key); if (saved !== null && saved !== '') value = Number(saved); } catch {}
-    setMenuOpacity(key, value, false);
-  });
+function setAllMenuOpacity(rawValue, persist = true) {
+  const value = Math.max(MENU_OPACITY_MIN, Math.min(MENU_OPACITY_MAX, Number(rawValue) || MENU_OPACITY_MIN));
+  Object.keys(MENU_OPACITY_DEFAULTS).forEach(key => setMenuOpacity(key, value, persist));
+  const slider = document.getElementById('allMenuOpacitySlider');
+  const label = document.getElementById('allMenuOpacityValue');
+  if (slider && slider.value !== String(value)) slider.value = String(value);
+  if (label) label.textContent = value + '%';
+  if (persist) { try { localStorage.setItem('rc_menu_opacity_all', String(value)); } catch {} }
 }
-
+function setCallStageHeight(rawValue, persist = true) {
+  const value = Math.max(280, Math.min(640, Math.round((Number(rawValue) || 380) / 10) * 10));
+  document.documentElement.style.setProperty('--call-stage-height', value + 'px');
+  const slider = document.getElementById('callStageSizeSlider');
+  const label = document.getElementById('callStageSizeValue');
+  if (slider && slider.value !== String(value)) slider.value = String(value);
+  if (label) label.textContent = value + ' px';
+  if (persist) { try { localStorage.setItem('rc_call_stage_height', String(value)); } catch {} }
+}
+function initMenuOpacity() {
+  let all = null;
+  try { const savedAll = localStorage.getItem('rc_menu_opacity_all'); if (savedAll !== null && savedAll !== '') all = Number(savedAll); } catch {}
+  if (all !== null && Number.isFinite(all)) {
+    setAllMenuOpacity(all, false);
+  } else {
+    Object.keys(MENU_OPACITY_DEFAULTS).forEach((key) => {
+      let value = MENU_OPACITY_DEFAULTS[key];
+      try { const saved = localStorage.getItem('rc_menu_opacity_' + key); if (saved !== null && saved !== '') value = Number(saved); } catch {}
+      setMenuOpacity(key, value, false);
+    });
+    const slider = document.getElementById('allMenuOpacitySlider');
+    const label = document.getElementById('allMenuOpacityValue');
+    if (slider) slider.value = '48';
+    if (label) label.textContent = '48%';
+  }
+  let callHeight = 380;
+  try { const saved = localStorage.getItem('rc_call_stage_height'); if (saved) callHeight = Number(saved); } catch {}
+  setCallStageHeight(callHeight, false);
+}
+ 
 function setSidebarWidth(px) {
   const val = Math.max(210, Math.min(440, Number(px) || 295));
   document.documentElement.style.setProperty('--sidebar-w', val + 'px');
@@ -4902,6 +5105,7 @@ function setSidebarWidth(px) {
   const savedAccent = localStorage.getItem('rc_accent_color');
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
+initDesktopBgEffect();
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
 
