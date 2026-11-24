@@ -2758,6 +2758,39 @@ html[data-theme="glasscord"] .pop-profile-strip {
 
 
 
+
+<style id="auralis-call-stage-containment-v2512">
+  /* Keep the in-call screen-share stage inside the chat column. */
+  .main { min-width:0; min-height:0; }
+  .call-stage {
+    box-sizing:border-box !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    max-height:min(60vh, calc(100dvh - 250px)) !important;
+    resize:none !important;
+    overflow:auto !important;
+    align-self:stretch !important;
+    flex:0 1 auto !important;
+  }
+  .call-stage .call-grid {
+    width:100%;
+    min-width:0 !important;
+    grid-template-columns:repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  }
+  .call-stage .tile { min-width:0; max-width:100%; }
+  .call-stage video { max-width:100%; }
+  @media (max-width:760px) {
+    .call-stage {
+      width:100% !important;
+      max-height:min(48dvh, calc(100dvh - 260px)) !important;
+      padding:9px !important;
+      overflow:auto !important;
+    }
+    .call-stage .call-grid { grid-template-columns:minmax(0,1fr); }
+    .call-stage .tile { min-height:110px; }
+  }
+</style>
 </head>
 <body>
 
