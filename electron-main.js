@@ -345,7 +345,7 @@ function setupMediaPermissions() {
       noLink: true
     }).then((result) => {
       const granted = result.response === 0;
-      mediaPermissionCache.set(key, granted);
+      if (granted) mediaPermissionCache.set(key, true);
       return granted;
     }).catch((err) => {
       console.error('[Auralis] Media permission prompt failed:', err);
