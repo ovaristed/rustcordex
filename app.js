@@ -2315,41 +2315,112 @@ function pickRecorderMimeType() {
   return '';
 }
 
-async function toggleVoiceRecord() {
-  if (!activeChat) return;
+let voiceRecordLocked = false;
+let voiceRecordCancel = false;
+let voiceRecordPointerDown = false;
+let voiceRecordStartY = 0;
+let voiceRecordStream = null;
+
+async function startVoiceRecord(ev) {
+  if (!activeChat || (mediaRecorder && mediaRecorder.state === 'recording')) return;
+  ev.preventDefault();
+  voiceRecordPointerDown = true;
+  voiceRecordLocked = false;
+  voiceRecordCancel = false;
+  voiceRecordStartY = ev.clientY;
   const btn = document.getElementById('recVoiceBtn');
   const timerEl = document.getElementById('recTimer');
-  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
-
+  const composer = document.getElementById('composer');
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { deviceId: selectedMicId ? { exact: selectedMicId } : undefined, echoCancellation: true, noiseSuppression: noiseSuppressionEnabled }
     });
+    voiceRecordStream = stream;
+    // The pointer may have been released while the permission prompt was open.
+    if (!voiceRecordPointerDown) {
+      stream.getTracks().forEach((t) => t.stop());
+      voiceRecordStream = null;
+      return;
+    }
     voiceChunks = [];
     const chosenMime = pickRecorderMimeType();
     mediaRecorder = chosenMime ? new MediaRecorder(stream, { mimeType: chosenMime }) : new MediaRecorder(stream);
     mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) voiceChunks.push(e.data); };
     mediaRecorder.onstop = () => {
-      clearInterval(recInterval); btn.classList.remove('recording'); timerEl.classList.add('hidden');
+      clearInterval(recInterval);
+      btn.classList.remove('recording');
+      composer.classList.remove('voice-recording', 'voice-locked');
+      timerEl.classList.add('hidden');
       stream.getTracks().forEach((t) => t.stop());
-      const baseMime = (mediaRecorder.mimeType || chosenMime || 'audio/webm').split(';')[0];
+      voiceRecordStream = null;
+      const shouldSend = !voiceRecordCancel;
+      const recorder = mediaRecorder;
+      mediaRecorder = null;
+      if (!shouldSend) { voiceChunks = []; return; }
+      const baseMime = (recorder.mimeType || chosenMime || 'audio/webm').split(';')[0];
       const blob = new Blob(voiceChunks, { type: baseMime });
+      voiceChunks = [];
       if (blob.size < 200) return;
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          sendOutboundMessageText('__VOICE__:' + normalizeVoiceSrc(reader.result));
-        }
+        if (typeof reader.result === 'string') sendOutboundMessageText('__VOICE__:' + normalizeVoiceSrc(reader.result));
       };
       reader.readAsDataURL(blob);
     };
-    recSeconds = 0; timerEl.textContent = '0:00'; timerEl.classList.remove('hidden'); btn.classList.add('recording');
+    recSeconds = 0;
+    timerEl.textContent = '● 0:00';
+    timerEl.classList.remove('hidden');
+    composer.classList.add('voice-recording');
+    btn.classList.add('recording');
     recInterval = setInterval(() => {
-      recSeconds += 1; timerEl.textContent = fmtSec(recSeconds);
-      if (recSeconds >= 60 && mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      recSeconds += 1;
+      timerEl.textContent = '● ' + fmtSec(recSeconds);
+      if (recSeconds >= 60 && mediaRecorder && mediaRecorder.state === 'recording') stopVoiceRecord(true);
     }, 1000);
     mediaRecorder.start();
-  } catch {}
+  } catch (err) {
+    voiceRecordPointerDown = false;
+    if (voiceRecordStream) voiceRecordStream.getTracks().forEach((t) => t.stop());
+    voiceRecordStream = null;
+    document.getElementById('recTimer').classList.add('hidden');
+    document.getElementById('composer').classList.remove('voice-recording', 'voice-locked');
+    btn.classList.remove('recording');
+  }
+}
+
+function moveVoiceRecord(ev) {
+  if (!voiceRecordPointerDown || voiceRecordLocked || !mediaRecorder || mediaRecorder.state !== 'recording') return;
+  if (voiceRecordStartY - ev.clientY >= 72) {
+    voiceRecordLocked = true;
+    document.getElementById('composer').classList.add('voice-locked');
+    document.getElementById('recTimer').textContent = '● ' + fmtSec(recSeconds) + ' · Запись закреплена';
+  }
+}
+
+function releaseVoiceRecord() {
+  if (!voiceRecordPointerDown) return;
+  voiceRecordPointerDown = false;
+  if (!voiceRecordLocked) stopVoiceRecord(true);
+}
+
+function stopVoiceRecord(send) {
+  voiceRecordCancel = !send;
+  voiceRecordPointerDown = false;
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+}
+
+function sendLockedVoice() {
+  if (voiceRecordLocked) stopVoiceRecord(true);
+}
+
+function cancelLockedVoice() {
+  if (voiceRecordLocked) stopVoiceRecord(false);
+}
+
+// Kept as a compatibility entry point for older UI bindings.
+function toggleVoiceRecord() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') stopVoiceRecord(true);
+  else startVoiceRecord({ preventDefault() {}, clientY: 0 });
 }
 
 function startRingTone() {
