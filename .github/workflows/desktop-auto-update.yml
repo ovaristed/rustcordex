@@ -59,6 +59,78 @@ jobs:
         if: steps.release_check.outputs.should_build == 'true'
         run: npm install --no-audit --no-fund
 
+      - name: Install installer artwork dependency
+        if: steps.release_check.outputs.should_build == 'true'
+        run: npm install --no-save --no-package-lock --prefer-offline --no-audit --no-fund sharp
+
+      - name: Generate branded app and installer assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "build" | Out-Null
+          node -e "require('sharp')('build/auralis-icon.svg').resize(512,512).png().toFile('build/auralis-icon.png').then(()=>console.log('Icon rendered'))"
+          Add-Type -AssemblyName System.Drawing
+
+          $image = [System.Drawing.Image]::FromFile((Resolve-Path "build/auralis-icon.png"))
+          $bitmap = New-Object System.Drawing.Bitmap(256, 256)
+          $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+          $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+          $graphics.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+          $graphics.DrawImage($image, 0, 0, 256, 256)
+          $graphics.Dispose()
+          $image.Dispose()
+
+          $stream = New-Object System.IO.MemoryStream
+          $bitmap.Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)
+          $png = $stream.ToArray()
+          $stream.Dispose()
+          $bitmap.Dispose()
+
+          $file = [System.IO.File]::Open((Join-Path (Resolve-Path "build") "icon.ico"), [System.IO.FileMode]::Create)
+          $writer = New-Object System.IO.BinaryWriter($file)
+          $writer.Write([UInt16]0); $writer.Write([UInt16]1); $writer.Write([UInt16]1)
+          $writer.Write([Byte]0); $writer.Write([Byte]0); $writer.Write([Byte]0); $writer.Write([Byte]0)
+          $writer.Write([UInt16]1); $writer.Write([UInt16]32)
+          $writer.Write([UInt32]$png.Length); $writer.Write([UInt32]22); $writer.Write($png)
+          $writer.Close()
+          $file.Dispose()
+
+          $side = New-Object System.Drawing.Bitmap(164, 314, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+          $g = [System.Drawing.Graphics]::FromImage($side)
+          $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+          $rect = New-Object System.Drawing.Rectangle(0,0,164,314)
+          $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect,[System.Drawing.Color]::FromArgb(8,13,34),[System.Drawing.Color]::FromArgb(23,31,77),90)
+          $g.FillRectangle($brush,$rect); $brush.Dispose()
+          $g.FillEllipse((New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(30,91,91,255))),70,-45,145,145)
+          $logo = [System.Drawing.Image]::FromFile((Resolve-Path "build/auralis-icon.png"))
+          $g.DrawImage($logo,46,24,72,72); $logo.Dispose()
+          $white = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(248,250,255))
+          $muted = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(174,190,224))
+          $accent = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(91,210,244))
+          $fontTitle = New-Object System.Drawing.Font("Segoe UI",15,[System.Drawing.FontStyle]::Bold)
+          $fontBody = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Regular)
+          $fontSmall = New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
+          $g.DrawString("AURALIS",$fontTitle,$white,18,116)
+          $g.FillRectangle($accent,18,151,38,3)
+          $g.DrawString("Голос. Видео.",$fontBody,$white,18,174)
+          $g.DrawString("Общение без границ.",$fontBody,$white,18,193)
+          $g.DrawString("Установка приложения",$fontBody,$muted,18,235)
+          $g.DrawString("AURALIS DESKTOP",$fontSmall,$accent,18,282)
+          $fontTitle.Dispose(); $fontBody.Dispose(); $fontSmall.Dispose()
+          $white.Dispose(); $muted.Dispose(); $accent.Dispose()
+          $g.Dispose(); $side.Save("build/installer-sidebar.bmp",[System.Drawing.Imaging.ImageFormat]::Bmp); $side.Dispose()
+
+          $header = New-Object System.Drawing.Bitmap(150,57,[System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+          $hg = [System.Drawing.Graphics]::FromImage($header)
+          $hg.Clear([System.Drawing.Color]::FromArgb(12,17,39))
+          $hlogo = [System.Drawing.Image]::FromFile((Resolve-Path "build/auralis-icon.png"))
+          $hg.DrawImage($hlogo,8,9,38,38); $hlogo.Dispose()
+          $hfont = New-Object System.Drawing.Font("Segoe UI",13,[System.Drawing.FontStyle]::Bold)
+          $hg.DrawString("Auralis",$hfont,(New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(245,248,255))),52,17)
+          $hfont.Dispose(); $hg.Dispose()
+          $header.Save("build/installer-header.bmp",[System.Drawing.Imaging.ImageFormat]::Bmp)
+          $header.Dispose()
+          Write-Host "Created Auralis icon and branded installer artwork."
+
       - name: Build and publish Windows installer
         if: steps.release_check.outputs.should_build == 'true'
         env:
