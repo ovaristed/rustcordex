@@ -8739,5 +8739,52 @@ checkSession();
   }
 </style>
 
+
+<style id="auralis-pure-max-transparency-v259">
+  /* Pure transparency: no white/black tint, no colored glass fills or dimming overlays. */
+  #app,#app > .sidebar,#app > .main,.sidebar,.main,
+  .top-tabs,.bottom-dock,.panel-body,.main > .chat-header,
+  .main > .messages,.main > .composer,.call-stage,.call-tile,
+  .emoji-bar,.gif-picker,#panelChats,#groupsList,#chatsList,
+  .card,.modal-card,.incoming-card,.profile-popover,.user-profile-card,
+  .voice-ctx-menu,.group-ctx-menu,.context-menu,.app-dialog,
+  .sticker-picker,.emoji-picker,.dropdown-menu,.popover,.menu,
+  [role="dialog"],[role="menu"],
+  .list-item,.msg-bubble,.message-bubble,.pop-card,.pop-profile-strip,
+  .field input:not([type="checkbox"]):not([type="range"]),
+  .field select,.field textarea,.icon-btn,.tab-btn,
+  .settings-tabs,.settings-tabs .s-tab,.theme-swatch,
+  .main > .composer:focus-within {
+    background:transparent !important;
+    background-color:transparent !important;
+    background-image:none !important;
+    border-color:transparent !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  .modal-backdrop,.app-dialog-backdrop,.user-profile-overlay {
+    background:transparent !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  .list-item:hover,.icon-btn:hover,.tab-btn:hover,.s-tab:hover,
+  .theme-swatch:hover,.list-item.active,.list-item.selected,
+  .tab-btn.active,.s-tab.active,.theme-swatch.active {
+    background:transparent !important;
+    background-color:transparent !important;
+    border-color:transparent !important;
+    box-shadow:none !important;
+  }
+  .send-btn,.primary-btn,.sm-btn.blue,.call-pill,
+  button.primary-btn:hover,.send-btn:hover,.sm-btn.blue:hover,.call-pill:hover {
+    background:transparent !important;
+    background-color:transparent !important;
+    border-color:transparent !important;
+    box-shadow:none !important;
+  }
+  select option { background:transparent !important; }
+</style>
+
 </body>
 </html>
