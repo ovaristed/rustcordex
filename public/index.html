@@ -3736,6 +3736,7 @@ window.addEventListener('keydown', (e) => {
     }
     applyMicMuteState();
     updateCallButtons();
+    broadcastCallState();
   }
 });
 
@@ -3744,6 +3745,7 @@ window.addEventListener('keyup', (e) => {
     micMuted = true;
     applyMicMuteState();
     updateCallButtons();
+    broadcastCallState();
   }
 });
 
