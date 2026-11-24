@@ -2744,56 +2744,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
   html[data-theme="discord"] body { background:var(--bg) !important; }
 </style>
 
-<style id="auralis-floating-panels-v2">
-  :root {
-    --groups-opacity:.30; --header-opacity:.48; --composer-opacity:.48;
-    --auralis-mark-rgb:var(--accent-rgb);
-  }
-  /* Main conversation is a transparent stage; each working surface floats above it. */
-  .main {
-    display:flex !important; flex-direction:column !important; gap:12px !important;
-    padding:12px !important; overflow:visible !important;
-    background:transparent !important; border:0 !important; border-radius:0 !important;
-    min-width:0;
-  }
-  .main > .chat-header {
-    flex:0 0 auto; min-height:58px; height:auto;
-    border:1px solid var(--border) !important; border-radius:18px !important;
-    background:rgba(var(--panel-rgb),var(--header-opacity)) !important;
-    box-shadow:0 9px 26px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06);
-    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
-  }
-  .main > .messages {
-    min-height:0; flex:1 1 auto; border:1px solid rgba(255,255,255,.055);
-    border-radius:18px; background:rgba(var(--panel-rgb),.10);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
-  }
-  .main > .composer {
-    flex:0 0 auto; min-height:62px; margin:0 !important;
-    border:1px solid var(--border) !important; border-radius:18px !important;
-    background:rgba(var(--panel-rgb),var(--composer-opacity)) !important;
-    box-shadow:0 9px 26px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.07);
-    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
-  }
-  #panelChats #groupsList {
-    padding:7px; margin:0 -2px 4px; border:1px solid rgba(255,255,255,.07);
-    border-radius:14px; background:rgba(var(--panel-rgb),var(--groups-opacity));
-    box-shadow:0 5px 16px rgba(0,0,0,.12);
-    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-  }
-  .top-tabs::before {
-    color:#fff !important;
-    background:linear-gradient(145deg,rgba(var(--auralis-mark-rgb),1),rgba(var(--auralis-mark-rgb),.70)) !important;
-    border:1px solid rgba(255,255,255,.25) !important;
-    box-shadow:0 7px 22px rgba(var(--auralis-mark-rgb),.42),inset 0 1px 0 rgba(255,255,255,.38) !important;
-    text-shadow:0 1px 3px rgba(0,0,0,.28);
-  }
-  @media(max-width:760px) {
-    .main {padding:8px !important;gap:8px !important;}
-    .main > .chat-header,.main > .composer {border-radius:15px !important;}
-    .main > .messages {border-radius:15px;}
-  }
-</style>
+
 
 
 <style id="auralis-chat-picker-preview-theme">
@@ -2827,77 +2778,13 @@ html[data-theme="glasscord"] .pop-profile-strip {
   }
 </style>
 
-<style id="auralis-sidebar-dock-recovery">
-  /* Keep the sidebar's lower account dock anchored; chat content must never
-     be able to collapse or cover it when the composer becomes visible. */
-  #app { min-height:0; }
-  #app > .sidebar {
-    display:flex !important; flex-direction:column !important;
-    min-height:0 !important; height:100% !important; overflow:hidden !important;
-  }
-  #app > .sidebar > .sidebar-top {
-    display:flex !important; flex:1 1 0% !important;
-    min-height:0 !important; height:auto !important;
-  }
-  #app > .sidebar > .bottom-dock {
-    display:block !important; flex:0 0 auto !important;
-    position:relative !important; inset:auto !important;
-    width:auto !important; min-height:74px;
-    margin-top:auto !important; z-index:12 !important;
-    visibility:visible !important; opacity:1 !important;
-  }
-  #app > .sidebar > .bottom-dock .user-bar {
-    display:flex !important; min-height:54px !important;
-    visibility:visible !important; opacity:1 !important;
-  }
-  /* Apply the groups/browse transparency to both the list surface and rows,
-     not merely to the container behind opaque list-item backgrounds. */
-  #panelChats #groupsList, #panelChats #chatsList {
-    background:rgba(var(--panel-rgb),var(--groups-opacity)) !important;
-    background-color:rgba(var(--panel-rgb),var(--groups-opacity)) !important;
-  }
-  #panelChats #groupsList > .list-item,
-  #panelChats #chatsList > .list-item {
-    background:rgba(var(--panel-rgb),calc(var(--groups-opacity) * .72)) !important;
-    background-color:rgba(var(--panel-rgb),calc(var(--groups-opacity) * .72)) !important;
-    border:1px solid rgba(255,255,255,calc(var(--groups-opacity) * .16)) !important;
-  }
-  #panelChats #groupsList > .list-item.active,
-  #panelChats #chatsList > .list-item.active {
-    background:rgba(var(--accent-rgb),calc(.10 + var(--groups-opacity) * .34)) !important;
-  }
-  @media(max-width:760px) {
-    /* On narrow Windows windows/mobile layouts, hide only the navigation list
-       while chatting. Keep a compact account strip above the message composer. */
-    body.mobile-chat-open #app > .sidebar {
-      display:flex !important; position:fixed !important;
-      left:0 !important; right:0 !important; top:auto !important; bottom:0 !important;
-      width:100% !important; height:auto !important; min-height:0 !important;
-      padding:0 !important; border:0 !important; border-radius:0 !important;
-      background:transparent !important; overflow:visible !important;
-      z-index:30 !important; pointer-events:none !important;
-    }
-    body.mobile-chat-open #app > .sidebar > .sidebar-top { display:none !important; }
-    body.mobile-chat-open #app > .sidebar > .bottom-dock {
-      display:block !important; width:100% !important; min-height:58px !important;
-      padding:4px 10px max(5px,env(safe-area-inset-bottom)) !important;
-      background:rgba(var(--panel-rgb),.94) !important;
-      border-top:1px solid var(--border) !important;
-      backdrop-filter:blur(20px) !important;-webkit-backdrop-filter:blur(20px) !important;
-      pointer-events:auto !important;
-    }
-    body.mobile-chat-open #app > .sidebar > .bottom-dock .user-bar {
-      min-height:48px !important; background:transparent !important;
-    }
-    body.mobile-chat-open #app > .main {
-      padding-bottom:calc(76px + env(safe-area-inset-bottom)) !important;
-    }
-    body.mobile-chat-open #app > .main > .composer {
-      margin-bottom:0 !important;
-    }
-  }
-</style>
-<style id="auralis-central-messages-opacity">
+
+
+
+<style id="auralis-layout-recovery-241">
+  /* Restore the established sidebar/main layout. Keep the Auralis mark out of
+     the tab rail; the original navigation buttons remain in their normal flow. */
+  .top-tabs::before { content:none !important; display:none !important; }
   :root { --messages-opacity:.18; }
   .main > .messages {
     background:rgba(var(--panel-rgb),var(--messages-opacity)) !important;
@@ -2905,7 +2792,56 @@ html[data-theme="glasscord"] .pop-profile-strip {
     backdrop-filter:blur(18px) saturate(1.12);
     -webkit-backdrop-filter:blur(18px) saturate(1.12);
   }
+  .main > .chat-header {
+    background:rgba(var(--panel-rgb),var(--header-opacity,.48)) !important;
+  }
+  .main > .composer {
+    background:rgba(var(--panel-rgb),var(--composer-opacity,.48)) !important;
+  }
+  /* The background canvas is decorative and must remain behind interactive UI. */
+  #zoomRoot { position:relative; z-index:5 !important; }
+  #bgCanvas { z-index:4; }
+  /* In compact layouts, keep the profile/settings dock visible during a chat.
+     Only the navigation list is hidden; the chat is resized above the dock. */
+  @media(max-width:760px) {
+    body.mobile-chat-open #app > .sidebar {
+      display:block !important; position:absolute !important;
+      inset:0 !important; width:100% !important; height:100% !important;
+      min-height:0 !important; padding:0 !important;
+      background:transparent !important; border:0 !important;
+      overflow:visible !important; pointer-events:none !important;
+      z-index:8 !important;
+    }
+    body.mobile-chat-open #app > .sidebar > .sidebar-top {
+      display:none !important;
+    }
+    body.mobile-chat-open #app > .sidebar > .bottom-dock {
+      display:block !important; position:fixed !important;
+      left:0 !important; right:0 !important; bottom:0 !important;
+      width:100% !important; min-height:68px !important;
+      padding:6px 10px max(6px,env(safe-area-inset-bottom)) !important;
+      margin:0 !important; background:rgba(var(--panel-rgb),.96) !important;
+      border-top:1px solid var(--border) !important;
+      border-radius:0 !important; backdrop-filter:blur(18px) !important;
+      -webkit-backdrop-filter:blur(18px) !important;
+      pointer-events:auto !important; z-index:10 !important;
+    }
+    body.mobile-chat-open #app > .sidebar > .bottom-dock .user-bar {
+      display:flex !important; min-height:50px !important;
+      background:transparent !important;
+    }
+    body.mobile-chat-open #app > .main {
+      display:flex !important; position:absolute !important;
+      inset:0 0 72px 0 !important; width:100% !important;
+      height:auto !important; min-height:0 !important;
+      padding-bottom:0 !important; z-index:6 !important;
+    }
+    body.mobile-chat-open #app > .main > .composer {
+      margin-bottom:0 !important;
+    }
+  }
 </style>
+
 </head>
 <body>
 
