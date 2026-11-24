@@ -1,0 +1,67 @@
+name: Build and publish Auralis Windows auto-update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'electron-main.js'
+      - 'preload.js'
+      - '.github/workflows/desktop-auto-update.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auralis-windows-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build Windows installer and publish updater metadata
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read desktop version
+        id: version
+        shell: pwsh
+        run: |
+          $package = Get-Content package.json -Raw | ConvertFrom-Json
+          "version=$($package.version)" >> $env:GITHUB_OUTPUT
+          "tag=v$($package.version)" >> $env:GITHUB_OUTPUT
+
+      - name: Skip if this version is already published
+        id: release_check
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          gh release view $env:TAG --repo ${{ github.repository }} *> $null
+          if ($LASTEXITCODE -eq 0) {
+            "should_build=false" >> $env:GITHUB_OUTPUT
+            Write-Host "Release $env:TAG already exists; bump package.json version to publish another update."
+          } else {
+            "should_build=true" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Setup Node.js
+        if: steps.release_check.outputs.should_build == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.release_check.outputs.should_build == 'true'
+        run: npm install --no-audit --no-fund
+
+      - name: Build and publish Windows installer
+        if: steps.release_check.outputs.should_build == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win nsis --publish always
