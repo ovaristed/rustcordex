@@ -2290,6 +2290,8 @@ input,textarea,select { accent-color:var(--accent); }
 
 /* Auralis mobile navigation: Discord-inspired compact bottom tab bar */
 @media(max-width:760px){
+  .top-tabs::before { content:none !important; display:none !important; }
+  .top-tabs { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
   .sidebar{
     display:flex;
     flex-direction:column;
@@ -5970,15 +5972,41 @@ function appendMsg(m) {
 function sendFileAttachment(file) {
   if (!file || !activeChat) return;
   if (file.size > MAX_FILE_BYTES) { showToast('Файл слишком большой — лимит 25 МБ', "error"); return; }
+  const chatAtStart = { ...activeChat };
+  const isImage = /^image\//i.test(file.type || '');
+  const previewUrl = isImage ? URL.createObjectURL(file) : '';
+  const messagesBox = document.getElementById('messages');
+  const pending = document.createElement('div');
+  pending.className = 'msg mine media-only attachment-pending';
+  pending.innerHTML = '<div class="msg-bubble">' +
+    (isImage ? '<img class="att-img" alt="Предпросмотр отправляемого фото">' : '<div class="att-file"><div class="att-file-name">📎 ' + esc(file.name || 'Файл') + '</div></div>') +
+    '<div class="att-status-line" style="display:block;padding:6px 2px;font-size:12px;color:var(--muted)">Подготовка к отправке…</div></div>';
+  const preview = pending.querySelector('img');
+  if (preview && previewUrl) preview.src = previewUrl;
+  if (messagesBox && chatAtStart.kind === activeChat.kind && chatAtStart.id === activeChat.id) {
+    messagesBox.appendChild(pending);
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+  const status = pending.querySelector('.att-status-line');
+  const fail = (message) => {
+    if (status) { status.textContent = message; status.style.color = 'var(--red)'; }
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  };
   const reader = new FileReader();
-  reader.onload = () => {
-    if (typeof reader.result !== 'string') return;
+  reader.onerror = () => fail('Не удалось прочитать файл. Попробуй выбрать его ещё раз.');
+  reader.onload = async () => {
+    if (typeof reader.result !== 'string') { fail('Не удалось подготовить файл.'); return; }
     const ext = (file.type && file.type.split('/')[1])
       ? file.type.split('/')[1].replace('jpeg', 'jpg').replace(/[^a-z0-9]+/gi, '')
       : 'png';
     const fileName = (file.name && file.name !== 'image.png') ? file.name : ('screenshot-' + Date.now() + '.' + (ext || 'png'));
     const payload = JSON.stringify({ name: fileName, size: file.size, mime: file.type || 'image/png', dataUrl: reader.result });
-    sendOutboundMessageText('__FILE__:' + payload);
+    if (status) status.textContent = 'Отправка…';
+    const sent = await sendOutboundMessageText('__FILE__:' + payload);
+    if (!sent) { fail('Не отправлено. Нажми на вложение и попробуй ещё раз.'); return; }
+    if (status) { status.textContent = 'Отправлено'; status.style.color = 'var(--green)'; }
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setTimeout(() => pending.remove(), 1400);
   };
   reader.readAsDataURL(file);
 }
