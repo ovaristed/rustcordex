@@ -87,7 +87,23 @@ server.on('upgrade', (req, socket, head) => {
       if (client.readyState === WebSocket.OPEN) client.send(data, { binary });
     });
     remote.on('close', (code, reason) => {
-      if (client.readyState === WebSocket.OPEN) client.close(code, reason);
+      if (client.readyState !== WebSocket.OPEN) return;
+      // RFC 6455 reserves 1005/1006/1015 for local reporting only; ws.close()
+      // rejects these codes when a peer closes without a proper close frame.
+      const validCloseCode =
+        (Number.isInteger(code) && code >= 1000 && code <= 1014 &&
+          ![1004, 1005, 1006].includes(code)) ||
+        (Number.isInteger(code) && code >= 3000 && code <= 4999);
+      const safeCode = validCloseCode ? code : 1011;
+      const safeReason = validCloseCode && reason && Buffer.byteLength(reason) <= 123
+        ? reason
+        : (validCloseCode ? '' : 'Backend connection closed unexpectedly');
+      try {
+        client.close(safeCode, safeReason);
+      } catch (err) {
+        console.error('[Auralis proxy] Could not close client WebSocket cleanly:', err.message);
+        try { client.terminate(); } catch {}
+      }
     });
     remote.on('error', (err) => {
       console.error('[Auralis proxy] WebSocket:', err.message);
