@@ -1,6 +1,6 @@
 {
   "name": "auralis-desktop",
-  "version": "2.3.8",
+  "version": "2.3.9",
   "description": "Auralis — Liquid Glass community messenger",
   "main": "electron-main.js",
   "scripts": {
