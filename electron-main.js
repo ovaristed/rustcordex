@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Noti
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const { startLocalPreview } = require('./local-preview');
 
 app.setName('Auralis');
 if (process.platform === 'win32') app.setAppUserModelId('com.ovarist.auralis');
@@ -483,12 +484,23 @@ if (!gotLock) {
     showMainWindow();
   });
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     setupMediaPermissions();
     setupIpc();
+    // Start local Auralis UI/API/WebSocket bridge automatically with the desktop app.
+    // Reuse an already running preview server if the user launched it manually.
+    try {
+      await startLocalPreview();
+    } catch (err) {
+      if (err.code === 'EADDRINUSE') {
+        const existing = await checkServerReachable(DEFAULT_SERVER_URL);
+        if (!existing.ok) console.error('[Auralis] Local preview port is occupied but not responding:', existing.reason);
+      } else {
+        console.error('[Auralis] Could not start local preview:', err);
+      }
+    }
     createTray();
     createWindow();
-
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
