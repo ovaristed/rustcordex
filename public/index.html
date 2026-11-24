@@ -3472,7 +3472,6 @@ async function handleDesktopUpdateAction() {
     if (action === 'install') { bridge.installUpdate(); return; }
     if (action === 'download') {
       await bridge.downloadUpdate();
-      setDesktopUpdateUi('Загрузка обновления началась…', 'Загрузка…', 'download', true);
       return;
     }
     const result = await bridge.checkForUpdates();
