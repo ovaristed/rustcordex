@@ -131,6 +131,18 @@
   }
   .hidden { display: none !important; }
 
+  .mobile-accent-field{display:none}
+  .accent-picker{display:flex;align-items:center;gap:14px;margin-top:10px}
+  .accent-choice,.accent-custom{position:relative;width:42px;height:42px;min-width:42px;border:2px solid rgba(255,255,255,.24);border-radius:50%;padding:4px;background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer}
+  .accent-choice span{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+  .accent-choice.active{border-color:#fff;box-shadow:0 0 0 3px rgba(var(--accent-rgb),.28),0 0 18px rgba(var(--accent-rgb),.28)}
+  .accent-custom{color:var(--text);font-size:22px;font-weight:400}
+  .accent-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+  @media(max-width:760px){
+    .desktop-theme-field{display:none!important}
+    .mobile-accent-field{display:block}
+  }
+
   /* Theme-aware custom checkbox and slider controls */
   input[type="checkbox"] {
     appearance: none; -webkit-appearance: none;
@@ -3152,7 +3164,7 @@ html[data-theme="discord"] .main{
     </div>
 
     <div id="sPanelAppearance" class="s-section">
-      <div class="field">
+      <div class="field desktop-theme-field">
         <div class="lbl">Тема оформления</div>
         <div class="theme-grid">
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Auralis</button>
@@ -3160,6 +3172,18 @@ html[data-theme="discord"] .main{
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
         </div>
+      </div>
+      <div class="field mobile-accent-field">
+        <div class="lbl">Акцентный цвет</div>
+        <div class="accent-picker" role="group" aria-label="Выбор акцентного цвета">
+          <button type="button" class="accent-choice" data-accent="#30d158" aria-label="Зелёный" title="Зелёный" onclick="applyAccentColor('#30d158')"><span style="background:#30d158"></span></button>
+          <button type="button" class="accent-choice" data-accent="#ff78ad" aria-label="Розовый" title="Розовый" onclick="applyAccentColor('#ff78ad')"><span style="background:#ff78ad"></span></button>
+          <label class="accent-custom" title="Свой цвет">
+            <input id="customAccentColor" type="color" value="#30d158" aria-label="Выбрать свой акцентный цвет" onchange="applyAccentColor(this.value)" />
+            <span aria-hidden="true">＋</span>
+          </label>
+        </div>
+        <div class="item-sub">Выбери цвет интерфейса или задай собственный.</div>
       </div>
       <div class="field">
         <div class="lbl">Кэш и данные сессии</div>
@@ -4680,6 +4704,22 @@ function applyTheme(name) {
     el.classList.toggle('active', el.dataset.theme === valid);
   });
   syncThemeEffect();
+  if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) {
+    const mobileAccent = localStorage.getItem('rc_accent_color') || '#30d158';
+    applyAccentColor(mobileAccent, false);
+  }
+}
+
+function applyAccentColor(color, persist = true) {
+  const value = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? String(color).toLowerCase() : '#30d158';
+  document.documentElement.style.setProperty('--accent', value);
+  document.documentElement.style.setProperty('--accent-rgb', hexToRgb(value));
+  if (persist) localStorage.setItem('rc_accent_color', value);
+  document.querySelectorAll('.accent-choice').forEach((el) => {
+    el.classList.toggle('active', el.dataset.accent === value);
+  });
+  const custom = document.getElementById('customAccentColor');
+  if (custom) custom.value = value;
 }
 
 function setSidebarWidth(px) {
@@ -4695,7 +4735,9 @@ function setSidebarWidth(px) {
     savedTheme = localStorage.getItem('rc_theme');
   } catch {}
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
-  applyTheme(savedTheme || 'discord');
+  const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
+  applyTheme(isMobileAppearance ? 'emerald' : (savedTheme || 'discord'));
+  if (isMobileAppearance) applyAccentColor(localStorage.getItem('rc_accent_color') || '#30d158', false);
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
   setClearCacheOnExit(localStorage.getItem('rc_clear_cache_exit') === '1');
