@@ -4358,6 +4358,23 @@ function notifyDesktop(title, body, tag, kind = 'message') {
     try { window.rustcordDesktop.notify(payload); return; } catch (err) { console.warn('Native notification failed:', err); }
   }
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  // On phones, notifications must be created by the service worker rather than new Notification().
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((registration) => {
+      if (registration && registration.showNotification) {
+        return registration.showNotification(payload.title, {
+          body: payload.body,
+          tag: payload.tag,
+          renotify: true,
+          silent: true,
+          icon: '/auralis-icon.svg',
+          badge: '/auralis-icon.svg',
+          data: { url: location.origin + '/download/' }
+        });
+      }
+    }).catch((err) => console.warn('Service worker notification failed:', err));
+    return;
+  }
   try {
     const note = new Notification(payload.title, { body: payload.body, tag: payload.tag, silent: true, icon: '/favicon.ico' });
     note.onclick = () => { try { window.focus(); note.close(); } catch {} };
