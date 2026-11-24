@@ -2791,6 +2791,48 @@ html[data-theme="glasscord"] .pop-profile-strip {
     .call-stage .tile { min-height:110px; }
   }
 </style>
+
+<style id="auralis-composer-layout-fix-v2513">
+  /* The native file input must never occupy a visible flex slot. */
+  #composer > #fileInput.file-input-native { display:none !important; }
+  #composer {
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    gap:8px !important;
+    min-width:0 !important;
+    width:100%;
+    box-sizing:border-box;
+  }
+  #composer > #stickerPickerBtn { order:1; flex:0 0 44px; }
+  #composer > #attachFileBtn { order:2; flex:0 0 44px; }
+  #composer > #recVoiceBtn { order:3; flex:0 0 44px; }
+  #composer > #recTimer { order:4; }
+  #composer > #voiceLockActions { order:5; }
+  #composer > #msgInput {
+    order:6;
+    display:block;
+    flex:1 1 0% !important;
+    width:0 !important;
+    min-width:0 !important;
+    max-width:none !important;
+    box-sizing:border-box;
+  }
+  #composer > .send-btn { order:7; flex:0 0 44px; }
+  #composer > .rec-btn,
+  #composer > .send-btn { min-width:0; padding:0; }
+  @media(max-width:760px) {
+    #composer { gap:6px !important; padding-left:9px; padding-right:9px; }
+    #composer > #stickerPickerBtn,
+    #composer > #attachFileBtn,
+    #composer > #recVoiceBtn,
+    #composer > .send-btn { flex-basis:40px; width:40px; height:42px; }
+    #composer > #msgInput { flex:1 1 0% !important; min-width:0 !important; }
+  }
+  #composer.voice-recording > #recTimer { order:1; }
+  #composer.voice-locked > #voiceLockActions { order:1; }
+</style>
 </head>
 <body>
 
