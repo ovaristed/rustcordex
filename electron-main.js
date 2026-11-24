@@ -6,7 +6,7 @@ const https = require('https');
 app.setName('Auralis');
 if (process.platform === 'win32') app.setAppUserModelId('com.ovarist.auralis');
 
-const DEFAULT_SERVER_URL = process.env.AURALIS_SERVER_URL || process.env.AURALIS_SERVER_URL || 'http://127.0.0.1:4173';
+const DEFAULT_SERVER_URL = process.env.AURALIS_SERVER_URL || process.env.RUSTCORD_SERVER_URL || 'http://127.0.0.1:4173';
 const REQUEST_TIMEOUT_MS = 12000;
 
 let mainWindow = null;
