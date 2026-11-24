@@ -4840,8 +4840,14 @@ async function toggleNoiseSuppression(enabled) {
 
 function micErrorText(err) {
   const name = err && err.name;
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'Браузер не поддерживает доступ к микрофону. Открой Auralis по HTTPS или в установленном приложении.';
-  if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') return 'Доступ к микрофону запрещён. Разреши микрофон для Auralis в запросе приложения или в настройках сайта/Windows, затем нажми «Проверить» ещё раз.';
+  const isAndroidApp = /Android/i.test(navigator.userAgent || '') &&
+    !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'android');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return isAndroidApp
+    ? 'Android WebView не предоставил доступ к микрофону. Обнови Auralis и проверь разрешение «Микрофон» в настройках Android.'
+    : 'Браузер не поддерживает доступ к микрофону. Открой Auralis по HTTPS или в установленном приложении.';
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') return isAndroidApp
+    ? 'Android запретил доступ к микрофону. Разреши микрофон в системном запросе Auralis или открой Настройки Android → Приложения → Auralis → Разрешения → Микрофон, затем повтори проверку.'
+    : 'Доступ к микрофону запрещён. Разреши микрофон для Auralis в запросе приложения или в настройках сайта/Windows, затем нажми «Проверить» ещё раз.';
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'Микрофон не найден. Подключи его или выбери другое устройство ввода.';
   if (name === 'NotReadableError' || name === 'TrackStartError' || name === 'AbortError') return 'Не удалось открыть микрофон: возможно, его использует другое приложение. Закрой Zoom, Teams, OBS или другую вкладку.';
   if (name === 'OverconstrainedError') return 'Выбранный микрофон недоступен. Выбери «По умолчанию» или другое устройство.';
