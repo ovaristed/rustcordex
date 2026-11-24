@@ -3587,9 +3587,13 @@ function setSidebarWidth(px) {
 (function initSavedAppearance() {
   document.documentElement.style.setProperty('--avatar-radius', '50%');
   let savedLite = null;
-  try { savedLite = localStorage.getItem('rc_lite_mode'); } catch {}
+  let savedTheme = null;
+  try {
+    savedLite = localStorage.getItem('rc_lite_mode');
+    savedTheme = localStorage.getItem('rc_theme');
+  } catch {}
+  // setLiteMode() calls applyTheme(); capture the saved choice first so it cannot be overwritten.
   setLiteMode(savedLite === '1');
-  const savedTheme = localStorage.getItem('rc_theme');
   applyTheme(savedTheme || 'discord');
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
