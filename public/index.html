@@ -2753,10 +2753,54 @@ html[data-theme="discord"] .main{
   }
 }
 
+  /* Auralis message actions — restrained glass toolbar */
+  .msg-bubble { overflow: visible; }
+  .msg-actions {
+    top: -17px !important;
+    right: 10px !important;
+    gap: 5px !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+    background: rgba(18,22,33,.82) !important;
+    border: 1px solid rgba(255,255,255,.13) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.22) !important;
+    backdrop-filter: blur(16px) saturate(1.25) !important;
+  }
+  .msg-act-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0 !important;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    color: rgba(240,245,255,.86);
+    background: transparent;
+    transition: background .16s ease, color .16s ease, transform .16s ease;
+  }
+  .msg-act-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .msg-act-btn:active { transform: scale(.94); }
+  .msg-act-btn[aria-label="Удалить"] { color: #ff7b86; }
+  .msg-act-btn[aria-label="Удалить"]:hover { background: rgba(255,91,105,.14); color:#ff9aa2; }
+  .msg-act-btn svg { width:17px !important; height:17px !important; }
   @media (max-width: 760px) {
     .msg-edit-hint { display:none !important; }
-    .msg-act-btn { min-width:34px; min-height:34px; display:grid; place-items:center; border-radius:9px; background:rgba(255,255,255,.055); }
-    .msg-act-btn svg { width:18px; height:18px; }
+    .msg-actions {
+      position: static !important;
+      display: flex !important;
+      justify-content: flex-end !important;
+      width: max-content;
+      margin: 7px 0 0 auto !important;
+      padding: 3px !important;
+      gap: 5px !important;
+      opacity: 1 !important;
+      border-radius: 11px !important;
+      background: rgba(255,255,255,.055) !important;
+      border: 1px solid rgba(255,255,255,.09) !important;
+      box-shadow: none !important;
+      backdrop-filter: blur(12px) !important;
+    }
+    .msg-act-btn { width:36px; height:36px; min-width:36px; min-height:36px; border-radius:9px; }
+    .msg-act-btn svg { width:19px !important; height:19px !important; }
   }
 </style>
 </head>
