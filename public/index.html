@@ -4987,15 +4987,16 @@ function applyTheme(name) {
   const t = THEMES[valid];
   document.documentElement.style.setProperty('--bg', t.bg);
   const desktopThemeVisuals = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
-  document.documentElement.style.setProperty('--theme-wallpaper', desktopThemeVisuals ? (t.wallpaper || 'none') : 'none');
-  if (desktopThemeVisuals && t.wallpaper && t.wallpaper !== 'none') {
+  const themeWallpaperEnabled = desktopThemeVisuals || valid === 'liquidglass';
+  document.documentElement.style.setProperty('--theme-wallpaper', themeWallpaperEnabled ? (t.wallpaper || 'none') : 'none');
+  if (themeWallpaperEnabled && t.wallpaper && t.wallpaper !== 'none') {
     const wallpaperUrl = t.wallpaper.slice(5, -2);
     if (wallpaperUrl) {
       const cached = window.__rcWallpaperCache || (window.__rcWallpaperCache = new Set());
       if (!cached.has(wallpaperUrl)) { cached.add(wallpaperUrl); const preload = new Image(); preload.decoding = 'async'; preload.src = wallpaperUrl; }
     }
   }
-  document.documentElement.style.setProperty('--theme-overlay', desktopThemeVisuals ? (t.overlay || 'rgba(7, 9, 15, 0.52)') : 'rgba(0,0,0,0)');
+  document.documentElement.style.setProperty('--theme-overlay', themeWallpaperEnabled ? (t.overlay || 'rgba(7, 9, 15, 0.52)') : 'rgba(0,0,0,0)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
    const panelAlpha = '0.22';
    document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
