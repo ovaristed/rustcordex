@@ -2048,6 +2048,38 @@
     .call-stage .call-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr)); }
   }
 
+
+  /* v1.7 — curated, license-checked wallpaper gallery */
+  .wallpaper-field { border-top:1px solid var(--border); padding-top:15px; }
+  .wallpaper-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .wallpaper-head .lbl { margin-bottom:3px; }
+  .wallpaper-reset { flex:0 0 auto; white-space:nowrap; font-size:11px; padding:7px 9px; }
+  .wallpaper-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+  .wallpaper-card {
+    position:relative; isolation:isolate; display:flex; flex-direction:column; justify-content:flex-end;
+    align-items:flex-start; text-align:left; gap:3px; min-width:0; min-height:118px; overflow:hidden;
+    padding:10px; border-radius:14px; border:1px solid rgba(255,255,255,.20);
+    color:#fff; background:#17212a; cursor:pointer; box-shadow:0 5px 16px rgba(0,0,0,.18);
+    transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;
+  }
+  .wallpaper-card::before { content:""; position:absolute; inset:0; z-index:-2; background-image:var(--wallpaper-image); background-size:cover; background-position:center; transition:transform .35s ease; }
+  .wallpaper-card::after { content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(180deg,rgba(3,7,12,.02) 10%,rgba(3,7,12,.22) 42%,rgba(3,7,12,.82) 100%); }
+  .wallpaper-card:hover { transform:translateY(-2px); border-color:rgba(255,255,255,.55); box-shadow:0 9px 22px rgba(0,0,0,.28); }
+  .wallpaper-card:hover::before { transform:scale(1.055); }
+  .wallpaper-card.active { border:2px solid var(--accent); padding:9px; box-shadow:0 0 0 2px rgba(var(--accent-rgb),.18),0 8px 22px rgba(0,0,0,.28); }
+  .wallpaper-card-title { font-size:12px; font-weight:750; line-height:1.2; text-shadow:0 1px 8px rgba(0,0,0,.65); }
+  .wallpaper-card-tag { font-size:10px; color:rgba(255,255,255,.83); }
+  .wallpaper-credit { margin-top:3px; font-size:9px; color:rgba(255,255,255,.76); }
+  .wallpaper-check { position:absolute; right:8px; top:8px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:rgba(5,10,16,.55); border:1px solid rgba(255,255,255,.45); opacity:0; transform:scale(.8); transition:all .16s ease; }
+  .wallpaper-card.active .wallpaper-check { opacity:1; transform:scale(1); background:var(--accent); border-color:rgba(255,255,255,.65); }
+  .wallpaper-license { margin-top:9px; color:var(--muted); font-size:10px; line-height:1.45; }
+  @media(max-width:420px) {
+    .wallpaper-grid { gap:7px; }
+    .wallpaper-card { min-height:104px; padding:8px; }
+    .wallpaper-card-title { font-size:11px; }
+    .wallpaper-reset { font-size:10px; padding:6px 7px; }
+  }
+
 </style>
 </head>
 <body>
@@ -2397,6 +2429,42 @@
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
         </div>
       </div>
+      <div class="field wallpaper-field">
+        <div class="wallpaper-head">
+          <div>
+            <div class="lbl">Галерея обоев</div>
+            <div class="item-sub">Подобранные природные фотографии для спокойного, атмосферного интерфейса</div>
+          </div>
+          <button type="button" class="sm-btn wallpaper-reset" onclick="selectWallpaper('')">Стандартный фон</button>
+        </div>
+        <div class="wallpaper-grid">
+          <button type="button" class="wallpaper-card" data-wallpaper="meadow" onclick="selectWallpaper('meadow')" aria-label="Установить фон: Альпийский луг" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=1400&q=82')">
+            <span class="wallpaper-card-title">Альпийский луг</span>
+            <span class="wallpaper-card-tag">Цветущие поля</span>
+            <span class="wallpaper-credit">Фото: Tomáš Hirsch</span>
+            <span class="wallpaper-check" aria-hidden="true">✓</span>
+          </button>
+          <button type="button" class="wallpaper-card" data-wallpaper="forest" onclick="selectWallpaper('forest')" aria-label="Установить фон: Тихий лес" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1712921675029-f455ad17bfc6?auto=format&fit=crop&w=1400&q=82')">
+            <span class="wallpaper-card-title">Тихий лес</span>
+            <span class="wallpaper-card-tag">Зелень и туман</span>
+            <span class="wallpaper-credit">Фото: William Warby</span>
+            <span class="wallpaper-check" aria-hidden="true">✓</span>
+          </button>
+          <button type="button" class="wallpaper-card" data-wallpaper="ocean" onclick="selectWallpaper('ocean')" aria-label="Установить фон: Морская гладь" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1575503588201-2ec789aa72a3?auto=format&fit=crop&w=1400&q=82')">
+            <span class="wallpaper-card-title">Морская гладь</span>
+            <span class="wallpaper-card-tag">Вода и волны</span>
+            <span class="wallpaper-credit">Фото: Ivan Bandura</span>
+            <span class="wallpaper-check" aria-hidden="true">✓</span>
+          </button>
+          <button type="button" class="wallpaper-card" data-wallpaper="blossom" onclick="selectWallpaper('blossom')" aria-label="Установить фон: Розовый лепесток" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1749307918200-5e37c3b2fbc4?auto=format&fit=crop&w=1400&q=82')">
+            <span class="wallpaper-card-title">Розовый лепесток</span>
+            <span class="wallpaper-card-tag">Нежная сакура</span>
+            <span class="wallpaper-credit">Фото: Danielle Suijkerbuijk</span>
+            <span class="wallpaper-check" aria-hidden="true">✓</span>
+          </button>
+        </div>
+        <div class="wallpaper-license">Фотографии опубликованы под лицензией Unsplash. Авторы указаны с ссылками на оригиналы.</div>
+      </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
         <div class="lbl">Производительность</div>
         <label style="display:flex;align-items:flex-start;gap:9px;font-size:13px;cursor:pointer;">
@@ -2528,7 +2596,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.6</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.7</div>
   </div>
 </div>
 
@@ -3847,6 +3915,31 @@ function syncThemeEffect() {
   setBgEffect(liteMode ? 'none' : (t.effect || 'none'));
 }
 
+const RC_WALLPAPERS = [{"id":"meadow","name":"Альпийский луг","author":"Tomáš Hirsch","photo":"https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/a-grassy-field-with-flowers-and-mountains-in-the-background-YoY3nTtre7I","tag":"Цветущие поля"},{"id":"forest","name":"Тихий лес","author":"William Warby","photo":"https://images.unsplash.com/photo-1712921675029-f455ad17bfc6?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/a-lush-green-forest-filled-with-lots-of-trees-GhZ0Qr7-fpI","tag":"Зелень и туман"},{"id":"ocean","name":"Морская гладь","author":"Ivan Bandura","photo":"https://images.unsplash.com/photo-1575503588201-2ec789aa72a3?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/sea-waves-stpi6rLRQx0","tag":"Вода и волны"},{"id":"blossom","name":"Розовый лепесток","author":"Danielle Suijkerbuijk","photo":"https://images.unsplash.com/photo-1749307918200-5e37c3b2fbc4?auto=format&fit=crop&w=1400&q=82","source":"https://unsplash.com/photos/a-pink-flower-floats-on-a-pink-background-4tl-lotlvEg","tag":"Нежная сакура"}];
+let selectedWallpaper = '';
+try { selectedWallpaper = localStorage.getItem('rc_wallpaper') || ''; } catch {}
+function syncWallpaperBackground() {
+  const item = RC_WALLPAPERS.find((x) => x.id === selectedWallpaper);
+  if (item) {
+    const overlay = activeThemeName === 'glasscord' ? 'rgba(5,8,14,.40)' : 'rgba(5,8,14,.48)';
+    document.body.style.setProperty('background', 'linear-gradient('+overlay+','+overlay+'), url("'+item.photo+'") center center / cover fixed no-repeat', 'important');
+  } else {
+    document.body.style.removeProperty('background');
+  }
+  document.querySelectorAll('.wallpaper-card').forEach((el) => {
+    el.classList.toggle('active', el.dataset.wallpaper === selectedWallpaper);
+    el.setAttribute('aria-pressed', el.dataset.wallpaper === selectedWallpaper ? 'true' : 'false');
+  });
+}
+function selectWallpaper(id) {
+  selectedWallpaper = RC_WALLPAPERS.some((x) => x.id === id) ? id : '';
+  try {
+    if (selectedWallpaper) localStorage.setItem('rc_wallpaper', selectedWallpaper);
+    else localStorage.removeItem('rc_wallpaper');
+  } catch {}
+  syncWallpaperBackground();
+}
+
 function applyTheme(name) {
   const requested = name === 'aurora-glass' || name === 'aurora' || name === 'liquid' ? 'glasscord' : name;
   const valid = THEMES[requested] ? requested : 'discord';
@@ -3876,6 +3969,7 @@ function applyTheme(name) {
     el.classList.toggle('active', el.dataset.theme === valid);
   });
   syncThemeEffect();
+  syncWallpaperBackground();
 }
 
 function setSidebarWidth(px) {
