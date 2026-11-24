@@ -2281,6 +2281,46 @@ input,textarea,select { accent-color:var(--accent); }
   .profile-sticker-preview .profile-sticker-art { width:100%; height:100%; }
   .pop-sticker .profile-sticker-art { width:100%; height:100%; }
   .user-profile-sticker .profile-sticker-art { max-width:72px; max-height:72px; width:auto; height:auto; border-radius:12px; }
+
+.mobile-back-btn{display:none}
+@media(max-width:760px){
+ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}
+ body{-webkit-tap-highlight-color:transparent}
+ .zoom-root{width:100%;height:100%;transform:none}
+ .app{display:block;position:relative;width:100%;height:100%;min-height:0;padding:0;gap:0}
+ .sidebar,.main{position:absolute;inset:0;width:100%;height:100%;min-width:0;min-height:0;border:0;border-radius:0;overflow:hidden}
+ .sidebar{display:flex;z-index:4;padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(13,17,27,.97),rgba(8,11,18,.99))}
+ .main{display:none;z-index:5;background:rgba(8,11,18,.98)}
+ body.mobile-chat-open .sidebar{display:none}
+ body.mobile-chat-open .main{display:flex}
+ .resizer{display:none!important}
+ .sidebar-top{min-height:0}.top-tabs{padding:9px 8px;gap:8px}.tab-btn{min-height:46px;border-radius:14px}
+ .panel-body{padding:10px 3px;overflow-y:auto;overscroll-behavior:contain}.list-stack{gap:7px}
+ .list-item{min-height:62px;padding:9px 11px;border-radius:15px}.avatar{width:42px;height:42px}
+ .item-name{font-size:14px}.item-sub{font-size:12px}.bottom-dock{padding:9px 4px max(8px,env(safe-area-inset-bottom))}
+ .user-bar{min-height:58px;padding:7px 10px}.icon-btn{width:42px;height:42px}
+ .chat-header{height:auto;min-height:60px;padding:max(8px,env(safe-area-inset-top)) 12px 9px;gap:8px;background:rgba(18,22,33,.86);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+ .mobile-back-btn{display:inline-flex;flex:0 0 40px;width:40px;height:40px;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:13px;background:var(--glass-2);color:var(--text);font-size:30px;line-height:1;padding:0 0 4px}
+ .peer-info{flex:1;gap:9px}.header-actions{gap:5px}.header-actions .sm-btn{max-width:116px;white-space:normal;line-height:1.15;min-height:38px}
+ .call-pill{padding:9px 11px;min-height:40px}.call-pill span{display:none}
+ .messages{padding:12px 11px 16px;gap:8px;overscroll-behavior:contain}.msg{max-width:88%;gap:6px}
+ .msg-bubble{min-width:0;max-width:100%;border-radius:17px}.msg-text{font-size:15px;line-height:1.45}
+ .att-img,.att-gif{max-width:min(70vw,300px);max-height:34vh}.att-file{min-width:0;max-width:70vw}
+ .emoji-bar{padding:3px 10px;gap:6px;flex-wrap:nowrap;overflow-x:auto}.emoji-btn{flex:0 0 auto;min-width:36px;min-height:36px}.win-sticker-hint{display:none}
+ .composer{padding:7px 9px max(10px,env(safe-area-inset-bottom));gap:6px;background:rgba(13,17,27,.94);border-top:1px solid var(--border)}
+ .composer input[type=text],.composer input:not([type]){min-width:0;height:46px;font-size:16px;border-radius:16px}
+ .send-btn,.rec-btn{width:44px;height:44px;border-radius:14px}.gif-picker{margin:0 8px 6px;max-height:32dvh}
+ .gif-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.call-stage{min-width:0;max-height:55dvh;resize:none;padding:10px}
+ .call-grid{grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}.tile{min-height:130px;border-radius:15px}
+ .call-ctrls{gap:10px;padding:4px 0}.round-btn{width:48px;height:48px}
+ .modal-backdrop,.app-dialog-backdrop{align-items:flex-end;padding:0}
+ .modal-card,.incoming-card,.app-dialog{width:100%;max-width:100%;max-height:min(92dvh,900px);overflow-y:auto;border-radius:24px 24px 0 0;padding:18px 16px max(18px,env(safe-area-inset-bottom))}
+ .settings-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.s-tab{min-height:42px}
+ .profile-popover{left:10px;right:10px;bottom:max(76px,calc(env(safe-area-inset-bottom) + 68px));width:auto;max-width:none;max-height:75dvh}
+ input,select,textarea,button{touch-action:manipulation}
+}
+@media(max-width:380px){.header-actions .sm-btn{font-size:10px;padding:0 7px}.peer-info .avatar{width:36px;height:36px}.msg{max-width:92%}.composer{gap:5px}}
+
 </style>
 </head>
 <body>
@@ -2392,6 +2432,7 @@ input,textarea,select { accent-color:var(--accent); }
 
   <div class="main">
     <div class="chat-header">
+      <button type="button" class="mobile-back-btn" aria-label="Назад к чатам" onclick="mobileBackToChats()">‹</button>
       <div class="peer-info">
         <div id="peerAv" class="avatar">?</div>
         <div style="min-width:0">
@@ -4276,6 +4317,10 @@ function enterApp() {
   refreshSocial();
 }
 
+function mobileBackToChats() {
+  document.body.classList.remove('mobile-chat-open');
+}
+
 function switchTab(tab) {
   ['chats', 'friends', 'requests'].forEach((t) => {
     document.getElementById('tab' + t[0].toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
@@ -5279,6 +5324,7 @@ function endGroupCallWhenLeavingChat(nextChat) {
 
 async function openChat(username) {
   const requestedChat = { kind: 'dm', id: username };
+  document.body.classList.add('mobile-chat-open');
   // Переключение чата не должно завершать текущий звонок.
   activeChat = requestedChat;
   renderLists();
@@ -5315,6 +5361,7 @@ async function openChat(username) {
 
 async function openGroupChat(groupId) {
   const requestedChat = { kind: 'group', id: groupId };
+  document.body.classList.add('mobile-chat-open');
   // Звонок остаётся активным при переходе между чатами и группами.
   if (!getGroupById(groupId)) {
     upsertGroup({ id: groupId, members: [me && me.username].filter(Boolean) });
