@@ -2906,6 +2906,14 @@ html[data-theme="discord"] .main{
     .msg-act-btn { width:36px; height:36px; min-width:36px; min-height:36px; border-radius:9px; }
     .msg-act-btn svg { width:19px !important; height:19px !important; }
   }
+/* Theme wallpapers visible through desktop panels. */
+html[data-theme]:not([data-theme="glasscord"]) .sidebar,
+html[data-theme]:not([data-theme="glasscord"]) .main {
+  background: var(--glass) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.18);
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+@media (max-width:760px) { #themeOpacity, #themeOpacityValue { display:none !important; } }
 </style>
 <style id="auralis-unified-opacity-fix">
 /* One transparency scale for every theme: 5% = nearly solid, 85% = very transparent. */
@@ -3307,11 +3315,6 @@ html[data-theme="glasscord"] .pop-profile-strip {
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Нейтральная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#e9edf4,#aeb8c8,#f7f8fb)"></span>Glasscord ✦</button>
         </div>
       </div>
-      <div class="field">
-        <div class="lbl">Прозрачность интерфейса <span id="themeOpacityValue" style="float:right;color:var(--accent)">16%</span></div>
-        <input id="themeOpacity" type="range" min="5" max="85" step="1" value="5" style="width:100%;accent-color:var(--accent)" oninput="setThemeOpacity(this.value)" />
-        <div class="item-sub">Настраивает прозрачность панелей и окон. Значение сохраняется отдельно от темы.</div>
-      </div>
       <div class="field mobile-accent-field">
         <div class="lbl">Акцентный цвет</div>
         <div class="accent-picker" role="group" aria-label="Выбор акцентного цвета">
@@ -3322,17 +3325,6 @@ html[data-theme="glasscord"] .pop-profile-strip {
           <button type="button" class="accent-choice" data-accent="#ff9f43" aria-label="Янтарный" title="Янтарный" onclick="applyAccentColor('#ff9f43')"><span style="background:#ff9f43"></span></button>
         </div>
         <div class="item-sub">Выбери один из готовых акцентных цветов.</div>
-      </div>
-      <div class="field">
-        <div class="lbl">Кэш и данные сессии</div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
-          <input id="clearCacheOnExitToggle" type="checkbox" style="width:auto;" onchange="setClearCacheOnExit(this.checked)" />
-          <span>Очищать кэш черновиков и стикеров при закрытии</span>
-        </label>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
-          <button type="button" class="sm-btn red" onclick="clearLocalCacheNow()">Очистить локальный кэш</button>
-          <span id="cacheClearStatus" class="item-sub"></span>
-        </div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
         <div class="lbl">Уведомления</div>
@@ -3444,7 +3436,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
       </div>
     </div>
 
-    <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" aria-label="Открыть страницу загрузки Auralis и проверить актуальную версию">
+    <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
       <span>Auralis · версия <span id="appVersion">2.3.1</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
@@ -3452,6 +3444,20 @@ html[data-theme="glasscord"] .pop-profile-strip {
 </div>
 
 <script>
+function openExternalSite(event, url) {
+  if (event) event.preventDefault();
+  const target = String(url || 'https://rustcord.hostless.app/download/');
+  try {
+    if (window.cordova && window.cordova.InAppBrowser && typeof window.cordova.InAppBrowser.open === 'function') {
+      window.cordova.InAppBrowser.open(target, '_system');
+      return false;
+    }
+    const opened = window.open(target, '_system');
+    if (!opened) window.open(target, '_blank', 'noopener,noreferrer');
+  } catch (error) { window.open(target, '_blank', 'noopener,noreferrer'); }
+  return false;
+}
+
 let RTC = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 let iceLoadedAt = 0;
 let icePromise = null;
@@ -3859,7 +3865,7 @@ let currentPlayingAudio = null, currentPlayingUi = null;
 let uiZoom = Number(localStorage.getItem('rc_zoom') || 1);
 let pttEnabled = localStorage.getItem('rc_ptt_enabled') === 'true';
 let pttKey = localStorage.getItem('rc_ptt_key') || 'KeyV';
-let clearCacheOnExit = localStorage.getItem('rc_clear_cache_exit') === 'true';
+let clearCacheOnExit = true;
 let gifDebounceTimer = null;
 
 function ruPlural(n, one, few, many) {
@@ -4492,33 +4498,25 @@ function setUiZoom(val) {
 
 }
 
-function setClearCacheOnExit(enabled) {
-  clearCacheOnExit = !!enabled;
-  localStorage.setItem('rc_clear_cache_exit', clearCacheOnExit ? '1' : '0');
-  const cb = document.getElementById('clearCacheOnExitToggle');
-  if (cb) cb.checked = clearCacheOnExit;
-}
-
 function clearLocalCacheNow() {
-  const keepToken = localStorage.getItem('rc_token') || '';
-  const keepAccounts = localStorage.getItem('rc_saved_accounts') || '';
-  const keysToRemove = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k !== 'rc_token' && k !== 'rc_saved_accounts') keysToRemove.push(k);
-  }
-  keysToRemove.forEach((k) => localStorage.removeItem(k));
-  if (keepToken) localStorage.setItem('rc_token', keepToken);
-  if (keepAccounts) localStorage.setItem('rc_saved_accounts', keepAccounts);
-  recentStickers = ['🔥', '😂', '😎', '🐸', '💀', '🎉'];
-  renderRecentStickers();
-  const inp = document.getElementById('msgInput');
-  if (inp) inp.value = '';
-  const st = document.getElementById('cacheClearStatus');
-  if (st) {
-    st.style.color = '#30d158';
-    st.textContent = 'Локальный кэш очищен';
-  }
+   // Clear only temporary drafts, recent stickers and cached chat history.
+   // Keep authentication, saved accounts, theme, profile and preferences intact.
+   const localKeys = [];
+   for (let i = 0; i < localStorage.length; i++) {
+     const key = localStorage.key(i);
+     if (key && (key.startsWith('rc_draft_') || key === 'rc_recent_stickers')) localKeys.push(key);
+   }
+   localKeys.forEach((key) => localStorage.removeItem(key));
+   const sessionKeys = [];
+   for (let i = 0; i < sessionStorage.length; i++) {
+     const key = sessionStorage.key(i);
+     if (key && key.startsWith('rc_chat_cache_v1_')) sessionKeys.push(key);
+   }
+   sessionKeys.forEach((key) => sessionStorage.removeItem(key));
+   recentStickers = ['🔥', '😂', '😎', '🐸', '💀', '🎉'];
+   renderRecentStickers();
+   const input = document.getElementById('msgInput');
+   if (input) input.value = '';
 }
 
 function cleanupAllBackgroundLoops() {
@@ -4534,8 +4532,8 @@ function cleanupAllBackgroundLoops() {
 }
 
 window.addEventListener('beforeunload', () => {
-  if (clearCacheOnExit) clearLocalCacheNow();
-  cleanupAllBackgroundLoops();
+   clearLocalCacheNow();
+   cleanupAllBackgroundLoops();
 });
 
 function setPttEnabled(enabled) {
@@ -4794,27 +4792,27 @@ const THEMES = {
   discord: {
     bg: '#07090f', panelRgb: '18, 22, 33', accent: '#5865f2',
     glow2: 'rgba(88, 101, 242, 0.16)', wallpaper: "url('/backgrounds/orange.jpg')",
-    overlay: 'rgba(7, 9, 15, 0.42)', effect: 'none'
+    overlay: 'rgba(7, 9, 15, 0.20)', panelAlpha: 0.66, effect: 'none'
   },
   emerald: {
     bg: '#050d09', panelRgb: '14, 30, 22', accent: '#30d158',
     glow2: 'rgba(16, 185, 129, 0.22)', wallpaper: "url('/backgrounds/green.jpg')",
-    overlay: 'rgba(5, 13, 9, 0.52)', effect: 'leaves'
+    overlay: 'rgba(5, 13, 9, 0.22)', panelAlpha: 0.64, effect: 'leaves'
   },
   violet: {
     bg: '#090710', panelRgb: '24, 18, 38', accent: '#ff78ad',
     glow2: 'rgba(255, 168, 198, 0.24)', wallpaper: "url('/backgrounds/purple.jpg')",
-    overlay: 'rgba(9, 7, 16, 0.52)', effect: 'sakura'
+    overlay: 'rgba(9, 7, 16, 0.22)', panelAlpha: 0.64, effect: 'sakura'
   },
   australis: {
     bg: '#06101f', panelRgb: '12, 29, 54', accent: '#244f9e',
     glow2: 'rgba(36, 79, 158, 0.24)', wallpaper: "url('/backgrounds/blue.jpg')",
-    overlay: 'rgba(4, 10, 22, 0.30)', effect: 'none'
+    overlay: 'rgba(4, 10, 22, 0.18)', panelAlpha: 0.62, effect: 'none'
   },
   'glasscord': {
     bg: '#06121d', panelRgb: '44, 91, 112', accent: '#e8e8ec',
     glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: 'none',
-    overlay: 'rgba(4, 13, 24, 0.12)', effect: 'none'
+    overlay: 'rgba(4, 13, 24, 0.12)', panelAlpha: 0.38, effect: 'none'
   },
 };
 
@@ -4831,7 +4829,7 @@ function syncThemeEffect() {
 }
 
 
-try { localStorage.removeItem('rc_wallpaper'); } catch {}
+try { localStorage.removeItem('rc_wallpaper'); localStorage.removeItem('rc_theme_opacity'); localStorage.removeItem('rc_clear_cache_exit'); } catch {}
 
 function applyTheme(name) {
   const requested = name === 'dark' || name === 'crimson' ? 'discord' : (name === 'aurora-glass' || name === 'aurora' || name === 'liquid' ? 'glasscord' : name);
@@ -4850,16 +4848,10 @@ function applyTheme(name) {
   }
   document.documentElement.style.setProperty('--theme-overlay', t.overlay || 'rgba(7, 9, 15, 0.52)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
-  const savedTransparency = Number(localStorage.getItem('rc_theme_opacity'));
-  const transparency = Number.isFinite(savedTransparency) && savedTransparency >= 0.05 && savedTransparency <= 0.85 ? savedTransparency : 0.05;
-  const panelAlpha = String(1 - transparency);
-  document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
-  document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
-  document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
-  const opacityControl = document.getElementById('themeOpacity');
-  const opacityValue = document.getElementById('themeOpacityValue');
-  if (opacityControl) opacityControl.value = String(Math.round(Number(panelAlpha) * 100));
-  if (opacityValue) opacityValue.textContent = Math.round(Number(panelAlpha) * 100) + '%';
+   const panelAlpha = String(t.panelAlpha || 0.66);
+   document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
+   document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
+   document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + Math.min(0.92, Number(panelAlpha) + 0.12) + ')');
   document.documentElement.style.setProperty('--accent', t.accent);
   document.documentElement.style.setProperty('--accent-rgb', hexToRgb(t.accent));
   document.documentElement.style.setProperty('--glow-2', t.glow2);
@@ -4869,18 +4861,6 @@ function applyTheme(name) {
   });
   syncThemeEffect();
 
-}
-
-function setThemeOpacity(value) {
-  const transparency = Math.max(5, Math.min(85, Number(value))) / 100;
-  const alpha = 1 - transparency;
-  localStorage.setItem('rc_theme_opacity', String(transparency));
-  document.documentElement.style.setProperty('--panel-alpha', String(alpha));
-  const t = THEMES[activeThemeName] || THEMES.discord;
-  document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + alpha + ')');
-  document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + alpha + ')');
-  const label = document.getElementById('themeOpacityValue');
-  if (label) label.textContent = Math.round(transparency * 100) + '%';
 }
 
 function applyAccentColor(color, persist = true) {
@@ -4912,7 +4892,7 @@ function setSidebarWidth(px) {
   if (isMobileAppearance) applyAccentColor(localStorage.getItem('rc_accent_color') || '#30d158', false);
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
-  setClearCacheOnExit(localStorage.getItem('rc_clear_cache_exit') === '1');
+
   setPttEnabled(localStorage.getItem('rc_ptt_enabled') === 'true');
   setPttKey(localStorage.getItem('rc_ptt_key') || 'KeyV');
   setUiZoom(localStorage.getItem('rc_zoom') || 1);
