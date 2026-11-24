@@ -40,7 +40,7 @@ const android=document.getElementById('android');
 fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
   const version = meta && /^\d+\.\d+\.\d+$/.test(meta.version || '') ? meta.version : '2.3.1';
   document.getElementById('version').textContent = 'Актуальная версия Auralis ' + version;
-  windows.href = 'https://github.com/ovaristed/rustcordex/releases/download/windows-latest/Auralis-Setup-' + version + '.exe';
+  windows.href = 'https://github.com/ovaristed/rustcordex/releases/download/v' + version + '/Auralis-Setup-' + version + '.exe';
   windows.classList.remove('disabled');
   windows.textContent = 'Скачать Auralis Setup ' + version;
   windows.setAttribute('rel','noopener');
