@@ -8464,5 +8464,87 @@ checkSession();
 }
 </style>
 
+
+<style id="auralis-254-universal-frosted-matte">
+  /* A consistent translucent, softly frosted finish across every color theme. */
+  :root {
+    --panel-alpha:.20 !important;
+    --glass:rgba(var(--panel-rgb),.20) !important;
+    --glass-solid:rgba(var(--panel-rgb),.38) !important;
+    --glass-2:rgba(var(--panel-rgb),.12) !important;
+    --glass-hover:rgba(235,244,255,.10) !important;
+    --input-bg:rgba(var(--panel-rgb),.16) !important;
+    --input-focus-bg:rgba(var(--panel-rgb),.25) !important;
+    --border:rgba(225,237,250,.14) !important;
+  }
+
+  .sidebar,.top-tabs,.bottom-dock,.panel-body,
+  .main > .chat-header,.main > .composer,.main > .messages,
+  .call-stage,#panelChats #groupsList,#panelChats #chatsList,
+  .main,.chat-header,.composer {
+    background-color:rgba(var(--panel-rgb),.19) !important;
+    border-color:rgba(225,237,250,.13) !important;
+    backdrop-filter:blur(26px) saturate(125%) !important;
+    -webkit-backdrop-filter:blur(26px) saturate(125%) !important;
+  }
+  .main > .messages {
+    background-color:rgba(var(--panel-rgb),.075) !important;
+  }
+
+  .modal-card,#settingsModal .modal-card,
+  .profile-popover,.user-profile-card,.app-dialog,
+  .voice-ctx-menu,.group-ctx-menu,.incoming-card,
+  .floating-menu,.select-menu,.reaction-picker,.user-menu,
+  .sticker-picker,.gif-picker,.emoji-picker,.context-menu,
+  .dropdown-menu,.popover,.menu,[role="menu"],[role="dialog"] {
+    background-color:rgba(var(--panel-rgb),.34) !important;
+    border:1px solid rgba(225,237,250,.17) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 16px 42px rgba(0,0,0,.22) !important;
+    backdrop-filter:blur(30px) saturate(128%) !important;
+    -webkit-backdrop-filter:blur(30px) saturate(128%) !important;
+  }
+
+  .msg-bubble,.message-bubble,.list-item,
+  .profile-bg-tools,.user-profile-description,
+  .field input:not([type="checkbox"]):not([type="range"]),
+  .field select,.field textarea,
+  .theme-swatch,.settings-tabs,.settings-tabs .s-tab,
+  .tab-btn,.icon-btn {
+    background-color:rgba(var(--panel-rgb),.13) !important;
+    border-color:rgba(225,237,250,.13) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.055) !important;
+    backdrop-filter:blur(16px) saturate(118%);
+    -webkit-backdrop-filter:blur(16px) saturate(118%);
+  }
+
+  .list-item:hover,.icon-btn:hover,.tab-btn:hover,
+  .s-tab:hover,.theme-swatch:hover {
+    background-color:rgba(235,244,255,.12) !important;
+  }
+  .list-item.active,.tab-btn.active,.s-tab.active,
+  .theme-swatch.active {
+    background-color:rgba(var(--accent-rgb),.20) !important;
+    border-color:rgba(var(--accent-rgb),.42) !important;
+  }
+  .send-btn,.primary-btn,.sm-btn.blue {
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 5px 16px rgba(0,0,0,.14) !important;
+  }
+  .modal-backdrop,.app-dialog-backdrop,.user-profile-overlay {
+    background:rgba(4,8,14,.34) !important;
+    backdrop-filter:blur(9px) !important;
+    -webkit-backdrop-filter:blur(9px) !important;
+  }
+  select option { background:#18212c; color:#f3f6fc; }
+  @media(prefers-reduced-transparency:reduce) {
+    .sidebar,.top-tabs,.bottom-dock,.panel-body,.main > .chat-header,
+    .main > .composer,.call-stage,.modal-card,.profile-popover,
+    .user-profile-card,.app-dialog,[role="dialog"],[role="menu"] {
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+      background-color:rgba(var(--panel-rgb),.88) !important;
+    }
+  }
+</style>
+
 </body>
 </html>
