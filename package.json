@@ -41,8 +41,7 @@
       "target": [
         "nsis",
         "portable"
-      ],
-      "icon": "build/icon.ico"
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -51,9 +50,6 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Auralis",
-      "installerSidebar": "build/installer-sidebar.bmp",
-      "uninstallerSidebar": "build/installer-sidebar.bmp",
-      "installerHeader": "build/installer-header.bmp",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
       "uninstallDisplayName": "Auralis",
