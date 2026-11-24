@@ -120,7 +120,7 @@
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    z-index: 4;
+    z-index: 12;
   }
   .modal-backdrop {
     position: fixed;
@@ -2928,6 +2928,41 @@ html[data-theme="glasscord"] .pop-profile-strip {
     .call-stage { height:auto !important; max-height:62dvh !important; container-type:normal; }
     .tile.screen-mode { height:min(48dvh,420px) !important; min-height:190px !important; }
   }
+  /* Live call sizing: scale every preview control from the call-stage height. */
+  .call-stage {
+    height:var(--call-stage-height) !important;
+    min-height:240px !important;
+    max-height:min(78vh,calc(100vh - 220px)) !important;
+    container-type:size !important;
+    overflow:auto !important;
+  }
+  .call-grid { min-height:0 !important; align-content:stretch; }
+  .tile { min-width:0 !important; container-type:inline-size; }
+  .tile.screen-mode {
+    height:clamp(120px,52cqh,560px) !important;
+    min-height:0 !important;
+    max-height:100% !important;
+  }
+  .tile .big-av {
+    width:clamp(44px,16cqh,104px) !important;
+    height:clamp(44px,16cqh,104px) !important;
+    font-size:clamp(16px,4.6cqh,32px) !important;
+  }
+  .call-ctrls .round-btn {
+    width:clamp(36px,9cqh,58px) !important;
+    height:clamp(36px,9cqh,58px) !important;
+    flex:0 0 clamp(36px,9cqh,58px) !important;
+  }
+  .call-ctrls .round-btn.end {
+    width:clamp(40px,10cqh,64px) !important;
+    height:clamp(40px,10cqh,64px) !important;
+    flex-basis:clamp(40px,10cqh,64px) !important;
+  }
+  .call-ctrls .round-btn svg {
+    width:clamp(16px,4cqh,27px) !important;
+    height:clamp(16px,4cqh,27px) !important;
+  }
+  #stickerPicker { z-index:45 !important; }
 </style>
 </head>
 <body>
@@ -3309,40 +3344,11 @@ html[data-theme="glasscord"] .pop-profile-strip {
         <div class="item-sub" style="margin:0 0 10px;">Один ползунок задаёт одинаковую прозрачность всем панелям. Диапазон у всех меню единый: 8–92%.</div>
         <label class="menu-opacity-row" for="allMenuOpacitySlider"><span>Все меню одновременно</span><b id="allMenuOpacityValue">48%</b></label>
         <input id="allMenuOpacitySlider" type="range" min="8" max="92" value="48" oninput="setAllMenuOpacity(this.value)" />
-        <label class="menu-opacity-row" for="sidebarOpacitySlider"><span>Боковая панель</span><b id="sidebarOpacityValue">78%</b></label>
-        <input id="sidebarOpacitySlider" type="range" min="8" max="92" value="78" oninput="setMenuOpacity('sidebar',this.value)" />
-        <label class="menu-opacity-row" for="navOpacitySlider"><span>Навигация и вкладки</span><b id="navOpacityValue">22%</b></label>
-        <input id="navOpacitySlider" type="range" min="8" max="92" value="22" oninput="setMenuOpacity('nav',this.value)" />
-        <label class="menu-opacity-row" for="dockOpacitySlider"><span>Нижняя панель профиля</span><b id="dockOpacityValue">24%</b></label>
-        <input id="dockOpacitySlider" type="range" min="8" max="92" value="24" oninput="setMenuOpacity('dock',this.value)" />
-        <label class="menu-opacity-row" for="popupOpacitySlider"><span>Всплывающие меню</span><b id="popupOpacityValue">92%</b></label>
-        <input id="popupOpacitySlider" type="range" min="8" max="92" value="92" oninput="setMenuOpacity('popup',this.value)" />
-        <label class="menu-opacity-row" for="groupsOpacitySlider"><span>Список групп и бесед</span><b id="groupsOpacityValue">30%</b></label>
-        <input id="groupsOpacitySlider" type="range" min="8" max="92" value="30" oninput="setMenuOpacity('groups',this.value)" />
-        <label class="menu-opacity-row" for="headerOpacitySlider"><span>Верхняя панель чата</span><b id="headerOpacityValue">48%</b></label>
-        <input id="headerOpacitySlider" type="range" min="8" max="92" value="48" oninput="setMenuOpacity('header',this.value)" />
-        <label class="menu-opacity-row" for="composerOpacitySlider"><span>Нижняя панель ввода</span><b id="composerOpacityValue">48%</b></label>
-        <input id="composerOpacitySlider" type="range" min="8" max="92" value="48" oninput="setMenuOpacity('composer',this.value)" />
-        <label class="menu-opacity-row" for="messagesOpacitySlider"><span>Центральная область переписки</span><b id="messagesOpacityValue">18%</b></label>
-        <input id="messagesOpacitySlider" type="range" min="8" max="92" value="18" oninput="setMenuOpacity('messages',this.value)" />
         <div class="field" style="padding:10px 0 0;border-top:1px solid var(--border);">
           <div class="lbl">Размер панели звонка</div>
           <label class="menu-opacity-row" for="callStageSizeSlider"><span>Высота панели и демонстрации</span><b id="callStageSizeValue">380 px</b></label>
           <input id="callStageSizeSlider" type="range" min="280" max="640" step="10" value="380" oninput="setCallStageHeight(this.value)" />
           <div class="item-sub">Превью экрана и кнопки управления подстраиваются под размер панели.</div>
-        </div>
-        <div class="field desktop-effects-field" style="padding:10px 0 0;border-top:1px solid var(--border);">
-          <div class="lbl">Анимированный эффект фона · только ПК</div>
-          <select id="desktopBgEffectSelect" onchange="setDesktopBgEffect(this.value)">
-            <option value="auto">Авто по теме</option>
-            <option value="aurora">Северное сияние</option>
-            <option value="leaves">Падающие листья</option>
-            <option value="sakura">Лепестки сакуры</option>
-            <option value="embers">Светящиеся частицы</option>
-            <option value="rain">Неоновый дождь</option>
-            <option value="none">Без эффекта</option>
-          </select>
-          <div class="item-sub">Эффекты работают только в настольной версии и не включаются на телефоне.</div>
         </div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
@@ -4875,6 +4881,9 @@ function toggleStickerPicker(forceState) {
   const panel = document.getElementById('stickerPicker');
   const button = document.getElementById('stickerPickerBtn');
   if (!panel) return;
+  // Keep the picker outside the transformed chat layout so its fixed layer
+  // is not trapped beneath the animated overlay canvas or clipped by chat panes.
+  if (panel.parentElement !== document.body) document.body.appendChild(panel);
   const open = typeof forceState === 'boolean' ? forceState : panel.classList.contains('hidden');
   panel.classList.toggle('hidden', !open);
   if (button) button.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -4963,24 +4972,9 @@ function hexToRgb(hex) {
 
 let activeThemeName = 'discord';
 function syncThemeEffect() {
-  const t = THEMES[activeThemeName] || THEMES.discord;
-  let override = 'auto';
-  try { override = localStorage.getItem('rc_desktop_bg_effect') || 'auto'; } catch {}
-  const effect = override === 'auto' ? (t.effect || 'none') : override;
-  setBgEffect((window.matchMedia && window.matchMedia('(max-width: 760px)').matches) ? 'none' : effect);
-}
-function setDesktopBgEffect(value) {
-  const valid = ['auto','aurora','leaves','sakura','embers','rain','none'].includes(value) ? value : 'auto';
-  try { localStorage.setItem('rc_desktop_bg_effect', valid); } catch {}
-  const select = document.getElementById('desktopBgEffectSelect');
-  if (select) select.value = valid;
-  syncThemeEffect();
-}
-function initDesktopBgEffect() {
-  let value = 'auto';
-  try { value = localStorage.getItem('rc_desktop_bg_effect') || 'auto'; } catch {}
-  const select = document.getElementById('desktopBgEffectSelect');
-  if (select) select.value = value;
+  const theme = THEMES[activeThemeName] || THEMES.discord;
+  const desktop = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
+  setBgEffect(desktop ? (theme.effect || 'none') : 'none');
 }
 
 
@@ -5060,6 +5054,14 @@ function setAllMenuOpacity(rawValue, persist = true) {
 function setCallStageHeight(rawValue, persist = true) {
   const value = Math.max(280, Math.min(640, Math.round((Number(rawValue) || 380) / 10) * 10));
   document.documentElement.style.setProperty('--call-stage-height', value + 'px');
+  const stage = document.getElementById('callStage');
+  if (stage) {
+    stage.style.height = value + 'px';
+    stage.style.setProperty('--call-stage-height', value + 'px');
+    stage.querySelectorAll('.tile .big-av, .call-ctrls .round-btn').forEach(el => {
+      el.style.setProperty('--call-preview-height', value + 'px');
+    });
+  }
   const slider = document.getElementById('callStageSizeSlider');
   const label = document.getElementById('callStageSizeValue');
   if (slider && slider.value !== String(value)) slider.value = String(value);
@@ -5094,7 +5096,7 @@ function setSidebarWidth(px) {
   const savedAccent = localStorage.getItem('rc_accent_color');
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
-initDesktopBgEffect();
+
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
 
