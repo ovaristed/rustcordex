@@ -2460,6 +2460,13 @@ body.lite-mode html[data-theme="discord"] .main{
   }
 }
 
+
+/* Android/mobile: keyboard shortcuts are desktop-only. */
+@media (max-width: 760px) {
+  #sTabBinds,
+  #sPanelBinds { display: none !important; }
+  .settings-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
 </style>
 </head>
 <body>
