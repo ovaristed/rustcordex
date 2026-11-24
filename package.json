@@ -58,6 +58,8 @@
     "files": [
       "electron-main.js",
       "preload.js",
+      "local-preview.js",
+      "public/**/*",
       "package.json",
       "!node_modules/**/*"
     ]
