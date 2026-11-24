@@ -2907,6 +2907,44 @@ html[data-theme="discord"] .main{
     .msg-act-btn svg { width:19px !important; height:19px !important; }
   }
 </style>
+<style id="auralis-unified-opacity-fix">
+/* One transparency scale for every theme: 5% = nearly solid, 85% = very transparent. */
+:root { --panel-alpha: .95; }
+.sidebar, .main, .card, .modal-card, .incoming-card, .profile-popover,
+.user-profile-card, .voice-ctx-menu, .group-ctx-menu {
+  background-color: var(--glass) !important;
+}
+.chat-header, .bottom-dock, .composer, .top-tabs, .panel-body {
+  background-color: var(--glass) !important;
+}
+html[data-theme="glasscord"] .sidebar,
+html[data-theme="glasscord"] .main,
+html[data-theme="glasscord"] .card,
+html[data-theme="glasscord"] .modal-card,
+html[data-theme="glasscord"] .incoming-card,
+html[data-theme="glasscord"] .profile-popover,
+html[data-theme="glasscord"] .user-profile-card,
+html[data-theme="glasscord"] .voice-ctx-menu,
+html[data-theme="glasscord"] .group-ctx-menu {
+  background: linear-gradient(145deg,
+    rgba(225,244,255,calc(var(--panel-alpha) * .12)),
+    rgba(151,181,208,calc(var(--panel-alpha) * .055)) 48%,
+    rgba(255,255,255,calc(var(--panel-alpha) * .03))) !important;
+}
+html[data-theme="glasscord"] .top-tabs,
+html[data-theme="glasscord"] .panel-body,
+html[data-theme="glasscord"] .chat-header,
+html[data-theme="glasscord"] .composer,
+html[data-theme="glasscord"] .bottom-dock {
+  background: rgba(224,241,255,calc(var(--panel-alpha) * .06)) !important;
+}
+html[data-theme="glasscord"] .list-item,
+html[data-theme="glasscord"] .msg-bubble,
+html[data-theme="glasscord"] .pop-card,
+html[data-theme="glasscord"] .pop-profile-strip {
+  background-color: rgba(228,243,255,calc(var(--panel-alpha) * .08)) !important;
+}
+</style>
 </head>
 <body>
 
@@ -3269,7 +3307,7 @@ html[data-theme="discord"] .main{
       </div>
       <div class="field">
         <div class="lbl">Прозрачность интерфейса <span id="themeOpacityValue" style="float:right;color:var(--accent)">16%</span></div>
-        <input id="themeOpacity" type="range" min="5" max="85" step="1" value="16" style="width:100%;accent-color:var(--accent)" oninput="setThemeOpacity(this.value)" />
+        <input id="themeOpacity" type="range" min="5" max="85" step="1" value="5" style="width:100%;accent-color:var(--accent)" oninput="setThemeOpacity(this.value)" />
         <div class="item-sub">Настраивает прозрачность панелей и окон. Значение сохраняется отдельно от темы.</div>
       </div>
       <div class="field mobile-accent-field">
@@ -4762,7 +4800,7 @@ const THEMES = {
     overlay: 'rgba(5, 13, 9, 0.52)', effect: 'leaves'
   },
   violet: {
-    bg: '#090710', panelRgb: '24, 18, 38', accent: '#bf5af2',
+    bg: '#090710', panelRgb: '24, 18, 38', accent: '#ff78ad',
     glow2: 'rgba(255, 168, 198, 0.24)', wallpaper: "url('/backgrounds/purple.jpg')",
     overlay: 'rgba(9, 7, 16, 0.52)', effect: 'sakura'
   },
@@ -4810,8 +4848,9 @@ function applyTheme(name) {
   }
   document.documentElement.style.setProperty('--theme-overlay', t.overlay || 'rgba(7, 9, 15, 0.52)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
-  const savedOpacity = Number(localStorage.getItem('rc_theme_opacity'));
-  const panelAlpha = String(Number.isFinite(savedOpacity) && savedOpacity >= 0.05 && savedOpacity <= 0.85 ? savedOpacity : (valid === 'glasscord' ? 0.22 : 0.16));
+  const savedTransparency = Number(localStorage.getItem('rc_theme_opacity'));
+  const transparency = Number.isFinite(savedTransparency) && savedTransparency >= 0.05 && savedTransparency <= 0.85 ? savedTransparency : 0.05;
+  const panelAlpha = String(1 - transparency);
   document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
   document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
   document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
@@ -4831,14 +4870,15 @@ function applyTheme(name) {
 }
 
 function setThemeOpacity(value) {
-  const alpha = Math.max(0.05, Math.min(0.85, Number(value) / 100));
-  localStorage.setItem('rc_theme_opacity', String(alpha));
+  const transparency = Math.max(5, Math.min(85, Number(value))) / 100;
+  const alpha = 1 - transparency;
+  localStorage.setItem('rc_theme_opacity', String(transparency));
   document.documentElement.style.setProperty('--panel-alpha', String(alpha));
   const t = THEMES[activeThemeName] || THEMES.discord;
   document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + alpha + ')');
   document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + alpha + ')');
   const label = document.getElementById('themeOpacityValue');
-  if (label) label.textContent = Math.round(alpha * 100) + '%';
+  if (label) label.textContent = Math.round(transparency * 100) + '%';
 }
 
 function applyAccentColor(color, persist = true) {
