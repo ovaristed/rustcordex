@@ -3344,10 +3344,8 @@ html[data-theme="glasscord"] .pop-profile-strip {
         <div class="item-sub">Выбери один из готовых акцентных цветов.</div>
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
-        <div class="lbl">Общая прозрачность меню</div>
-        <div class="item-sub" style="margin:0 0 10px;">Один ползунок задаёт одинаковую прозрачность всем панелям. Диапазон у всех меню единый: 8–92%.</div>
-        <label class="menu-opacity-row" for="allMenuOpacitySlider"><span>Все меню одновременно</span><b id="allMenuOpacityValue">48%</b></label>
-        <input id="allMenuOpacitySlider" type="range" min="8" max="92" value="48" oninput="setAllMenuOpacity(this.value)" />
+        <div class="lbl">Прозрачное стекло</div>
+        <div class="item-sub">Лёгкое стеклянное оформление автоматически подстраивается под тему: фон хорошо виден, а текст и элементы остаются читаемыми.</div>
         <div class="field" style="padding:10px 0 0;border-top:1px solid var(--border);">
           <div class="lbl">Размер панели звонка</div>
           <label class="menu-opacity-row" for="callStageSizeSlider"><span>Высота панели и демонстрации</span><b id="callStageSizeValue">380 px</b></label>
@@ -5030,30 +5028,22 @@ function applyAccentColor(color, persist = true) {
 
 }
 
-const MENU_OPACITY_MIN = 8;
-const MENU_OPACITY_MAX = 92;
-const MENU_OPACITY_DEFAULTS = { sidebar: 78, nav: 22, dock: 24, popup: 92, groups: 30, header: 48, composer: 48, messages: 18, call: 48 };
-const MENU_OPACITY_VARS = { sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity', popup: '--popup-opacity', groups: '--groups-opacity', header: '--header-opacity', composer: '--composer-opacity', messages: '--messages-opacity', call: '--call-stage-opacity' };
-function setMenuOpacity(section, rawValue, persist = true) {
-  const key = String(section || '');
-  const cssVar = MENU_OPACITY_VARS[key];
-  if (!cssVar) return;
-  const value = Math.max(MENU_OPACITY_MIN, Math.min(MENU_OPACITY_MAX, Number(rawValue) || MENU_OPACITY_MIN));
-  document.documentElement.style.setProperty(cssVar, String(value / 100));
-  const slider = document.getElementById(key + 'OpacitySlider');
-  const label = document.getElementById(key + 'OpacityValue');
-  if (slider && slider.value !== String(value)) slider.value = String(value);
-  if (label) label.textContent = value + '%';
-  if (persist) { try { localStorage.setItem('rc_menu_opacity_' + key, String(value)); } catch {} }
-}
-function setAllMenuOpacity(rawValue, persist = true) {
-  const value = Math.max(MENU_OPACITY_MIN, Math.min(MENU_OPACITY_MAX, Number(rawValue) || MENU_OPACITY_MIN));
-  Object.keys(MENU_OPACITY_DEFAULTS).forEach(key => setMenuOpacity(key, value, persist));
-  const slider = document.getElementById('allMenuOpacitySlider');
-  const label = document.getElementById('allMenuOpacityValue');
-  if (slider && slider.value !== String(value)) slider.value = String(value);
-  if (label) label.textContent = value + '%';
-  if (persist) { try { localStorage.setItem('rc_menu_opacity_all', String(value)); } catch {} }
+const MENU_GLASS_ALPHA = {
+  sidebar: 0.22, nav: 0.18, dock: 0.22, popup: 0.34,
+  groups: 0.20, header: 0.22, composer: 0.24, messages: 0.14, call: 0.22
+};
+const MENU_OPACITY_VARS = {
+  sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity',
+  popup: '--popup-opacity', groups: '--groups-opacity', header: '--header-opacity',
+  composer: '--composer-opacity', messages: '--messages-opacity', call: '--call-stage-opacity'
+};
+function setAllMenuOpacity() {
+  Object.keys(MENU_GLASS_ALPHA).forEach(key => {
+    document.documentElement.style.setProperty(MENU_OPACITY_VARS[key], String(MENU_GLASS_ALPHA[key]));
+  });
+  document.documentElement.style.setProperty('--panel-alpha', '0.22');
+  document.documentElement.style.setProperty('--glass', 'rgba(var(--panel-rgb),.22)');
+  document.documentElement.style.setProperty('--glass-solid', 'rgba(var(--panel-rgb),.34)');
 }
 function setCallStageHeight(rawValue, persist = true) {
   const value = Math.max(280, Math.min(640, Math.round((Number(rawValue) || 380) / 10) * 10));
@@ -7837,5 +7827,65 @@ checkSession();
 })();
 </script>
 <script>if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(() => {}));</script>
+<style id="auralis-refined-glass-243">
+  :root {
+    --sidebar-opacity:.22 !important;
+    --nav-opacity:.18 !important;
+    --dock-opacity:.22 !important;
+    --popup-opacity:.34 !important;
+    --groups-opacity:.20 !important;
+    --header-opacity:.22 !important;
+    --composer-opacity:.24 !important;
+    --messages-opacity:.14 !important;
+    --call-stage-opacity:.22 !important;
+    --glass:rgba(var(--panel-rgb),.22) !important;
+    --glass-solid:rgba(var(--panel-rgb),.34) !important;
+    --panel-alpha:.22 !important;
+    --border:rgba(220,238,232,.16);
+  }
+  .sidebar,.top-tabs,.bottom-dock,
+  #panelChats #groupsList,#panelChats #chatsList,
+  .main > .chat-header,.main > .composer,.main > .messages,
+  .call-stage {
+    backdrop-filter:blur(24px) saturate(155%) !important;
+    -webkit-backdrop-filter:blur(24px) saturate(155%) !important;
+  }
+  .sidebar { background:rgba(var(--panel-rgb),.22) !important; }
+  .top-tabs { background:rgba(var(--panel-rgb),.18) !important; }
+  .bottom-dock { background:rgba(var(--panel-rgb),.22) !important; }
+  .profile-popover,.voice-ctx-menu,.group-ctx-menu,
+  #settingsModal .modal-card,.sticker-picker,.context-menu {
+    background:rgba(var(--panel-rgb),.34) !important;
+    backdrop-filter:blur(28px) saturate(160%) !important;
+    -webkit-backdrop-filter:blur(28px) saturate(160%) !important;
+    border-color:rgba(225,245,238,.18) !important;
+  }
+  #panelChats #groupsList,#panelChats #chatsList {
+    background:rgba(var(--panel-rgb),.20) !important;
+    border-color:rgba(225,245,238,.12) !important;
+  }
+  .main > .chat-header { background:rgba(var(--panel-rgb),.22) !important; }
+  .main > .composer { background:rgba(var(--panel-rgb),.24) !important; }
+  .main > .messages { background:rgba(var(--panel-rgb),.14) !important; }
+  .call-stage { background:rgba(var(--panel-rgb),.22) !important; }
+  .main > .messages .message-bubble,
+  .main > .messages .msg-bubble {
+    backdrop-filter:blur(12px) saturate(130%);
+    -webkit-backdrop-filter:blur(12px) saturate(130%);
+  }
+  html[data-theme="emerald"] {
+    --border:rgba(140,235,177,.17);
+  }
+  html[data-theme="emerald"] .sidebar,
+  html[data-theme="emerald"] .top-tabs,
+  html[data-theme="emerald"] .bottom-dock,
+  html[data-theme="emerald"] .main > .chat-header,
+  html[data-theme="emerald"] .main > .composer,
+  html[data-theme="emerald"] .main > .messages,
+  html[data-theme="emerald"] #panelChats #groupsList,
+  html[data-theme="emerald"] #panelChats #chatsList {
+    box-shadow:inset 0 1px 0 rgba(168,255,199,.07),0 8px 28px rgba(0,0,0,.10) !important;
+  }
+</style>
 </body>
 </html>
