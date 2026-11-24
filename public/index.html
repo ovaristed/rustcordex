@@ -2711,6 +2711,44 @@ html[data-theme="discord"] .main{
   .composer { position:relative; }
   .attachment-pending .att-status-line { font-size:11px !important; }
 }
+
+/* Android polish: stable profile sheet, no particle overlays, compact message actions. */
+@media(max-width:760px) {
+  #bgCanvas { display:none !important; }
+  .user-profile-overlay {
+    align-items:flex-end !important;
+    justify-content:center !important;
+    padding:0 !important;
+    overflow:hidden !important;
+  }
+  .user-profile-card {
+    width:100% !important;
+    max-width:100% !important;
+    max-height: min(82dvh, 720px) !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain;
+    border-radius:24px 24px 0 0 !important;
+    padding-bottom:max(14px,env(safe-area-inset-bottom)) !important;
+    animation:none !important;
+  }
+  .user-profile-banner { height:104px !important; flex:none; }
+  .user-profile-content { padding:0 16px 18px !important; }
+  .user-profile-name { font-size:22px !important; }
+  .user-profile-thought, .user-profile-description { overflow-wrap:anywhere !important; }
+  .user-profile-sticker { max-width:100%; overflow:hidden; }
+  .msg-actions {
+    position:static !important;
+    display:flex !important;
+    justify-content:flex-end !important;
+    gap:8px !important;
+    opacity:1 !important;
+    transform:none !important;
+    margin:8px 0 0 !important;
+    padding-top:6px !important;
+    border-top:1px solid rgba(255,255,255,.09) !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -3085,7 +3123,11 @@ html[data-theme="discord"] .main{
         <div class="lbl">Уведомления</div>
         <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
           <input id="desktopNotificationsToggle" type="checkbox" style="width:auto;" onchange="setDesktopNotifications(this.checked)" />
-          <span>Показывать уведомления Windows о звонках и сообщениях</span>
+          <span>Показывать уведомления о сообщениях</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
+          <input id="callNotificationsToggle" type="checkbox" style="width:auto;" onchange="setCallNotifications(this.checked)" />
+          <span>Уведомления о звонках</span>
         </label>
         <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
           <input id="notificationSoundsToggle" type="checkbox" style="width:auto;" onchange="setNotificationSounds(this.checked)" />
@@ -3233,6 +3275,7 @@ let me = null;
 let ws = null;
 let wsAuthenticated = false;
 let desktopNotificationsEnabled = localStorage.getItem('rc_desktop_notifications') !== '0';
+let callNotificationsEnabled = localStorage.getItem('rc_call_notifications') !== '0';
 let notificationSoundsEnabled = localStorage.getItem('rc_notification_sounds') !== '0';
 let wsReconnectTimer = null;
 
@@ -3354,8 +3397,11 @@ async function openUserProfile(username) {
   nameEl.innerHTML = formatProfileDisplayName(displayNameOf(target)); loginEl.textContent = '@' + target;
   avatarEl.textContent = '…'; stickerEl.classList.add('hidden'); if (thoughtEl) { thoughtEl.textContent='Загружаем профиль…'; thoughtEl.classList.remove('hidden'); }
   overlay.classList.remove('hidden');
+  const requestToken = token;
+  const requestId = (window.__auralisProfileRequest = (window.__auralisProfileRequest || 0) + 1);
   try {
-    const res = await fetch('/api/users/' + encodeURIComponent(target) + '/profile', { headers: { Authorization: 'Bearer ' + token } });
+    const res = await fetch('/api/users/' + encodeURIComponent(target) + '/profile', { headers: { Authorization: 'Bearer ' + requestToken } });
+    if (requestId !== window.__auralisProfileRequest || overlay.classList.contains('hidden')) return;
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.user) throw new Error(data.error || 'Не удалось загрузить профиль');
     const p = data.user;
@@ -3395,6 +3441,7 @@ async function copyProfileField(kind) {
 function closeUserProfile() {
   const overlay = document.getElementById('userProfileOverlay');
   if (overlay) overlay.classList.add('hidden');
+  window.__auralisProfileRequest = (window.__auralisProfileRequest || 0) + 1;
 }
 
 function toggleProfilePopover(ev) {
@@ -4130,8 +4177,8 @@ function playNotificationSound(name) {
   if (notificationSoundsEnabled) playDiscordSfx(name);
 }
 
-function notifyDesktop(title, body, tag) {
-  if (!desktopNotificationsEnabled) return;
+function notifyDesktop(title, body, tag, kind = 'message') {
+  if (!desktopNotificationsEnabled || (kind === 'call' && !callNotificationsEnabled)) return;
   const payload = {
     title: String(title || 'Auralis').slice(0, 100),
     body: String(body || '').slice(0, 220),
@@ -4158,6 +4205,13 @@ async function setDesktopNotifications(enabled, requestPermission = true) {
   if (cb) cb.checked = desktopNotificationsEnabled;
   const status = document.getElementById('notificationPermissionStatus');
   if (status) status.textContent = !('Notification' in window) ? 'Системные уведомления недоступны в этом окружении' : (Notification.permission === 'denied' ? 'Разрешите уведомления в настройках браузера/Windows' : (Notification.permission === 'granted' ? 'Уведомления разрешены' : 'Нужно разрешить уведомления при запросе'));
+}
+
+function setCallNotifications(enabled) {
+  callNotificationsEnabled = !!enabled;
+  localStorage.setItem('rc_call_notifications', callNotificationsEnabled ? '1' : '0');
+  const cb = document.getElementById('callNotificationsToggle');
+  if (cb) cb.checked = callNotificationsEnabled;
 }
 
 function setNotificationSounds(enabled) {
@@ -4538,7 +4592,7 @@ function hexToRgb(hex) {
 let activeThemeName = 'discord';
 function syncThemeEffect() {
   const t = THEMES[activeThemeName] || THEMES.discord;
-  setBgEffect(t.effect || 'none');
+  setBgEffect((window.matchMedia && window.matchMedia('(max-width: 760px)').matches) ? 'none' : (t.effect || 'none'));
 }
 
 
@@ -4760,6 +4814,7 @@ async function openSettings() {
   loadProfileForm();
   await populateAudioDevices();
   const n = document.getElementById('desktopNotificationsToggle'); if (n) n.checked = desktopNotificationsEnabled;
+  const calls = document.getElementById('callNotificationsToggle'); if (calls) calls.checked = callNotificationsEnabled;
   const snd = document.getElementById('notificationSoundsToggle'); if (snd) snd.checked = notificationSoundsEnabled;
   await setDesktopNotifications(desktopNotificationsEnabled, false);
 }
@@ -4789,7 +4844,7 @@ function showIncomingCallModal(callerUsername, ctxObj, callId) {
   document.getElementById('incomingMeAv').innerHTML = me ? renderAvatarHtml(me.username) : 'Я';
   document.getElementById('incomingCallModal').classList.remove('hidden');
   stopIncomingRing();
-  notifyDesktop('Входящий звонок', displayNameOf(callerUsername) + ' звонит вам', 'call-' + callerUsername);
+  notifyDesktop('Входящий звонок', displayNameOf(callerUsername) + ' звонит вам', 'call-' + callerUsername, 'call');
   playNotificationSound('incoming');
   ringTimer = setInterval(() => {
     if (!pendingCaller) return stopIncomingRing();
@@ -5749,7 +5804,9 @@ function writeChatCache(kind, id, messages) {
 
 function mergeChatMessages(kind, id, incoming) {
   const byId = new Map();
-  for (const m of [...(Array.isArray(incoming) ? incoming : []), ...readChatCache(kind, id)]) {
+  // Cached live WebSocket messages are applied last so a slower REST history
+  // response cannot overwrite or hide a message that arrived during loading.
+  for (const m of [...readChatCache(kind, id), ...(Array.isArray(incoming) ? incoming : [])]) {
     if (!m || m.id == null) continue;
     byId.set(String(m.id), m);
   }
@@ -5803,10 +5860,11 @@ async function openChat(username) {
     if (res.ok) {
       const list = mergeChatMessages('dm', username, await res.json());
       if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+      const latest = mergeChatMessages('dm', username, list);
       box.innerHTML = '';
-      if (!list.length) box.innerHTML = '<div class="empty-chat">Сообщений пока нет — напиши первым!</div>';
-      else list.forEach(appendMsg);
-      writeChatCache('dm', username, list);
+      if (!latest.length) box.innerHTML = '<div class="empty-chat">Сообщений пока нет — напиши первым!</div>';
+      else latest.forEach(appendMsg);
+      writeChatCache('dm', username, latest);
     }
   } catch {}
 }
@@ -5840,10 +5898,11 @@ async function openGroupChat(groupId) {
     if (res.ok) {
       const list = mergeChatMessages('group', groupId, await res.json());
       if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+      const latest = mergeChatMessages('group', groupId, list);
       box.innerHTML = '';
-      if (!list.length) box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
-      else list.forEach(appendMsg);
-      writeChatCache('group', groupId, list);
+      if (!latest.length) box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
+      else latest.forEach(appendMsg);
+      writeChatCache('group', groupId, latest);
     } else {
       box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
     }
