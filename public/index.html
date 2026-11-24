@@ -3036,7 +3036,7 @@ body.lite-mode html[data-theme="discord"] .main{
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Auralis · версия 2.0</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Auralis · версия <span id="appVersion">2.3.0</span></div>
   </div>
 </div>
 
@@ -3379,7 +3379,15 @@ async function switchToSavedAccount(targetUsername) {
   token = acc.token;
   localStorage.setItem('rc_token', token);
   activeChat = null;
-  await checkSession();
+  await // Keep the displayed client version synchronized with the release metadata.
+fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
+  if (meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '')) {
+    const label = document.getElementById('appVersion');
+    if (label) label.textContent = meta.version;
+  }
+}).catch(() => {});
+
+checkSession();
 }
 
 function logoutAndSwitchAccount(prefillUsername = '') {
