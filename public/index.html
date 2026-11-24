@@ -2321,6 +2321,100 @@ input,textarea,select { accent-color:var(--accent); }
 }
 @media(max-width:380px){.header-actions .sm-btn{font-size:10px;padding:0 7px}.peer-info .avatar{width:36px;height:36px}.msg{max-width:92%}.composer{gap:5px}}
 
+
+/* Auralis mobile navigation: Discord-inspired compact bottom tab bar */
+@media(max-width:760px){
+  .sidebar{
+    display:flex;
+    flex-direction:column;
+    padding:max(8px,env(safe-area-inset-top)) 0 max(6px,env(safe-area-inset-bottom));
+    background:#313338;
+  }
+  .sidebar-top{
+    display:flex;
+    flex:1 1 auto;
+    flex-direction:column;
+    min-height:0;
+    gap:0;
+  }
+  .top-tabs{
+    order:2;
+    flex:0 0 auto;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:4px;
+    margin:0;
+    padding:7px 10px 8px;
+    border-top:1px solid rgba(255,255,255,.08);
+    border-radius:0;
+    background:#232428;
+  }
+  .tab-btn{
+    width:100%;
+    min-width:0;
+    min-height:54px;
+    height:54px;
+    flex-basis:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    border:0;
+    border-radius:10px;
+    background:transparent;
+    color:#b5bac1;
+    font-size:10px;
+    font-weight:650;
+  }
+  .tab-btn svg{width:21px;height:21px;color:#b5bac1}
+  .tab-btn::after{font-size:10px;line-height:1.1;color:inherit}
+  #tabChats::after{content:"Сообщения"}
+  #tabFriends::after{content:"Друзья"}
+  #tabRequests::after{content:"Запросы"}
+  .tab-btn.active{
+    color:#fff;
+    background:rgba(255,255,255,.075);
+    box-shadow:none;
+  }
+  .tab-btn.active svg{color:#fff}
+  .panel-body{
+    order:1;
+    flex:1 1 auto;
+    min-height:0;
+    padding:12px 10px 10px;
+    overflow-y:auto;
+    background:#313338;
+  }
+  .bottom-dock{
+    flex:0 0 auto;
+    padding:7px 10px max(7px,env(safe-area-inset-bottom));
+    border-top:1px solid rgba(255,255,255,.07);
+    background:#232428;
+  }
+  .user-bar{min-height:52px;border:0;background:transparent;padding:4px 6px}
+  .user-trigger #meAv{width:38px;height:38px;min-width:38px;flex-basis:38px}
+  .list-item{background:rgba(255,255,255,.035);border:0;border-radius:10px}
+  .list-item.active{background:rgba(255,255,255,.10);border:0}
+  .main{background:#313338}
+  .chat-header{
+    background:#232428;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+  }
+  .mobile-back-btn{border:0;background:transparent;border-radius:10px}
+  .messages{background:#313338}
+  .composer{background:#232428;border-top:1px solid rgba(255,255,255,.08)}
+  .composer input[type=text],.composer input:not([type]){
+    background:#383a40;
+    border:0;
+    border-radius:22px;
+  }
+  .msg-bubble{border-radius:12px}
+  .modal-card,.incoming-card,.app-dialog{background:#313338;border-color:rgba(255,255,255,.10)}
+}
+
 </style>
 </head>
 <body>
@@ -2667,8 +2761,6 @@ input,textarea,select { accent-color:var(--accent); }
         <div class="lbl">Тема оформления</div>
         <div class="theme-grid">
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Auralis</button>
-          <button type="button" class="theme-swatch" data-theme="dark" onclick="applyTheme('dark')"><span class="dot" style="background:#0a84ff"></span>Синяя</button>
-          <button type="button" class="theme-swatch" data-theme="crimson" onclick="applyTheme('crimson')"><span class="dot" style="background:#ff453a"></span>Закат</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
@@ -4113,16 +4205,6 @@ const THEMES = {
     glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: "url('/backgrounds/blue.jpg')",
     overlay: 'rgba(4, 13, 24, 0.12)', effect: 'none'
   },
-  dark: {
-    bg: '#07090f', panelRgb: '18, 22, 33', accent: '#0a84ff',
-    glow2: 'rgba(10, 132, 255, 0.22)', wallpaper: "url('/backgrounds/blue.jpg')",
-    overlay: 'rgba(7, 9, 15, 0.42)', effect: 'none'
-  },
-  crimson: {
-    bg: '#0f0608', panelRgb: '34, 15, 20', accent: '#ff453a',
-    glow2: 'rgba(255, 69, 58, 0.24)', wallpaper: "url('/backgrounds/orange.jpg')",
-    overlay: 'rgba(15, 6, 8, 0.48)', effect: 'embers'
-  }
 };
 
 function hexToRgb(hex) {
@@ -4142,7 +4224,7 @@ function syncThemeEffect() {
 try { localStorage.removeItem('rc_wallpaper'); } catch {}
 
 function applyTheme(name) {
-  const requested = name === 'aurora-glass' || name === 'aurora' || name === 'liquid' ? 'glasscord' : name;
+  const requested = name === 'dark' || name === 'crimson' ? 'discord' : (name === 'aurora-glass' || name === 'aurora' || name === 'liquid' ? 'glasscord' : name);
   const valid = THEMES[requested] ? requested : 'discord';
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
