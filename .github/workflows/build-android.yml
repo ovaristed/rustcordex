@@ -47,6 +47,281 @@ jobs:
       - name: Sync Auralis web shell
         run: npx cap sync android
 
+      - name: Install native Android screen-capture bridge
+        run: |
+          set -euo pipefail
+          APP_ID=$(node -p "require('./capacitor.config.json').appId")
+          PACKAGE_PATH="${APP_ID//./\/}"
+          JAVA_DIR="android/app/src/main/java/$PACKAGE_PATH"
+          mkdir -p "$JAVA_DIR"
+          cat > "$JAVA_DIR/ScreenCapturePlugin.java" <<'JAVA'
+          package com.ovarist.auralis;
+          
+          import android.app.Activity;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          import com.getcapacitor.ActivityResult;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.ActivityCallback;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import androidx.core.content.ContextCompat;
+          
+          @CapacitorPlugin(name = "ScreenCapture")
+          public class ScreenCapturePlugin extends Plugin {
+              private static final String ACTION_FRAME = "com.ovarist.auralis.SCREEN_FRAME";
+              private static final String ACTION_STOPPED = "com.ovarist.auralis.SCREEN_STOPPED";
+              private BroadcastReceiver receiver;
+          
+              @Override
+              public void load() {
+                  receiver = new BroadcastReceiver() {
+                      @Override public void onReceive(Context context, Intent intent) {
+                          if (ACTION_FRAME.equals(intent.getAction())) {
+                              JSObject data = new JSObject();
+                              data.put("frame", intent.getStringExtra("frame"));
+                              data.put("width", intent.getIntExtra("width", 0));
+                              data.put("height", intent.getIntExtra("height", 0));
+                              notifyListeners("frame", data);
+                          } else if (ACTION_STOPPED.equals(intent.getAction())) {
+                              notifyListeners("stopped", new JSObject());
+                          }
+                      }
+                  };
+                  IntentFilter filter = new IntentFilter();
+                  filter.addAction(ACTION_FRAME);
+                  filter.addAction(ACTION_STOPPED);
+                  ContextCompat.registerReceiver(getContext(), receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+              }
+          
+              @PluginMethod
+              public void start(PluginCall call) {
+                  Intent intent = ((android.media.projection.MediaProjectionManager) getContext()
+                      .getSystemService(Context.MEDIA_PROJECTION_SERVICE)).createScreenCaptureIntent();
+                  startActivityForResult(call, intent, "handleScreenCaptureResult");
+              }
+          
+              @ActivityCallback
+              private void handleScreenCaptureResult(PluginCall call, ActivityResult result) {
+                  if (call == null) return;
+                  if (result == null || result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {
+                      call.reject("Screen capture permission was not granted");
+                      return;
+                  }
+                  Intent service = new Intent(getContext(), ScreenCaptureService.class);
+                  service.setAction(ScreenCaptureService.ACTION_START);
+                  service.putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, result.getResultCode());
+                  service.putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, result.getData());
+                  try {
+                      ContextCompat.startForegroundService(getContext(), service);
+                      call.resolve();
+                  } catch (Exception error) {
+                      call.reject("Unable to start Android screen capture", error);
+                  }
+              }
+          
+              @PluginMethod
+              public void stop(PluginCall call) {
+                  Intent service = new Intent(getContext(), ScreenCaptureService.class);
+                  service.setAction(ScreenCaptureService.ACTION_STOP);
+                  getContext().startService(service);
+                  call.resolve();
+              }
+          
+              @Override
+              protected void handleOnDestroy() {
+                  if (receiver != null) {
+                      try { getContext().unregisterReceiver(receiver); } catch (Exception ignored) {}
+                      receiver = null;
+                  }
+                  super.handleOnDestroy();
+              }
+          }
+          JAVA
+          cat > "$JAVA_DIR/ScreenCaptureService.java" <<'JAVA'
+          package com.ovarist.auralis;
+          
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.PendingIntent;
+          import android.app.Service;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.pm.ServiceInfo;
+          import android.graphics.Bitmap;
+          import android.graphics.PixelFormat;
+          import android.hardware.display.DisplayManager;
+          import android.hardware.display.VirtualDisplay;
+          import android.media.Image;
+          import android.media.ImageReader;
+          import android.media.projection.MediaProjection;
+          import android.media.projection.MediaProjectionManager;
+          import android.os.Build;
+          import android.os.Handler;
+          import android.os.HandlerThread;
+          import android.os.IBinder;
+          import android.os.SystemClock;
+          import android.util.Base64;
+          import android.util.DisplayMetrics;
+          import android.view.WindowManager;
+          import androidx.core.app.NotificationCompat;
+          import java.io.ByteArrayOutputStream;
+          import java.nio.ByteBuffer;
+          
+          public class ScreenCaptureService extends Service {
+              public static final String ACTION_START = "com.ovarist.auralis.START_SCREEN_CAPTURE";
+              public static final String ACTION_STOP = "com.ovarist.auralis.STOP_SCREEN_CAPTURE";
+              public static final String EXTRA_RESULT_CODE = "resultCode";
+              public static final String EXTRA_RESULT_DATA = "resultData";
+              private static final String CHANNEL_ID = "auralis-screen-capture";
+              private static final int NOTIFICATION_ID = 4207;
+              private static final String ACTION_FRAME = "com.ovarist.auralis.SCREEN_FRAME";
+              private static final String ACTION_STOPPED = "com.ovarist.auralis.SCREEN_STOPPED";
+          
+              private MediaProjection projection;
+              private VirtualDisplay virtualDisplay;
+              private ImageReader imageReader;
+              private HandlerThread workerThread;
+              private Handler worker;
+              private long lastFrameAt;
+              private boolean stoppedBroadcastSent;
+          
+              @Override public int onStartCommand(Intent intent, int flags, int startId) {
+                  if (intent == null || ACTION_STOP.equals(intent.getAction())) {
+                      stopSelf();
+                      return START_NOT_STICKY;
+                  }
+                  if (!ACTION_START.equals(intent.getAction()) || projection != null) return START_NOT_STICKY;
+                  startCaptureForeground();
+                  int resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0);
+                  Intent resultData = Build.VERSION.SDK_INT >= 33
+                      ? intent.getParcelableExtra(EXTRA_RESULT_DATA, Intent.class)
+                      : intent.getParcelableExtra(EXTRA_RESULT_DATA);
+                  if (resultData == null) { stopSelf(); return START_NOT_STICKY; }
+                  try {
+                      MediaProjectionManager manager = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+                      projection = manager.getMediaProjection(resultCode, resultData);
+                      if (projection == null) throw new IllegalStateException("MediaProjection unavailable");
+                      DisplayMetrics metrics = new DisplayMetrics();
+                      WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+                      wm.getDefaultDisplay().getRealMetrics(metrics);
+                      int sourceWidth = Math.max(1, metrics.widthPixels);
+                      int sourceHeight = Math.max(1, metrics.heightPixels);
+                      float scale = Math.min(1f, Math.min(960f / sourceWidth, 540f / sourceHeight));
+                      int width = Math.max(2, ((int) (sourceWidth * scale)) & ~1);
+                      int height = Math.max(2, ((int) (sourceHeight * scale)) & ~1);
+                      workerThread = new HandlerThread("AuralisScreenCapture");
+                      workerThread.start();
+                      worker = new Handler(workerThread.getLooper());
+                      imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2);
+                      imageReader.setOnImageAvailableListener(this::onImageAvailable, worker);
+                      projection.registerCallback(new MediaProjection.Callback() {
+                          @Override public void onStop() { stopSelf(); }
+                      }, worker);
+                      virtualDisplay = projection.createVirtualDisplay(
+                          "Auralis screen share", width, height, metrics.densityDpi,
+                          DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, imageReader.getSurface(), null, worker
+                      );
+                      if (virtualDisplay == null) throw new IllegalStateException("Unable to create virtual display");
+                  } catch (Exception error) {
+                      android.util.Log.e("AuralisScreenCapture", "Capture start failed", error);
+                      stopSelf();
+                  }
+                  return START_NOT_STICKY;
+              }
+          
+              private void startCaptureForeground() {
+                  NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                  if (Build.VERSION.SDK_INT >= 26) {
+                      manager.createNotificationChannel(new NotificationChannel(CHANNEL_ID, "Демонстрация экрана", NotificationManager.IMPORTANCE_LOW));
+                  }
+                  Intent stopIntent = new Intent(this, ScreenCaptureService.class).setAction(ACTION_STOP);
+                  int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0);
+                  PendingIntent stopPending = PendingIntent.getService(this, 1, stopIntent, flags);
+                  Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                      .setSmallIcon(getApplicationInfo().icon)
+                      .setContentTitle("Auralis — демонстрация экрана")
+                      .setContentText("Экран передаётся собеседнику")
+                      .setOngoing(true)
+                      .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                      .addAction(0, "Остановить", stopPending)
+                      .build();
+                  if (Build.VERSION.SDK_INT >= 29) {
+                      startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
+                  } else {
+                      startForeground(NOTIFICATION_ID, notification);
+                  }
+              }
+          
+              private void onImageAvailable(ImageReader reader) {
+                  Image image = null;
+                  try {
+                      long now = SystemClock.elapsedRealtime();
+                      if (now - lastFrameAt < 160) {
+                          image = reader.acquireLatestImage();
+                          return;
+                      }
+                      image = reader.acquireLatestImage();
+                      if (image == null) return;
+                      lastFrameAt = now;
+                      Image.Plane plane = image.getPlanes()[0];
+                      ByteBuffer buffer = plane.getBuffer();
+                      int pixelStride = plane.getPixelStride();
+                      int rowStride = plane.getRowStride();
+                      int width = image.getWidth();
+                      int height = image.getHeight();
+                      int paddedWidth = rowStride / pixelStride;
+                      Bitmap padded = Bitmap.createBitmap(paddedWidth, height, Bitmap.Config.ARGB_8888);
+                      buffer.rewind();
+                      padded.copyPixelsFromBuffer(buffer);
+                      Bitmap frame = paddedWidth == width ? padded : Bitmap.createBitmap(padded, 0, 0, width, height);
+                      ByteArrayOutputStream output = new ByteArrayOutputStream(48 * 1024);
+                      frame.compress(Bitmap.CompressFormat.JPEG, 52, output);
+                      byte[] bytes = output.toByteArray();
+                      Intent broadcast = new Intent(ACTION_FRAME).setPackage(getPackageName());
+                      broadcast.putExtra("frame", Base64.encodeToString(bytes, Base64.NO_WRAP));
+                      broadcast.putExtra("width", width);
+                      broadcast.putExtra("height", height);
+                      sendBroadcast(broadcast);
+                      if (frame != padded) frame.recycle();
+                      padded.recycle();
+                      output.close();
+                  } catch (Exception error) {
+                      android.util.Log.w("AuralisScreenCapture", "Frame encode failed", error);
+                  } finally {
+                      if (image != null) image.close();
+                  }
+              }
+          
+              @Override public void onDestroy() {
+                  if (virtualDisplay != null) { virtualDisplay.release(); virtualDisplay = null; }
+                  if (imageReader != null) { imageReader.close(); imageReader = null; }
+                  if (projection != null) { projection.stop(); projection = null; }
+                  if (workerThread != null) { workerThread.quitSafely(); workerThread = null; }
+                  stopForeground(true);
+                  if (!stoppedBroadcastSent) {
+                      stoppedBroadcastSent = true;
+                      sendBroadcast(new Intent(ACTION_STOPPED).setPackage(getPackageName()));
+                  }
+                  super.onDestroy();
+              }
+          
+              @Override public IBinder onBind(Intent intent) { return null; }
+          }
+          JAVA
+          MAIN_ACTIVITY=$(find android/app/src/main/java -name MainActivity.java -print -quit)
+          if [ -z "$MAIN_ACTIVITY" ]; then echo "MainActivity.java not found"; exit 1; fi
+          if ! grep -q 'ScreenCapturePlugin.class' "$MAIN_ACTIVITY"; then
+            sed -i '/import com.getcapacitor.BridgeActivity;/a import android.os.Bundle;\nimport com.ovarist.auralis.ScreenCapturePlugin;' "$MAIN_ACTIVITY"
+            sed -i 's/extends BridgeActivity {/extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        registerPlugin(ScreenCapturePlugin.class);\n    }/' "$MAIN_ACTIVITY"
+          fi
+          echo "Installed native MediaProjection capture bridge"
+
       - name: Declare Android runtime permissions
         run: |
           node <<'NODE'
@@ -56,7 +331,9 @@ jobs:
           const permissions = [
             'android.permission.RECORD_AUDIO',
             'android.permission.MODIFY_AUDIO_SETTINGS',
-            'android.permission.CAMERA'
+            'android.permission.CAMERA',
+            'android.permission.FOREGROUND_SERVICE',
+            'android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION'
           ];
           for (const permission of permissions) {
             const tag = '<uses-permission android:name="' + permission + '" />';
@@ -64,8 +341,12 @@ jobs:
               xml = xml.replace(/<manifest\b[^>]*>/, match => match + '\n    ' + tag);
             }
           }
+          const serviceTag = '<service android:name=".ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />';
+          if (!xml.includes('android:name=".ScreenCaptureService"')) {
+            xml = xml.replace(/<application\\b[^>]*>/, match => match + '\\n        ' + serviceTag);
+          }
           fs.writeFileSync(file, xml);
-          console.log('Declared microphone, audio routing and camera permissions');
+          console.log('Declared microphone, audio routing, camera and screen capture permissions');
           NODE
 
       - name: Set Android app version from package.json
