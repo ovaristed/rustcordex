@@ -2865,6 +2865,7 @@ body.lite-mode html[data-theme="discord"] .main{
           <button id="micTestBtn" type="button" class="sm-btn blue" onclick="toggleMicTest()">Проверить</button>
           <div class="meter-bar"><div id="micMeterFill" class="meter-fill"></div></div>
         </div>
+        <div id="micTestStatus" class="item-sub" role="status" aria-live="polite" style="margin-top:8px;">Нажми «Проверить», чтобы запросить доступ и протестировать микрофон.</div>
       </div>
     </div>
 
@@ -4686,21 +4687,19 @@ async function saveProfile() {
 
 async function populateAudioDevices() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
-  try {
-    const tmp = await navigator.mediaDevices.getUserMedia({ audio: true });
-    tmp.getTracks().forEach((t) => t.stop());
-  } catch {}
+  // Не запрашиваем микрофон автоматически при открытии настроек: браузер/Electron
+  // покажет запрос только после явного действия пользователя (проверка или звонок).
   const devices = await navigator.mediaDevices.enumerateDevices();
   const mics = devices.filter((d) => d.kind === 'audioinput');
   const spks = devices.filter((d) => d.kind === 'audiooutput');
 
   document.getElementById('micSelect').innerHTML = mics.map((d, i) =>
     '<option value="' + esc(d.deviceId) + '" ' + (d.deviceId === selectedMicId ? 'selected' : '') + '>' + esc(d.label || ('Микрофон ' + (i + 1))) + '</option>'
-  ).join('') || '<option value="">По умолчанию</option>';
+  ).join('') || '<option value="">Микрофон по умолчанию (доступ не выдан)</option>';
 
   document.getElementById('spkSelect').innerHTML = spks.map((d, i) =>
     '<option value="' + esc(d.deviceId) + '" ' + (d.deviceId === selectedSpkId ? 'selected' : '') + '>' + esc(d.label || ('Динамики ' + (i + 1))) + '</option>'
-  ).join('') || '<option value="">По умолчанию</option>';
+  ).join('') || '<option value="">Динамики по умолчанию</option>';
 }
 
 async function applyOutputDeviceToAll() {
@@ -4734,9 +4733,27 @@ async function toggleNoiseSuppression(enabled) {
   if (inCall) await rebuildCallMic();
 }
 
+function micErrorText(err) {
+  const name = err && err.name;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'Браузер не поддерживает доступ к микрофону. Открой Auralis по HTTPS или в установленном приложении.';
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError' || name === 'SecurityError') return 'Доступ к микрофону запрещён. Разреши микрофон для Auralis в запросе приложения или в настройках сайта/Windows, затем нажми «Проверить» ещё раз.';
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') return 'Микрофон не найден. Подключи его или выбери другое устройство ввода.';
+  if (name === 'NotReadableError' || name === 'TrackStartError' || name === 'AbortError') return 'Не удалось открыть микрофон: возможно, его использует другое приложение. Закрой Zoom, Teams, OBS или другую вкладку.';
+  if (name === 'OverconstrainedError') return 'Выбранный микрофон недоступен. Выбери «По умолчанию» или другое устройство.';
+  return 'Ошибка микрофона: ' + ((err && (err.message || err.name)) || 'неизвестная ошибка');
+}
+
 async function toggleMicTest() {
   const btn = document.getElementById('micTestBtn');
+  const status = document.getElementById('micTestStatus');
   if (testStream) { stopMicTest(); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (status) status.textContent = micErrorText();
+    showToast(micErrorText(), 'error');
+    return;
+  }
+  if (btn) btn.disabled = true;
+  if (status) status.textContent = 'Ожидаем разрешение на использование микрофона…';
   try {
     testStream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -4744,26 +4761,42 @@ async function toggleMicTest() {
         echoCancellation: true,
         noiseSuppression: false,
         autoGainControl: false
-      }
+      },
+      video: false
     });
     const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) throw new Error('AudioContext недоступен');
     testCtx = new Ctx();
+    if (testCtx.state === 'suspended') await testCtx.resume();
     const src = testCtx.createMediaStreamSource(testStream);
     const analyser = testCtx.createAnalyser();
-    analyser.fftSize = 128;
+    analyser.fftSize = 256;
     src.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    btn.textContent = 'Остановить';
+    const data = new Uint8Array(analyser.fftSize);
+    if (btn) { btn.textContent = 'Остановить'; btn.disabled = false; }
+    if (status) status.textContent = 'Говори — индикатор должен двигаться.';
     const loop = () => {
       if (!testStream || document.hidden) { testRaf = null; return; }
-      analyser.getByteFrequencyData(data);
-      const avg = data.reduce((a, b) => a + b, 0) / data.length;
-      const pct = Math.min(100, Math.round((avg / 90) * 100 * (micGainPercent / 100)));
-      document.getElementById('micMeterFill').style.width = pct + '%';
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (const sample of data) { const v = (sample - 128) / 128; sum += v * v; }
+      const rms = Math.sqrt(sum / data.length);
+      const pct = Math.min(100, Math.round(rms * 420 * (micGainPercent / 100)));
+      const fill = document.getElementById('micMeterFill');
+      if (fill) fill.style.width = pct + '%';
       testRaf = requestAnimationFrame(loop);
     };
     loop();
-  } catch {}
+    // Обновляем список устройств теперь, когда браузер раскрыл их названия.
+    populateAudioDevices().catch(() => {});
+  } catch (err) {
+    console.warn('[mic-test] Не удалось запустить проверку:', err);
+    if (testStream) { testStream.getTracks().forEach((t) => t.stop()); testStream = null; }
+    if (testCtx) { try { await testCtx.close(); } catch {} testCtx = null; }
+    if (status) status.textContent = micErrorText(err);
+    showToast(micErrorText(err), 'error');
+    if (btn) { btn.textContent = 'Проверить'; btn.disabled = false; }
+  }
 }
 
 function stopMicTest() {
@@ -4773,8 +4806,10 @@ function stopMicTest() {
   if (testCtx) { try { testCtx.close(); } catch {} testCtx = null; }
   const btn = document.getElementById('micTestBtn');
   const fill = document.getElementById('micMeterFill');
-  if (btn) btn.textContent = 'Проверить';
+  const status = document.getElementById('micTestStatus');
+  if (btn) { btn.textContent = 'Проверить'; btn.disabled = false; }
   if (fill) fill.style.width = '0%';
+  if (status) status.textContent = 'Проверка остановлена.';
 }
 
 function getDraftKey() {
@@ -6273,7 +6308,13 @@ async function openCallUI(outgoing, targetUsers, sessionId = callSessionId, cont
   await loadIceServers();
   if (sessionId !== callSessionId || !inCall || callContext !== contextSnapshot) return;
   if (!micStream) {
-    try { micStream = await createCleanMicStream(); } catch {}
+    try {
+      micStream = await createCleanMicStream();
+      await populateAudioDevices();
+    } catch (err) {
+      console.warn('[voice] микрофон недоступен:', err);
+      showToast(micErrorText(err), 'error');
+    }
   }
   if (sessionId !== callSessionId || !inCall || callContext !== contextSnapshot) {
     if (rawMicStream) { rawMicStream.getTracks().forEach((t) => t.stop()); rawMicStream = null; }
