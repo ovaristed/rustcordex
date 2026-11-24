@@ -7771,22 +7771,97 @@ async function toggleCamInner() {
   }
 }
 
+let nativeScreenCaptureActive = false;
+let nativeScreenFrameListener = null;
+let nativeScreenStoppedListener = null;
+let nativeScreenCapturePlugin = null;
+
+async function finishNativeScreenCapture(showNotice) {
+  if (!nativeScreenCaptureActive) return;
+  nativeScreenCaptureActive = false;
+  const active = scrStream;
+  scrStream = null;
+  localPreviewVisible = false;
+  if (active) active.getTracks().forEach((track) => track.stop());
+  try { if (nativeScreenCapturePlugin) await nativeScreenCapturePlugin.stop(); } catch (err) { console.warn('[screen] native stop failed', err); }
+  try { if (nativeScreenFrameListener) await nativeScreenFrameListener.remove(); } catch {}
+  try { if (nativeScreenStoppedListener) await nativeScreenStoppedListener.remove(); } catch {}
+  nativeScreenFrameListener = null;
+  nativeScreenStoppedListener = null;
+  const fallbackCamTrack = camStream && camStream.getVideoTracks()[0] ? camStream.getVideoTracks()[0] : null;
+  updateLocalStageUI();
+  updateCallButtons();
+  await syncVideoTrackToAllPeers(fallbackCamTrack, camStream);
+  if (showNotice) showToast('Демонстрация экрана остановлена');
+}
+
+async function startNativeScreenCapture() {
+  nativeScreenCapturePlugin = window.Capacitor && window.Capacitor.Plugins
+    ? window.Capacitor.Plugins.ScreenCapture
+    : null;
+  if (!nativeScreenCapturePlugin || typeof nativeScreenCapturePlugin.start !== 'function') return false;
+  if (!HTMLCanvasElement.prototype.captureStream) {
+    showToast('На этом устройстве недоступна передача видеопотока экрана.', 'error');
+    return false;
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 960;
+  canvas.height = 540;
+  const context = canvas.getContext('2d', { alpha: false });
+  if (!context) return false;
+  context.fillStyle = '#10131a';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  const stream = canvas.captureStream(6);
+  try {
+    nativeScreenFrameListener = await nativeScreenCapturePlugin.addListener('frame', (frame) => {
+      if (!frame || !frame.frame || !frame.width || !frame.height) return;
+      if (canvas.width !== frame.width || canvas.height !== frame.height) {
+        canvas.width = frame.width;
+        canvas.height = frame.height;
+      }
+      const image = new Image();
+      image.onload = () => {
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        image.src = '';
+      };
+      image.src = 'data:image/jpeg;base64,' + frame.frame;
+    });
+    nativeScreenStoppedListener = await nativeScreenCapturePlugin.addListener('stopped', () => {
+      if (nativeScreenCaptureActive) finishNativeScreenCapture(true);
+    });
+    await nativeScreenCapturePlugin.start();
+    scrStream = stream;
+    nativeScreenCaptureActive = true;
+    localPreviewVisible = false;
+    const track = stream.getVideoTracks()[0];
+    if (track) track.onended = () => { if (nativeScreenCaptureActive) finishNativeScreenCapture(true); };
+    updateLocalStageUI();
+    updateCallButtons();
+    await syncVideoTrackToAllPeers(track || null, stream);
+    showToast('Демонстрация экрана запущена');
+    return true;
+  } catch (err) {
+    stream.getTracks().forEach((track) => track.stop());
+    try { if (nativeScreenFrameListener) await nativeScreenFrameListener.remove(); } catch {}
+    try { if (nativeScreenStoppedListener) await nativeScreenStoppedListener.remove(); } catch {}
+    nativeScreenFrameListener = null;
+    nativeScreenStoppedListener = null;
+    showToast('Не удалось запустить демонстрацию экрана: ' + (err && (err.message || err.name) || 'ошибка'), 'error');
+    return false;
+  }
+}
+
 async function toggleScreen() {
   if (!inCall) return;
-
   if (!scrStream) {
+    const isAndroidApp = /Android/i.test(navigator.userAgent || '') &&
+      !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'android');
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
-      const isAndroidApp = /Android/i.test(navigator.userAgent || '') &&
-        !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'android');
-      showToast(
-        isAndroidApp
-          ? 'Демонстрация экрана пока не поддерживается в Android-приложении. Нужна системная запись экрана Android (MediaProjection); localhost здесь не поможет.'
-          : 'Демонстрация экрана недоступна в этом браузере. Открой Auralis по HTTPS и используй браузер с поддержкой захвата экрана.',
-        "error"
-      );
+      if (isAndroidApp && await startNativeScreenCapture()) return;
+      if (!isAndroidApp) showToast('Демонстрация экрана недоступна в этом браузере. Открой Auralis по HTTPS и используй браузер с поддержкой захвата экрана.', 'error');
+      else if (!nativeScreenCapturePlugin) showToast('В этой версии APK нет системного модуля демонстрации экрана. Обнови приложение.', 'error');
       return;
     }
-
     let captured;
     try {
       captured = await navigator.mediaDevices.getDisplayMedia({
@@ -7795,29 +7870,24 @@ async function toggleScreen() {
       });
     } catch (err) {
       if (err && err.name !== 'NotAllowedError' && err.name !== 'AbortError') {
-        showToast('Ошибка демонстрации экрана: ' + (err.message || err.name || 'неизвестная ошибка'), "error");
+        showToast('Ошибка демонстрации экрана: ' + (err.message || err.name || 'неизвестная ошибка'), 'error');
       }
       return;
     }
-
     scrStream = captured;
     localPreviewVisible = true;
     const sTrack = scrStream.getVideoTracks()[0];
-    if (sTrack) {
-      sTrack.onended = () => {
-        if (scrStream) toggleScreen();
-      };
-    }
-
+    if (sTrack) sTrack.onended = () => { if (scrStream) toggleScreen(); };
     updateLocalStageUI();
     updateCallButtons();
     await syncVideoTrackToAllPeers(sTrack || null, scrStream);
+  } else if (nativeScreenCaptureActive) {
+    await finishNativeScreenCapture(false);
   } else {
     const activeScr = scrStream;
     scrStream = null;
     localPreviewVisible = false;
     activeScr.getTracks().forEach((t) => t.stop());
-
     const fallbackCamTrack = camStream && camStream.getVideoTracks()[0] ? camStream.getVideoTracks()[0] : null;
     updateLocalStageUI();
     updateCallButtons();
