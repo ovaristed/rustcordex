@@ -809,6 +809,24 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
 const INDEX_FILE = path.join(__dirname, 'public', 'index.html');
 
+// Explicit health check for the deployed web process.
+app.get('/healthz', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.json({ ok: true, service: 'rustcord' });
+});
+
+// Serve the app shell explicitly before express.static so browser/CDN caches
+// cannot keep an older index.html after a successful deployment.
+app.get('/', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
+  res.setHeader('CDN-Cache-Control', 'no-store');
+  res.setHeader('X-Rustcord-Entry', 'server-root-v2');
+  res.sendFile(INDEX_FILE);
+});
+
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders(res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
