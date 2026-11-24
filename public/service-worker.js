@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auralis-shell-v2.5.13-classic-ui';
+const CACHE_NAME = 'auralis-shell-v2.5.14-unified-auth';
 const SHELL = ['/download/', '/auralis-icon.svg', '/manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
