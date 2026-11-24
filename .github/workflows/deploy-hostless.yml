@@ -1,0 +1,47 @@
+name: Deploy Rustcord to Hostless
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rustcord-hostless-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Trigger Hostless deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check deployment credentials
+        env:
+          HOSTLESS_TOKEN: ${{ secrets.HOSTLESS_TOKEN }}
+        run: |
+          if [ -z "$HOSTLESS_TOKEN" ]; then
+            echo "::error::Missing GitHub Actions secret HOSTLESS_TOKEN. Add a Hostless API key with deployments:write scope in repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      - name: Deploy pushed commit to Hostless
+        env:
+          HOSTLESS_TOKEN: ${{ secrets.HOSTLESS_TOKEN }}
+          HOSTLESS_APP_NAME: rustcord
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          response="$(curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: $HOSTLESS_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data "{\"commit\":\"$COMMIT_SHA\"}" \
+            "https://api.hostless.cloud/v1/apps/$HOSTLESS_APP_NAME/deployments")"
+          echo "$response"
+          echo "$response" | grep -Eq '"(started":true|"outcome":"already_in_progress")' || {
+            echo "::error::Hostless did not confirm that the deployment was queued."
+            exit 1
+          }
