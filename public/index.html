@@ -3871,7 +3871,7 @@ async function switchToSavedAccount(targetUsername) {
   token = acc.token;
   localStorage.setItem('rc_token', token);
   activeChat = null;
-  await // Keep the displayed client version synchronized with the release metadata.
+  if (!window.rustcordDesktop) await // Keep the web client version synchronized with release metadata.
 fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
   if (meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '')) {
     const label = document.getElementById('appVersion');
