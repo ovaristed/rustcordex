@@ -445,7 +445,15 @@ function setupIpc() {
     if (updateCheckPromise) return updateCheckPromise;
     updateCheckPromise = autoUpdater.checkForUpdates().finally(() => { updateCheckPromise = null; });
     const result = await updateCheckPromise;
-    return { supported: true, version: app.getVersion(), updateAvailable: !!(result && result.updateInfo && result.updateInfo.version), availableVersion: result && result.updateInfo ? result.updateInfo.version : null };
+    const availableVersion = result && result.updateInfo ? result.updateInfo.version : null;
+    const currentParts = app.getVersion().split('.').map((part) => Number(part) || 0);
+    const availableParts = String(availableVersion || '').split('.').map((part) => Number(part) || 0);
+    let comparison = 0;
+    for (let i = 0; i < Math.max(currentParts.length, availableParts.length); i += 1) {
+      const difference = (availableParts[i] || 0) - (currentParts[i] || 0);
+      if (difference !== 0) { comparison = difference; break; }
+    }
+    return { supported: true, version: app.getVersion(), updateAvailable: comparison > 0, availableVersion };
   });
   ipcMain.handle('auralis:update-download', async (event) => {
     if (!isTrustedAppSender(event)) throw new Error('Недоверенный источник');
