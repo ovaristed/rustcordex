@@ -122,8 +122,14 @@ jobs:
           $installer = Get-ChildItem "dist/*.exe" | Where-Object { $_.Name -notmatch "uninstaller" } | Select-Object -First 1
           if (-not $installer) { throw "Windows installer EXE was not produced" }
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          Copy-Item $installer.FullName "dist/Auralis-Setup-$version.exe" -Force
-          Copy-Item $installer.FullName "dist/Auralis-Setup.exe" -Force
+          $versionedPath = Join-Path (Resolve-Path "dist") "Auralis-Setup-$version.exe"
+          if ([System.IO.Path]::GetFullPath($installer.FullName) -ne [System.IO.Path]::GetFullPath($versionedPath)) {
+            Copy-Item $installer.FullName $versionedPath -Force
+          }
+          $latestPath = Join-Path (Resolve-Path "dist") "Auralis-Setup.exe"
+          if ([System.IO.Path]::GetFullPath($installer.FullName) -ne [System.IO.Path]::GetFullPath($latestPath)) {
+            Copy-Item $installer.FullName $latestPath -Force
+          }
 
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
