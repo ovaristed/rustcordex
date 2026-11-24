@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Notification, Tray, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Notification, Tray, nativeImage, dialog } = require('electron');
 const path = require('path');
 const http = require('http');
 const https = require('https');
@@ -313,15 +313,58 @@ function isOurOrigin(url) {
 function setupMediaPermissions() {
   if (!session || !session.defaultSession) return;
   const ses = session.defaultSession;
-  const allowed = new Set(['media', 'display-capture', 'microphone', 'camera', 'fullscreen', 'clipboard-sanitized-write']);
+  const alwaysAllowed = new Set(['display-capture', 'fullscreen', 'clipboard-sanitized-write']);
+  const mediaPermissionCache = new Map();
+  const pendingPermissionPrompts = new Map();
 
   ses.setPermissionRequestHandler((wc, permission, callback, details) => {
     const url = (details && details.requestingUrl) || (wc && wc.getURL()) || '';
-    callback(allowed.has(permission) && isOurOrigin(url));
+    if (!isOurOrigin(url)) return callback(false);
+    if (alwaysAllowed.has(permission)) return callback(true);
+    if (!['media', 'microphone', 'camera'].includes(permission)) return callback(false);
+
+    const key = permission + ':' + new URL(url).origin;
+    if (mediaPermissionCache.has(key)) return callback(mediaPermissionCache.get(key));
+    if (pendingPermissionPrompts.has(key)) {
+      pendingPermissionPrompts.get(key).then(callback).catch(() => callback(false));
+      return;
+    }
+
+    const mediaTypes = details && Array.isArray(details.mediaTypes) ? details.mediaTypes : [];
+    const wantsAudio = permission === 'microphone' || mediaTypes.includes('audio');
+    const wantsVideo = permission === 'camera' || mediaTypes.includes('video');
+    const deviceName = wantsAudio && wantsVideo ? 'микрофон и камеру' : wantsVideo ? 'камеру' : 'микрофон';
+    const prompt = dialog.showMessageBox(mainWindow && !mainWindow.isDestroyed() ? mainWindow : undefined, {
+      type: 'question',
+      title: 'Разрешение Auralis',
+      message: 'Разрешить Auralis использовать ' + deviceName + '?',
+      detail: 'Доступ нужен для голосовых звонков' + (wantsVideo ? ' и видеосвязи' : '') + '. Разрешение можно изменить в настройках Windows.',
+      buttons: ['Разрешить', 'Запретить'],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true
+    }).then((result) => {
+      const granted = result.response === 0;
+      mediaPermissionCache.set(key, granted);
+      return granted;
+    }).catch((err) => {
+      console.error('[Auralis] Media permission prompt failed:', err);
+      return false;
+    }).finally(() => pendingPermissionPrompts.delete(key));
+
+    pendingPermissionPrompts.set(key, prompt);
+    prompt.then(callback);
   });
 
   ses.setPermissionCheckHandler((wc, permission, requestingOrigin) => {
-    return allowed.has(permission) && isOurOrigin(requestingOrigin || (wc && wc.getURL()) || '');
+    const url = requestingOrigin || (wc && wc.getURL()) || '';
+    if (!isOurOrigin(url)) return false;
+    if (alwaysAllowed.has(permission)) return true;
+    if (['media', 'microphone', 'camera'].includes(permission)) {
+      const key = permission + ':' + new URL(url).origin;
+      return mediaPermissionCache.get(key) === true;
+    }
+    return false;
   });
 
   // Выбор экрана/окна для демонстрации экрана (Screen Share)
