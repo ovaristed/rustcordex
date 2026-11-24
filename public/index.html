@@ -1573,6 +1573,105 @@
     .pop-nick:hover, .user-profile-name:hover { animation:none !important; }
   }
 
+
+  /* Единый вид карточек профиля: стикер расположен непосредственно у ника. */
+  .user-profile-card {
+    width:min(360px,100%);
+    max-height:min(620px,calc(100vh - 40px));
+    border-radius:20px;
+    overflow:hidden;
+  }
+  .user-profile-banner { height:76px; }
+  .user-profile-content { padding:0 14px 16px; }
+  .user-profile-avatar-row {
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    min-height:34px;
+    gap:10px;
+    margin-top:-34px;
+  }
+  .user-profile-avatar {
+    width:68px;
+    height:68px;
+    min-width:68px;
+    flex:0 0 68px;
+    border-width:4px;
+    border-color:#17181c;
+    font-size:22px;
+    box-shadow:0 6px 18px rgba(0,0,0,.38);
+  }
+  .user-profile-presence {
+    position:absolute;
+    left:49px;
+    bottom:2px;
+    z-index:4;
+    width:17px;
+    height:17px;
+    border:3px solid #17181c;
+    margin:0;
+  }
+  .user-profile-name-row {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    margin-top:12px;
+  }
+  .user-profile-name {
+    min-width:0;
+    margin:0;
+    font-size:21px;
+    line-height:1.2;
+    font-weight:850;
+    color:#fff;
+    overflow-wrap:anywhere;
+  }
+  .user-profile-sticker {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    min-width:28px;
+    min-height:28px;
+    max-width:42px;
+    max-height:42px;
+    margin:0;
+    font-size:25px;
+    line-height:1;
+    overflow:hidden;
+  }
+  .user-profile-sticker img {
+    display:block;
+    max-width:38px !important;
+    max-height:38px !important;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+    border-radius:9px;
+  }
+  .user-profile-login {
+    display:block;
+    width:max-content;
+    max-width:100%;
+    margin-top:3px;
+    font-size:11.5px;
+    color:var(--muted);
+  }
+  .user-profile-thought {
+    max-width:none;
+    margin:12px 0 0;
+    padding:10px 12px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:12px;
+    background:rgba(255,255,255,.045);
+    color:var(--text);
+    font-size:12.5px;
+    line-height:1.45;
+    box-shadow:none;
+  }
+  .user-profile-thought:empty { display:none; }
+
 </style>
 </head>
 <body>
@@ -1824,12 +1923,14 @@
     <div class="user-profile-content">
       <div class="user-profile-avatar-row">
         <div id="userProfileAvatar" class="user-profile-avatar">?</div>
-        <div id="userProfileThought" class="user-profile-thought hidden"></div>
-        <div id="userProfileSticker" class="user-profile-sticker hidden"></div>
         <div id="userProfilePresence" class="user-profile-presence"><span class="presence-dot"></span></div>
       </div>
-      <div id="userProfileName" class="user-profile-name" aria-label="Имя пользователя">Профиль</div>
+      <div class="user-profile-name-row">
+        <div id="userProfileName" class="user-profile-name" aria-label="Имя пользователя">Профиль</div>
+        <div id="userProfileSticker" class="user-profile-sticker hidden"></div>
+      </div>
       <button id="userProfileLogin" class="user-profile-login profile-copy-field" type="button" onclick="copyProfileField('login')">@username</button>
+      <div id="userProfileThought" class="user-profile-thought hidden"></div>
     </div>
   </section>
 </div>
