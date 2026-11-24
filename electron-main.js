@@ -525,6 +525,7 @@ function createWindow() {
     minWidth: 780,
     minHeight: 560,
     title: 'Auralis',
+    icon: path.join(__dirname, 'build', 'icon.ico'),
     backgroundColor: '#07090f',
     autoHideMenuBar: true,
     webPreferences: {

@@ -67,7 +67,9 @@
       "preload.js",
       "local-preview.js",
       "public/**/*",
-      "package.json"
+      "package.json",
+      "build/icon.ico",
+      "build/icon.png.jpg"
     ],
     "publish": [
       {
