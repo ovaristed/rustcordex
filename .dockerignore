@@ -1,0 +1,28 @@
+# Keep the Hostless Docker build context limited to the web runtime.
+.git
+.github
+node_modules
+npm-debug.log*
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Local build outputs and desktop-only tooling
+/dist
+/release
+/coverage
+/desktop
+/src-tauri
+/build
+/build-exe.yml
+/electron-main.js
+/preload.js
+/main.js
+/index.html
+/tauri.conf.json
+/Cargo.toml
+/build.rs
+/main.rs
+/*.bat
+/*.jpg
