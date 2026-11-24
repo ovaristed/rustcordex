@@ -1695,42 +1695,57 @@
   }
 
 
-  /* Единый вид карточек профиля: стикер расположен непосредственно у ника. */
+  /* Профиль: возвращаем крупную карточку, индикатор статуса закреплён на аватаре. */
   .user-profile-card {
-    width:min(360px,100%);
-    max-height:min(620px,calc(100vh - 40px));
-    border-radius:20px;
+    width:min(440px,calc(100vw - 40px));
+    max-height:min(680px,calc(100vh - 40px));
+    border-radius:22px;
     overflow:hidden;
   }
-  .user-profile-banner { height:76px; }
-  .user-profile-content { padding:0 14px 16px; }
+  .user-profile-banner { height:112px; }
+  .user-profile-content { padding:0 20px 22px; }
   .user-profile-avatar-row {
     position:relative;
     display:flex;
     align-items:flex-end;
-    min-height:34px;
-    gap:10px;
-    margin-top:-34px;
+    min-height:50px;
+    gap:12px;
+    margin-top:-50px;
   }
   .user-profile-avatar {
-    width:68px;
-    height:68px;
-    min-width:68px;
-    flex:0 0 68px;
-    border-width:4px;
+    width:96px;
+    height:96px;
+    min-width:96px;
+    flex:0 0 96px;
+    border-width:5px;
     border-color:#17181c;
-    font-size:22px;
+    font-size:25px;
     box-shadow:0 6px 18px rgba(0,0,0,.38);
   }
   .user-profile-presence {
     position:absolute;
-    left:49px;
-    bottom:2px;
+    left:75px !important;
+    bottom:3px !important;
     z-index:4;
-    width:17px;
-    height:17px;
-    border:3px solid #17181c;
-    margin:0;
+    width:21px !important;
+    height:21px !important;
+    border:4px solid #17181c !important;
+    margin:0 !important;
+  }
+
+  /* Скругления в остальных темах повторяют мягкую геометрию Glasscord. */
+  .sidebar, .main, .card, .modal-card, .incoming-card, .profile-popover,
+  .user-profile-card, .voice-ctx-menu, .group-ctx-menu {
+    border-radius:22px;
+  }
+  .top-tabs, .panel-body, .chat-header, .composer, .bottom-dock {
+    border-radius:18px;
+  }
+  .list-item, .msg-bubble, .pop-card, .pop-profile-strip {
+    border-radius:15px;
+  }
+  .sm-btn, .mini-plus-btn, .round-btn, .tab-btn {
+    border-radius:14px;
   }
   .user-profile-name-row {
     display:flex;
@@ -2273,7 +2288,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.3</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.4</div>
   </div>
 </div>
 
