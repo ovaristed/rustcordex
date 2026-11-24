@@ -318,7 +318,7 @@ jobs:
           if [ -z "$MAIN_ACTIVITY" ]; then echo "MainActivity.java not found"; exit 1; fi
           if ! grep -q 'ScreenCapturePlugin.class' "$MAIN_ACTIVITY"; then
             sed -i '/import com.getcapacitor.BridgeActivity;/a import android.os.Bundle;\nimport com.ovarist.auralis.ScreenCapturePlugin;' "$MAIN_ACTIVITY"
-            sed -i 's/extends BridgeActivity {/extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        registerPlugin(ScreenCapturePlugin.class);\n    }/' "$MAIN_ACTIVITY"
+            sed -i 's/extends BridgeActivity {/extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        registerPlugin(ScreenCapturePlugin.class);\n        super.onCreate(savedInstanceState);\n    }/' "$MAIN_ACTIVITY"
           fi
           echo "Installed native MediaProjection capture bridge"
 
@@ -343,7 +343,7 @@ jobs:
           }
           const serviceTag = '<service android:name=".ScreenCaptureService" android:exported="false" android:foregroundServiceType="mediaProjection" />';
           if (!xml.includes('android:name=".ScreenCaptureService"')) {
-            xml = xml.replace(/<application\\b[^>]*>/, match => match + '\\n        ' + serviceTag);
+            xml = xml.replace(/<application\b[^>]*>/, match => match + '\n        ' + serviceTag);
           }
           fs.writeFileSync(file, xml);
           console.log('Declared microphone, audio routing, camera and screen capture permissions');
