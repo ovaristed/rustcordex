@@ -6566,6 +6566,15 @@ function ensurePC(peerUser) {
       }
       aud.srcObject = stream;
       aud.muted = false;
+      // Android WebView can leave remote WebRTC audio paused even with autoplay=true.
+      // Explicitly start playback when the remote audio track arrives.
+      const audioPlayback = aud.play();
+      if (audioPlayback && typeof audioPlayback.catch === 'function') {
+        audioPlayback.catch((err) => {
+          console.warn('[voice] remote audio playback was blocked:', err);
+          showToast('Не удалось включить звук собеседника. Нажми на экран и проверь громкость телефона.', 'error');
+        });
+      }
       const peerPc = c;
       remoteSpeakingState.set(peerUser, {
         pc: peerPc,
