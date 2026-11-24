@@ -1,5 +1,8 @@
 @echo off
-title Rustcord Web Client
-echo Запуск клиента Rustcord в браузере...
-start "" msedge --app="https://rustcord-server.onrender.com"
+cd /d "%~dp0"
+title Auralis Web Client
+echo Starting Auralis locally...
+start "Auralis Preview Server" cmd /k "npm run preview"
+timeout /t 2 /nobreak >nul
+start "" msedge --app="http://127.0.0.1:4173"
 exit

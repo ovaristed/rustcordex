@@ -1,4 +1,4 @@
-name: Build Rustcord Windows Installer
+name: Build Auralis Windows Installer
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: rustcord-windows-build
+  group: auralis-windows-build
   cancel-in-progress: true
 
 jobs:
@@ -38,9 +38,9 @@ jobs:
           path: |
             ~\AppData\Local\npm-cache
             ~\AppData\Local\electron-builder\Cache
-          key: rustcord-win-build-${{ runner.os }}-node22-${{ hashFiles('package.json') }}
+          key: auralis-win-build-${{ runner.os }}-node22-${{ hashFiles('package.json') }}
           restore-keys: |
-            rustcord-win-build-${{ runner.os }}-node22-
+            auralis-win-build-${{ runner.os }}-node22-
 
       - name: Install dependencies
         run: npm install --no-save --no-package-lock --prefer-offline --no-audit --no-fund sharp
@@ -49,10 +49,10 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "build" | Out-Null
-          node -e "require('sharp')('build/rustcord-icon.svg').resize(512,512).png().toFile('build/rustcord-icon.png').then(()=>console.log('Icon rendered'))"
+          node -e "require('sharp')('build/auralis-icon.svg').resize(512,512).png().toFile('build/auralis-icon.png').then(()=>console.log('Icon rendered'))"
           Add-Type -AssemblyName System.Drawing
 
-          $image = [System.Drawing.Image]::FromFile((Resolve-Path "build/rustcord-icon.png"))
+          $image = [System.Drawing.Image]::FromFile((Resolve-Path "build/auralis-icon.png"))
           $bitmap = New-Object System.Drawing.Bitmap(256, 256)
           $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
           $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
@@ -83,7 +83,7 @@ jobs:
           $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rect,[System.Drawing.Color]::FromArgb(8,13,34),[System.Drawing.Color]::FromArgb(23,31,77),90)
           $g.FillRectangle($brush,$rect); $brush.Dispose()
           $g.FillEllipse((New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(30,91,91,255))),70,-45,145,145)
-          $logo = [System.Drawing.Image]::FromFile((Resolve-Path "build/rustcord-icon.png"))
+          $logo = [System.Drawing.Image]::FromFile((Resolve-Path "build/auralis-icon.png"))
           $g.DrawImage($logo,46,24,72,72); $logo.Dispose()
           $white = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(248,250,255))
           $muted = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(174,190,224))
@@ -91,12 +91,12 @@ jobs:
           $fontTitle = New-Object System.Drawing.Font("Segoe UI",15,[System.Drawing.FontStyle]::Bold)
           $fontBody = New-Object System.Drawing.Font("Segoe UI",9,[System.Drawing.FontStyle]::Regular)
           $fontSmall = New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
-          $g.DrawString("RUSTCORD",$fontTitle,$white,18,116)
+          $g.DrawString("AURALIS",$fontTitle,$white,18,116)
           $g.FillRectangle($accent,18,151,38,3)
           $g.DrawString("Голос. Видео.",$fontBody,$white,18,174)
           $g.DrawString("Общение без границ.",$fontBody,$white,18,193)
           $g.DrawString("Установка приложения",$fontBody,$muted,18,235)
-          $g.DrawString("RUSTCORD DESKTOP",$fontSmall,$accent,18,282)
+          $g.DrawString("AURALIS DESKTOP",$fontSmall,$accent,18,282)
           $fontTitle.Dispose(); $fontBody.Dispose(); $fontSmall.Dispose()
           $white.Dispose(); $muted.Dispose(); $accent.Dispose()
           $g.Dispose(); $side.Save("build/installer-sidebar.bmp",[System.Drawing.Imaging.ImageFormat]::Bmp); $side.Dispose()
@@ -104,14 +104,14 @@ jobs:
           $header = New-Object System.Drawing.Bitmap(150,57,[System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
           $hg = [System.Drawing.Graphics]::FromImage($header)
           $hg.Clear([System.Drawing.Color]::FromArgb(12,17,39))
-          $hlogo = [System.Drawing.Image]::FromFile((Resolve-Path "build/rustcord-icon.png"))
+          $hlogo = [System.Drawing.Image]::FromFile((Resolve-Path "build/auralis-icon.png"))
           $hg.DrawImage($hlogo,8,9,38,38); $hlogo.Dispose()
           $hfont = New-Object System.Drawing.Font("Segoe UI",13,[System.Drawing.FontStyle]::Bold)
-          $hg.DrawString("Rustcord",$hfont,(New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(245,248,255))),52,17)
+          $hg.DrawString("Auralis",$hfont,(New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(245,248,255))),52,17)
           $hfont.Dispose(); $hg.Dispose()
           $header.Save("build/installer-header.bmp",[System.Drawing.Imaging.ImageFormat]::Bmp)
           $header.Dispose()
-          Write-Host "Created Rustcord icon and branded installer artwork."
+          Write-Host "Created Auralis icon and branded installer artwork."
 
       - name: Build Windows installer (NSIS)
         run: npm run build:nsis -- --publish never
@@ -119,7 +119,7 @@ jobs:
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: Rustcord-Windows-Installer
+          name: Auralis-Windows-Installer
           path: dist/*.exe
           if-no-files-found: error
           retention-days: 14

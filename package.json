@@ -1,14 +1,16 @@
 {
-  "name": "rustcord-desktop",
+  "name": "auralis-desktop",
   "version": "1.0.0",
-  "description": "Rustcord Desktop Client",
+  "description": "Auralis — Liquid Glass community messenger",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
     "desktop": "electron .",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable",
-    "build:nsis": "electron-builder --win nsis"
+    "build:nsis": "electron-builder --win nsis",
+    "preview": "node local-preview.js",
+    "preview:host": "node local-preview.js"
   },
   "engines": {
     "node": ">=18"
@@ -25,8 +27,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.ovarist.rustcord",
-    "productName": "Rustcord",
+    "appId": "com.ovarist.auralis",
+    "productName": "Auralis",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -44,18 +46,20 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Rustcord",
+      "shortcutName": "Auralis",
       "installerSidebar": "build/installer-sidebar.bmp",
       "uninstallerSidebar": "build/installer-sidebar.bmp",
       "installerHeader": "build/installer-header.bmp",
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
-      "uninstallDisplayName": "Rustcord",
+      "uninstallDisplayName": "Auralis",
       "language": 1049
     },
     "files": [
       "electron-main.js",
       "preload.js",
+      "local-preview.js",
+      "public/**/*",
       "package.json",
       "!node_modules/**/*"
     ]
