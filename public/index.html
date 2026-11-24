@@ -8419,5 +8419,50 @@ checkSession();
 })();
 </script>
 
+
+<style id="auralis-253-settings-tabs-visibility">
+/* Keep the settings navigation visibly rendered above the scrolling settings content. */
+#settingsModal .modal-card {
+  display:flex !important;
+  flex-direction:column !important;
+}
+#settingsModal .settings-tabs {
+  display:grid !important;
+  position:sticky !important;
+  top:0 !important;
+  z-index:20 !important;
+  flex:0 0 auto !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  min-height:44px !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  overflow:visible !important;
+}
+#settingsModal .settings-tabs::before {
+  z-index:0 !important;
+}
+#settingsModal .settings-tabs > .s-tab {
+  position:relative !important;
+  z-index:1 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0 !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+@media (max-width:760px) {
+  #settingsModal .settings-tabs {
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  }
+  #settingsModal .settings-tabs #sTabBinds {
+    display:none !important;
+  }
+  #settingsModal #sPanelBinds {
+    display:none !important;
+  }
+}
+</style>
+
 </body>
 </html>
