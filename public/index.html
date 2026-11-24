@@ -1104,12 +1104,12 @@
     gap: 12px;
     box-sizing: border-box;
     width: 100%;
-    min-width: 260px;
+    min-width: 0;
     min-height: 220px;
     max-width: 100%;
-    max-height: 75vh;
+    max-height: min(75vh, calc(100vh - 260px));
     overflow: auto;
-    resize: both;
+    resize: vertical;
     align-self: flex-start;
   }
   .call-stage .call-grid { min-width: 0; }
@@ -1604,10 +1604,6 @@
     align-items:flex-end;
     gap:0;
   }
-  html[data-theme="glasscord"] .msg.sticker-only .avatar,
-  html[data-theme="glasscord"] .msg.sticker-only .msg-head {
-    display:none !important;
-  }
   html[data-theme="glasscord"] .msg.sticker-only .msg-bubble,
   html[data-theme="glasscord"] .msg.mine.sticker-only .msg-bubble,
   html[data-theme="glasscord"] .msg.other.sticker-only .msg-bubble {
@@ -1932,6 +1928,124 @@
   html[data-theme="glasscord"] .user-profile-card,
   html[data-theme="glasscord"] .voice-ctx-menu,
   html[data-theme="glasscord"] .group-ctx-menu { border-radius:20px !important; }
+
+
+  /* v1.6: call panel resizes vertically only; participant layout follows available width. */
+  .call-stage {
+    resize:vertical !important;
+    width:100% !important;
+    min-width:0 !important;
+    min-height:220px !important;
+    max-width:100% !important;
+    max-height:min(75vh, calc(100vh - 260px)) !important;
+    overflow:auto;
+    flex:0 0 auto;
+    align-self:stretch;
+  }
+  .call-stage .call-grid {
+    width:100%;
+    min-width:0;
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));
+    align-items:stretch;
+  }
+  .call-stage .tile {
+    min-width:0;
+    min-height:clamp(112px, 18vw, 165px);
+    padding:clamp(6px,1.4vw,12px);
+  }
+  .call-stage .tile .big-av {
+    width:clamp(42px, 8vw, 64px);
+    height:clamp(42px, 8vw, 64px);
+    flex:0 0 auto;
+  }
+  .call-stage .tile video { max-width:100%; max-height:clamp(110px,28vh,260px); }
+  .call-stage .tile-tag {
+    max-width:calc(100% - 16px);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:clamp(10px,1.2vw,12px);
+  }
+  /* Restore author/avatar metadata for standalone stickers in Glasscord. */
+  html[data-theme="glasscord"] .msg.sticker-only {
+    align-items:flex-start;
+    gap:10px;
+    max-width:min(82%, 680px);
+  }
+  html[data-theme="glasscord"] .msg.sticker-only .avatar,
+  html[data-theme="glasscord"] .msg.sticker-only .msg-head { display:flex !important; }
+  html[data-theme="glasscord"] .msg.sticker-only .msg-bubble {
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    align-items:flex-start;
+  }
+  html[data-theme="glasscord"] .msg.sticker-only .msg-head {
+    width:100%;
+    align-items:baseline;
+  }
+  /* Keep the quick-sticker strip aligned and wrapping cleanly in Glasscord. */
+  html[data-theme="glasscord"] .emoji-bar {
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:6px;
+    flex-wrap:nowrap;
+    min-width:0;
+    width:100%;
+    padding:6px 14px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:thin;
+  }
+  html[data-theme="glasscord"] #recentStickersBox {
+    display:flex !important;
+    align-items:center;
+    justify-content:flex-start;
+    flex-wrap:nowrap !important;
+    gap:6px !important;
+    min-width:max-content;
+    width:max-content;
+  }
+  html[data-theme="glasscord"] .emoji-btn {
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 34px;
+    width:34px;
+    height:32px;
+    padding:0;
+    line-height:1;
+    font-size:16px;
+    white-space:nowrap;
+  }
+  /* More see-through Liquid Glass surfaces, with legible controls. */
+  html[data-theme="glasscord"] .sidebar,
+  html[data-theme="glasscord"] .main,
+  html[data-theme="glasscord"] .card,
+  html[data-theme="glasscord"] .modal-card,
+  html[data-theme="glasscord"] .incoming-card,
+  html[data-theme="glasscord"] .profile-popover,
+  html[data-theme="glasscord"] .user-profile-card,
+  html[data-theme="glasscord"] .voice-ctx-menu,
+  html[data-theme="glasscord"] .group-ctx-menu {
+    background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(220,230,245,.018) 55%,rgba(255,255,255,.008)) !important;
+    backdrop-filter:blur(28px) brightness(.92) saturate(125%) !important;
+    -webkit-backdrop-filter:blur(28px) brightness(.92) saturate(125%) !important;
+  }
+  html[data-theme="glasscord"] .call-stage,
+  html[data-theme="glasscord"] .call-tile,
+  html[data-theme="glasscord"] .msg-bubble,
+  html[data-theme="glasscord"] .composer,
+  html[data-theme="glasscord"] .emoji-bar {
+    background-color:rgba(255,255,255,.035) !important;
+    backdrop-filter:blur(22px) saturate(120%);
+    -webkit-backdrop-filter:blur(22px) saturate(120%);
+  }
+  html[data-theme="glasscord"] .emoji-bar { background:transparent !important; }
+  @media (max-width:640px) {
+    .call-stage { max-height:min(70vh, calc(100dvh - 240px)) !important; }
+    .call-stage .call-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr)); }
+  }
 
 </style>
 </head>
@@ -2413,7 +2527,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.5</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.6</div>
   </div>
 </div>
 
@@ -3656,7 +3770,8 @@ function setBgEffect(val) {
   rebuildBgParticles();
 }
 
-let recentStickers = JSON.parse(localStorage.getItem('rc_recent_stickers') || '["🔥","😂","😎","🐸","💀","🎉"]');
+let recentStickers = JSON.parse(localStorage.getItem('rc_recent_stickers') || '["🔥","😂","😎","🐸","💀","🎉","67","777","52","48"]');
+recentStickers = [...new Set([...(recentStickers || []), '67', '777', '52', '48'])].slice(0, 12);
 function saveRecentSticker(st) {
   const clean = String(st || '').trim();
   if (!clean) return;
@@ -3692,7 +3807,7 @@ function isSingleStickerMessage(text) {
   const trimmed = String(text || '').trim();
   if (!trimmed || trimmed.startsWith('__VOICE__:') || trimmed.startsWith('__FILE__:') || trimmed.startsWith('__CALL__:')) return false;
   const emojis = extractEmojis(trimmed);
-  return emojis.length === 1 && trimmed === emojis[0];
+  return (emojis.length === 1 && trimmed === emojis[0]) || /^(?:67|777|52|48)$/.test(trimmed);
 }
 
 const THEMES = {
@@ -4067,7 +4182,7 @@ function toggleProfileStickerPicker(source) {
   const willOpen = panel.classList.contains('hidden');
   document.querySelectorAll('.profile-sticker-choices').forEach((el) => el.classList.add('hidden'));
   if (!willOpen) return;
-  const choices = Array.from(new Set([...(recentStickers || []), '🔥','😂','😎','🐸','💀','🎉','❤️','✨','🌸','🌿','⭐','👑','🚀','🎮','💜','🩷','🤍']));
+  const choices = Array.from(new Set([...(recentStickers || []), '67','777','52','48','🔥','😂','😎','🐸','💀','🎉','❤️','✨','🌸','🌿','⭐','👑','🚀','🎮','💜','🩷','🤍']));
   const current = String(me && me.profile_sticker_url || '');
   panel.innerHTML = choices.map((st) => '<button type="button" class="profile-sticker-choice ' + (current === st ? 'active' : '') + '" data-profile-sticker="' + esc(st) + '" title="Выбрать ' + esc(st) + '">' + esc(st) + '</button>').join('') +
     '<button type="button" class="profile-sticker-choice" data-profile-sticker="" title="Убрать стикер">×</button>';
