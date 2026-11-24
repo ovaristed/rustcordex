@@ -1933,7 +1933,7 @@
   html[data-theme="glasscord"] .user-profile-card,
   html[data-theme="glasscord"] .voice-ctx-menu,
   html[data-theme="glasscord"] .group-ctx-menu {
-    background:rgba(255,255,255,.075) !important;
+    background:rgba(255,255,255,var(--panel-alpha,.22)) !important;
     border:1px solid rgba(255,255,255,.19) !important;
     border-radius:20px !important;
     box-shadow:
@@ -1949,7 +1949,7 @@
   html[data-theme="glasscord"] .composer,
   html[data-theme="glasscord"] .top-tabs,
   html[data-theme="glasscord"] .panel-body {
-    background:rgba(255,255,255,.045) !important;
+    background:rgba(255,255,255,calc(var(--panel-alpha,.22) * .6)) !important;
     border-color:rgba(255,255,255,.12) !important;
     border-radius:18px !important;
     box-shadow:inset 1px 1px 3px rgba(255,255,255,.13),0 3px 12px rgba(0,0,0,.12);
