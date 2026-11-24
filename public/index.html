@@ -38,33 +38,6 @@
     --bubble-pad: 9px 13px;
     --ui-zoom: 1;
   }
-  /* ===== Режим для слабых ПК: максимум экономии ресурсов ===== */
-  body.lite-mode {
-    --glass: rgba(var(--panel-rgb), var(--panel-alpha));
-    --msg-gap: 3px;
-    --bubble-pad: 5px 10px;
-    background: linear-gradient(var(--theme-overlay), var(--theme-overlay)), var(--theme-wallpaper), var(--bg) !important;
-    background-size: cover, cover, auto !important;
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-  }
-  body.lite-mode *, body.lite-mode *::before, body.lite-mode *::after {
-    animation: none !important;
-    transition: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    filter: none !important;
-    scroll-behavior: auto !important;
-  }
-  body.lite-mode #bgCanvas { display: none !important; }
-  /* Lite mode reduces visual effects while preserving the selected UI zoom. */
-  body.lite-mode .sidebar, body.lite-mode .main, body.lite-mode .card,
-  body.lite-mode .incoming-card, body.lite-mode .profile-popover { background: rgba(var(--panel-rgb), var(--panel-alpha)) !important; }
-  /* Keep dialogs readable without expensive backdrop blur in lite mode. */
-  body.lite-mode .modal-backdrop { background: rgba(4, 6, 10, .66) !important; backdrop-filter: blur(2px) !important; -webkit-backdrop-filter: blur(2px) !important; }
-  body.lite-mode .modal-card { background: rgba(var(--panel-rgb), .86) !important; border-color: rgba(var(--accent-rgb), .30); backdrop-filter: blur(2px) saturate(105%) !important; -webkit-backdrop-filter: blur(2px) saturate(105%) !important; box-shadow: 0 14px 36px rgba(0,0,0,.30) !important; }
   body {
     margin: 0;
     height: 100vh;
@@ -271,7 +244,6 @@
   .voice-ctx-btn { min-height:38px; border-radius:10px; padding:9px 10px; }
   .voice-ctx-btn:hover { background:rgba(255,255,255,.08); transform:translateX(2px); }
   .voice-ctx-btn.danger:hover { background:rgba(255,69,58,.13); }
-  .lite-mode #profileBgCanvas { box-shadow:none; }
   /* Единая лёгкая motion-система интерфейса */
   @keyframes rcFadeUp { from { opacity:0; transform:translateY(9px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
   @keyframes rcFadeIn { from { opacity:0; } to { opacity:1; } }
@@ -1660,12 +1632,6 @@
     border:1px solid rgba(255,255,255,.25) !important;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 20px rgba(83,173,220,.22);
   }
-  html[data-theme="glasscord"] body.lite-mode .sidebar,
-  html[data-theme="glasscord"] body.lite-mode .main,
-  html[data-theme="glasscord"] body.lite-mode .profile-popover,
-  html[data-theme="glasscord"] body.lite-mode .modal-card {
-    backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
-  }
   @media (prefers-reduced-motion:reduce) {
     html[data-theme="glasscord"] *,html[data-theme="glasscord"] *::before,html[data-theme="glasscord"] *::after {
       transition-duration:.01ms !important; animation-duration:.01ms !important;
@@ -2435,10 +2401,6 @@ html[data-theme="discord"] .main{
   backdrop-filter:blur(24px) saturate(1.25);
   -webkit-backdrop-filter:blur(24px) saturate(1.25);
 }
-body.lite-mode html[data-theme="discord"] .sidebar,
-body.lite-mode html[data-theme="discord"] .main{
-  background:rgba(18,22,33,.78) !important;
-}
 @media(max-width:760px){
   body{background-attachment:scroll !important}
   html[data-theme="discord"] .sidebar{
@@ -2907,13 +2869,6 @@ body.lite-mode html[data-theme="discord"] .main{
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
         </div>
-      </div>
-      <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
-        <div class="lbl">Производительность</div>
-        <label style="display:flex;align-items:flex-start;gap:9px;font-size:13px;cursor:pointer;">
-          <input id="liteModeToggle" type="checkbox" style="width:auto;margin-top:3px;" onchange="setLiteMode(this.checked)" />
-          <span><b>⚡ Режим для слабых ПК</b><br><span class="item-sub">Отключает анимации, размытие и фоновые эффекты. Включается только вручную.</span></span>
-        </label>
       </div>
       <div class="field">
         <div class="lbl">Кэш и данные сессии</div>
@@ -4053,15 +4008,6 @@ function setUiZoom(val) {
 
 }
 
-function setLiteMode(enabled) {
-  liteMode = !!enabled;
-  document.body.classList.toggle('lite-mode', liteMode);
-  try { localStorage.setItem('rc_lite_mode', liteMode ? '1' : '0'); } catch {}
-  const cb = document.getElementById('liteModeToggle');
-  if (cb) cb.checked = liteMode;
-  applyTheme(activeThemeName);
-}
-
 function setClearCacheOnExit(enabled) {
   clearCacheOnExit = !!enabled;
   localStorage.setItem('rc_clear_cache_exit', clearCacheOnExit ? '1' : '0');
@@ -4364,11 +4310,10 @@ function hexToRgb(hex) {
   return ((num >> 16) & 255) + ', ' + ((num >> 8) & 255) + ', ' + (num & 255);
 }
 
-let liteMode = false;
 let activeThemeName = 'discord';
 function syncThemeEffect() {
   const t = THEMES[activeThemeName] || THEMES.discord;
-  setBgEffect(liteMode ? 'none' : (t.effect || 'none'));
+  setBgEffect(t.effect || 'none');
 }
 
 
@@ -4413,14 +4358,11 @@ function setSidebarWidth(px) {
 
 (function initSavedAppearance() {
   document.documentElement.style.setProperty('--avatar-radius', '50%');
-  let savedLite = null;
   let savedTheme = null;
   try {
-    savedLite = localStorage.getItem('rc_lite_mode');
     savedTheme = localStorage.getItem('rc_theme');
   } catch {}
-  // setLiteMode() calls applyTheme(); capture the saved choice first so it cannot be overwritten.
-  setLiteMode(savedLite === '1');
+  try { localStorage.removeItem('rc_lite_mode'); } catch {}
   applyTheme(savedTheme || 'discord');
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
@@ -5638,7 +5580,7 @@ async function openChat(username) {
       if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
       box.innerHTML = '';
       if (!list.length) box.innerHTML = '<div class="empty-chat">Сообщений пока нет — напиши первым!</div>';
-      else (liteMode ? list.slice(-40) : list).forEach(appendMsg);
+      else list.forEach(appendMsg);
       writeChatCache('dm', username, list);
     }
   } catch {}
@@ -6323,7 +6265,7 @@ function startSpeakingLoop() {
       speakRaf = null;
       return;
     }
-    if (ts - lastTickTs < (liteMode ? 160 : 80)) { speakRaf = requestAnimationFrame(tick); return; }
+    if (ts - lastTickTs < 80) { speakRaf = requestAnimationFrame(tick); return; }
     lastTickTs = ts;
     let localSpeaking = false;
     if (micAnalyser && !micMuted) {
@@ -6883,9 +6825,7 @@ let camBusy = false;
 
 async function getCameraStream() {
   const attempts = [
-    liteMode
-      ? { video: { width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 15, max: 20 }, facingMode: 'user' }, audio: false }
-      : { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false },
+    { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false },
     { video: true, audio: false }
   ];
   let lastErr;
@@ -6969,7 +6909,7 @@ async function toggleScreen() {
     let captured;
     try {
       captured = await navigator.mediaDevices.getDisplayMedia({
-        video: liteMode ? { frameRate: { ideal: 15, max: 20 }, width: { max: 1280 }, height: { max: 720 } } : { frameRate: { ideal: 30, max: 60 } },
+        video: { frameRate: { ideal: 30, max: 60 } },
         audio: false
       });
     } catch (err) {
