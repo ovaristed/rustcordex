@@ -1179,8 +1179,39 @@
     background: #000;
     cursor: pointer;
   }
+  .tile.screen-mode {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: min(68vh, 720px);
+    padding: 8px;
+    background: #05070b;
+    justify-content: center;
+  }
   .tile.screen-mode video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: none;
     object-fit: contain;
+    object-position: center;
+    border-radius: 10px;
+  }
+  @media (max-width: 640px) {
+    .call-stage { width: 100%; max-width: 100%; }
+    .call-grid { grid-template-columns: minmax(0, 1fr); }
+    .tile.screen-mode {
+      height: min(62vh, 620px);
+      min-height: 220px;
+    }
+    .call-ctrls {
+      position: sticky;
+      bottom: max(8px, env(safe-area-inset-bottom));
+      padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(8, 11, 18, .92);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+    }
   }
   .tile:fullscreen,
   .tile video:fullscreen {
@@ -7103,9 +7134,14 @@ function ensurePC(peerUser) {
           const p = rv.play && rv.play();
           if (p && typeof p.catch === 'function') p.catch(() => {});
         }
+        // Screen shares should fit the whole phone viewport instead of being cropped like a webcam.
+        const isScreenTrack = /screen|display|window/i.test(String(e.track.label || ''));
+        if (rTile) {
+          rTile.classList.add('streaming');
+          rTile.classList.toggle('screen-mode', isScreenTrack);
+        }
         if (fsBtn) fsBtn.classList.remove('hidden');
         if (rAv) rAv.classList.add('hidden');
-        if (rTile) rTile.classList.add('streaming');
         applyRemotePeerAudioSettings(peerUser);
       };
       const hideVid = () => {
@@ -7116,7 +7152,7 @@ function ensurePC(peerUser) {
         if (rv) { rv.srcObject = null; rv.classList.add('hidden'); }
         if (fsBtn) fsBtn.classList.add('hidden');
         if (rAv) rAv.classList.remove('hidden');
-        if (rTile) rTile.classList.remove('streaming');
+        if (rTile) rTile.classList.remove('streaming', 'screen-mode');
       };
       // Удалённый трек при выключении камеры не «заканчивается», а получает mute — иначе картинка зависала бы
       e.track.onmute = hideVid;
