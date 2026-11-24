@@ -1,6 +1,6 @@
 const { app, BrowserWindow, session } = require('electron');
 
-const SERVER_URL = 'https://rustcord-server.onrender.com';
+const SERVER_URL = 'http://127.0.0.1:4173';
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -8,7 +8,7 @@ function createWindow() {
     height: 780,
     minWidth: 680,
     minHeight: 520,
-    title: 'Rustcord',
+    title: 'Auralis',
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
