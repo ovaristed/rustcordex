@@ -22,7 +22,7 @@ function serveFile(req, res) {
   let pathname;
   try { pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname); }
   catch { res.writeHead(400); return res.end('Bad request'); }
-  const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\\/+/, '');
+  const relative = pathname === '/' ? 'index.html' : (pathname.startsWith('/') ? pathname.slice(1) : pathname);
   const candidate = path.resolve(PUBLIC_DIR, relative);
   if (!candidate.startsWith(PUBLIC_DIR + path.sep)) {
     res.writeHead(403); return res.end('Forbidden');
