@@ -2833,6 +2833,32 @@ html[data-theme="glasscord"] .pop-profile-strip {
   #composer.voice-recording > #recTimer { order:1; }
   #composer.voice-locked > #voiceLockActions { order:1; }
 </style>
+
+<style id="auralis-unified-auth-design-v2514">
+  #authWrap { min-height:100%; padding:24px 18px; }
+  #authWrap > .card { position:relative; width:min(440px,100%); padding:clamp(28px,6vw,46px); gap:18px; border-radius:28px; background:rgba(18,22,33,.52); border:1px solid rgba(225,237,250,.16); border-top-color:rgba(255,255,255,.23); border-left-color:rgba(255,255,255,.20); backdrop-filter:blur(30px) saturate(175%); -webkit-backdrop-filter:blur(30px) saturate(175%); box-shadow:0 24px 80px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.07); animation:auralisAuthRise .55s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes auralisAuthRise { from{opacity:0;transform:translateY(22px) scale(.97)} to{opacity:1;transform:none} }
+  #authWrap .auth-brand { display:flex;align-items:center;justify-content:center;gap:11px;margin:0 0 3px; }
+  #authWrap .auth-brand-mark { display:grid;place-items:center;width:42px;height:42px;border-radius:14px;color:#fff;background:linear-gradient(135deg,#0a84ff,#5e5ce6);box-shadow:0 8px 24px rgba(10,132,255,.28); }
+  #authWrap .auth-brand-mark svg { width:23px;height:23px;color:#fff; }
+  #authWrap .auth-brand-name { font-size:30px;line-height:1;font-weight:760;letter-spacing:-.8px;background:linear-gradient(120deg,#48a5ff,#8b83ff 72%,#c18aff);background-clip:text;-webkit-background-clip:text;color:transparent; }
+  #authWrap .head h2 { margin:5px 0 8px;font-size:24px;letter-spacing:-.5px; }
+  #authWrap .head p { max-width:300px;margin:0 auto;color:rgba(230,236,255,.62);font-size:13px;line-height:1.55; }
+  #authWrap .ios-switch { border-radius:14px;background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.12); }
+  #authWrap .ios-thumb { border-radius:11px;background:linear-gradient(135deg,rgba(10,132,255,.48),rgba(94,92,230,.48));border-color:rgba(255,255,255,.22); }
+  #authWrap .ios-tab { height:40px;border-radius:11px;font-size:13px; }
+  #authWrap .field { gap:8px; }
+  #authWrap .lbl { padding-left:2px;color:rgba(243,246,252,.84);font-size:12px;font-weight:650;text-transform:none;letter-spacing:0; }
+  #authWrap input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) { width:100%;min-height:49px;padding:0 15px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22);color:#f3f6fc;font-size:14px; }
+  #authWrap input:focus { border-color:rgba(10,132,255,.9);background:rgba(0,0,0,.3);box-shadow:0 0 0 3px rgba(10,132,255,.15); }
+  #authWrap input::placeholder { color:rgba(230,236,255,.34); }
+  #authWrap .primary-btn { height:49px;margin-top:0;border:0;border-radius:14px;background:linear-gradient(135deg,#0a84ff,#5e5ce6);box-shadow:0 8px 25px rgba(10,132,255,.25);font-size:14px; }
+  #authWrap .primary-btn:hover { filter:brightness(1.08);box-shadow:0 12px 30px rgba(10,132,255,.34); }
+  #authWrap .err { min-height:18px;margin-top:-8px;color:#ff766e;font-size:12px; }
+  @media(max-width:420px){ #authWrap{padding:14px} #authWrap > .card{padding:28px 22px;border-radius:23px} }
+  @media(prefers-reduced-motion:reduce){ #authWrap > .card{animation:none} }
+</style>
+
 </head>
 <body>
 
@@ -2842,6 +2868,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
 
 <div id="authWrap" class="auth-wrap">
   <div class="card">
+    <div class="auth-brand"><span class="auth-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-6.5A2.5 2.5 0 0 1 4 11z"/><path d="M8 8h8M8 11.5h5"/></svg></span><span class="auth-brand-name">Auralis</span></div>
     <div class="head">
       <h2 id="authTitle">С возвращением!</h2>
       <p>Войди в Auralis, чтобы писать друзьям и звонить</p>
@@ -2870,8 +2897,6 @@ html[data-theme="glasscord"] .pop-profile-strip {
 
     <button id="authSubmit" type="button" class="primary-btn" onclick="submitAuth()">Войти</button>
     <div id="err" class="err"></div>
-    <a class="auth-register-link" href="/register.html">Создать аккаунт на отдельной странице</a>
-    <a class="auth-register-link" href="/auralis-liquid-glass.html">Открыть новый дизайн Liquid Glass</a>
   </div>
 </div>
 
@@ -3440,7 +3465,7 @@ async function loadIceServers(force) {
 }
 const pcState = new Map();
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
-let mode = 'login';
+let mode = new URLSearchParams(window.location.search).get('auth') === 'register' ? 'register' : 'login';
 let token = localStorage.getItem('rc_token') || '';
 let me = null;
 let ws = null;
@@ -5014,6 +5039,7 @@ function setMode(m) {
   document.getElementById('authSubmit').textContent = isReg ? 'Зарегистрироваться' : 'Войти';
   document.getElementById('authSubmit').disabled = false;
 }
+if (mode === 'register') setMode('register');
 function setErr(msg) { document.getElementById('err').textContent = msg; }
 
 async function submitAuth() {
@@ -5021,6 +5047,8 @@ async function submitAuth() {
   const password = document.getElementById('p').value;
   const p2 = document.getElementById('p2').value;
   if (!username || !password) return setErr('Введите логин и пароль');
+  if (mode === 'register' && (username.length < 2 || username.length > 32)) return setErr('Логин должен быть от 2 до 32 символов');
+  if (mode === 'register' && password.length < 10) return setErr('Пароль должен содержать не менее 10 символов');
   if (mode === 'register' && password !== p2) return setErr('Пароли не совпадают');
 
   const btn = document.getElementById('authSubmit');
