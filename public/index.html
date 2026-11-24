@@ -2667,6 +2667,8 @@ input,textarea,select { accent-color:var(--accent); }
         <div class="lbl">Тема оформления</div>
         <div class="theme-grid">
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Auralis</button>
+          <button type="button" class="theme-swatch" data-theme="dark" onclick="applyTheme('dark')"><span class="dot" style="background:#0a84ff"></span>Синяя</button>
+          <button type="button" class="theme-swatch" data-theme="crimson" onclick="applyTheme('crimson')"><span class="dot" style="background:#ff453a"></span>Закат</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
           <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
@@ -4092,9 +4094,9 @@ function isSingleStickerMessage(text) {
 
 const THEMES = {
   discord: {
-    bg: '#1e1f22', panelRgb: '49, 51, 56', accent: '#5865f2',
-    glow2: 'rgba(88, 101, 242, 0.08)', wallpaper: 'none',
-    overlay: 'rgba(30, 31, 34, 0.25)', effect: 'none'
+    bg: '#07090f', panelRgb: '18, 22, 33', accent: '#5865f2',
+    glow2: 'rgba(88, 101, 242, 0.16)', wallpaper: "url('/backgrounds/blue.jpg')",
+    overlay: 'rgba(7, 9, 15, 0.42)', effect: 'none'
   },
   emerald: {
     bg: '#050d09', panelRgb: '14, 30, 22', accent: '#30d158',
@@ -4108,8 +4110,18 @@ const THEMES = {
   },
   'glasscord': {
     bg: '#06121d', panelRgb: '44, 91, 112', accent: '#72e4df',
-    glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: "url('https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=2000&q=88')",
+    glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: "url('/backgrounds/blue.jpg')",
     overlay: 'rgba(4, 13, 24, 0.12)', effect: 'none'
+  },
+  dark: {
+    bg: '#07090f', panelRgb: '18, 22, 33', accent: '#0a84ff',
+    glow2: 'rgba(10, 132, 255, 0.22)', wallpaper: "url('/backgrounds/blue.jpg')",
+    overlay: 'rgba(7, 9, 15, 0.42)', effect: 'none'
+  },
+  crimson: {
+    bg: '#0f0608', panelRgb: '34, 15, 20', accent: '#ff453a',
+    glow2: 'rgba(255, 69, 58, 0.24)', wallpaper: "url('/backgrounds/orange.jpg')",
+    overlay: 'rgba(15, 6, 8, 0.48)', effect: 'embers'
   }
 };
 
