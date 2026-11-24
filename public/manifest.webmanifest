@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "Auralis",
+  "short_name": "Auralis",
+  "description": "Auralis — мессенджер для общения и сообществ",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090b12",
+  "theme_color": "#090b12",
+  "orientation": "any",
+  "icons": [
+    {"src": "/auralis-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}
