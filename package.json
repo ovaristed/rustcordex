@@ -57,7 +57,8 @@
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
       "uninstallDisplayName": "Auralis",
-      "language": 1049
+      "language": 1049,
+      "artifactName": "Auralis-Setup-${version}.${ext}"
     },
     "files": [
       "electron-main.js",
