@@ -2913,7 +2913,6 @@ html[data-theme]:not([data-theme="glasscord"]) .main {
   -webkit-backdrop-filter: blur(18px) saturate(1.18);
   backdrop-filter: blur(18px) saturate(1.18);
 }
-@media (max-width:760px) { #themeOpacity, #themeOpacityValue { display:none !important; } }
 </style>
 <style id="auralis-unified-opacity-fix">
 /* One transparency scale for every theme: 5% = nearly solid, 85% = very transparent. */
@@ -3452,6 +3451,10 @@ function openExternalSite(event, url) {
       window.cordova.InAppBrowser.open(target, '_system');
       return false;
     }
+    if (/Android/i.test(navigator.userAgent) && !window.cordova) {
+      window.location.href = 'intent://rustcord.hostless.app/download/#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;end';
+      return false;
+    }
     const opened = window.open(target, '_system');
     if (!opened) window.open(target, '_blank', 'noopener,noreferrer');
   } catch (error) { window.open(target, '_blank', 'noopener,noreferrer'); }
@@ -3865,7 +3868,6 @@ let currentPlayingAudio = null, currentPlayingUi = null;
 let uiZoom = Number(localStorage.getItem('rc_zoom') || 1);
 let pttEnabled = localStorage.getItem('rc_ptt_enabled') === 'true';
 let pttKey = localStorage.getItem('rc_ptt_key') || 'KeyV';
-let clearCacheOnExit = true;
 let gifDebounceTimer = null;
 
 function ruPlural(n, one, few, many) {
@@ -4531,10 +4533,12 @@ function cleanupAllBackgroundLoops() {
   closeSfxCtx();
 }
 
-window.addEventListener('beforeunload', () => {
+function handleAppPageExit() {
    clearLocalCacheNow();
    cleanupAllBackgroundLoops();
-});
+}
+window.addEventListener('beforeunload', handleAppPageExit);
+window.addEventListener('pagehide', handleAppPageExit);
 
 function setPttEnabled(enabled) {
   pttEnabled = !!enabled;
