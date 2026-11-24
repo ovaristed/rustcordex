@@ -38,7 +38,7 @@ document.getElementById('year').textContent=new Date().getFullYear();
 const windows=document.getElementById('windows');
 const android=document.getElementById('android');
 fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
-  const version = meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '') ? meta.version : '2.3.0';
+  const version = meta && /^\d+\.\d+\.\d+$/.test(meta.version || '') ? meta.version : '2.3.0';
   document.getElementById('version').textContent = 'Актуальная версия Auralis ' + version;
   windows.href = 'https://github.com/ovaristed/rustcordex/releases/download/windows-latest/Auralis-Setup-' + version + '.exe';
   windows.classList.remove('disabled');
