@@ -3,6 +3,10 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const { startLocalPreview } = require('./local-preview');
+const { autoUpdater } = require('electron-updater');
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
+let updateCheckPromise = null;
 
 app.setName('Auralis');
 if (process.platform === 'win32') app.setAppUserModelId('com.ovarist.auralis');
@@ -430,6 +434,35 @@ function isStatusSender(event) {
 }
 
 function setupIpc() {
+  const isTrustedAppSender = (event) => isOurOrigin((event.senderFrame && event.senderFrame.url) || '');
+  ipcMain.handle('auralis:update-version', (event) => {
+    if (!isTrustedAppSender(event)) throw new Error('Недоверенный источник');
+    return app.getVersion();
+  });
+  ipcMain.handle('auralis:update-check', async (event) => {
+    if (!isTrustedAppSender(event)) throw new Error('Недоверенный источник');
+    if (process.platform !== 'win32') return { supported: false, reason: 'Автообновление доступно только в Windows-версии.' };
+    if (updateCheckPromise) return updateCheckPromise;
+    updateCheckPromise = autoUpdater.checkForUpdates().finally(() => { updateCheckPromise = null; });
+    const result = await updateCheckPromise;
+    return { supported: true, version: app.getVersion(), updateAvailable: !!(result && result.updateInfo && result.updateInfo.version), availableVersion: result && result.updateInfo ? result.updateInfo.version : null };
+  });
+  ipcMain.handle('auralis:update-download', async (event) => {
+    if (!isTrustedAppSender(event)) throw new Error('Недоверенный источник');
+    if (process.platform !== 'win32') throw new Error('Обновление поддерживается только в Windows.');
+    await autoUpdater.downloadUpdate();
+    return { started: true };
+  });
+  ipcMain.on('auralis:update-install', (event) => {
+    if (!isTrustedAppSender(event)) return;
+    autoUpdater.quitAndInstall(false, true);
+  });
+  autoUpdater.on('checking-for-update', () => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('auralis:update-state', { state: 'checking' }));
+  autoUpdater.on('update-available', (info) => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('auralis:update-state', { state: 'available', version: info.version }));
+  autoUpdater.on('update-not-available', (info) => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('auralis:update-state', { state: 'current', version: info.version }));
+  autoUpdater.on('download-progress', (progress) => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('auralis:update-state', { state: 'downloading', percent: Math.round(progress.percent || 0) }));
+  autoUpdater.on('update-downloaded', (info) => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('auralis:update-state', { state: 'downloaded', version: info.version }));
+  autoUpdater.on('error', (error) => mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('auralis:update-state', { state: 'error', message: String(error && error.message || 'Ошибка обновления').slice(0, 240) }));
   ipcMain.on('rustcord:notify', (event, payload) => {
     if (!isOurOrigin((event.senderFrame && event.senderFrame.url) || '')) return;
     if (!Notification.isSupported()) return;
