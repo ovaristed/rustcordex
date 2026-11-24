@@ -2720,6 +2720,15 @@ function ensurePC(peerUser) {
   ensureRemoteTile(peerUser);
 
   const c = new RTCPeerConnection(RTC);
+  // Не теряем повторную renegotiation, если предыдущий SDP ещё согласуется.
+  c.__offerPending = false;
+  c.__makingOffer = false;
+  c.onsignalingstatechange = () => {
+    if (c.signalingState === 'stable' && c.__offerPending && !c.__makingOffer) {
+      c.__offerPending = false;
+      sendOfferTo(peerUser);
+    }
+  };
   if (micStream) {
     micStream.getTracks().forEach((t) => c.addTrack(t, micStream));
   }
@@ -2784,14 +2793,32 @@ function ensurePC(peerUser) {
 async function sendOfferTo(peerUser) {
   if (!peerUser || !ws || ws.readyState !== WebSocket.OPEN) return;
   const c = ensurePC(peerUser);
-  if (c.signalingState !== 'stable') return;
+  if (c.signalingState !== 'stable' || c.__makingOffer) {
+    c.__offerPending = true;
+    return;
+  }
+
+  c.__makingOffer = true;
   try {
     const offer = await c.createOffer();
+    // Состояние могло измениться, пока браузер создавал SDP.
+    if (c.signalingState !== 'stable') {
+      c.__offerPending = true;
+      return;
+    }
     await c.setLocalDescription(offer);
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'signal', to: peerUser, callContext, signal: { sdp: c.localDescription } }));
     }
-  } catch {}
+  } catch {
+    c.__offerPending = true;
+  } finally {
+    c.__makingOffer = false;
+    if (c.signalingState === 'stable' && c.__offerPending) {
+      c.__offerPending = false;
+      queueMicrotask(() => sendOfferTo(peerUser));
+    }
+  }
 }
 
 async function handleSignal(signal, fromUser, sigCtx) {
