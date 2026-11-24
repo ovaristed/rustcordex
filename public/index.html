@@ -3262,9 +3262,15 @@ html[data-theme="discord"] .main{
         <div class="theme-grid">
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Auralis</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
-          <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#bf5af2"></span>Сакура</button>
-          <button type="button" class="theme-swatch" data-theme="glasscord" title="Полупрозрачная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#35d9d0,#91d7ff,#b9a6ff);box-shadow:0 0 9px rgba(114,228,223,.65)"></span>Glasscord ✦</button>
+          <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
+          <button type="button" class="theme-swatch" data-theme="australis" onclick="applyTheme('australis')"><span class="dot" style="background:#244f9e"></span>Australis</button>
+          <button type="button" class="theme-swatch" data-theme="glasscord" title="Нейтральная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#e9edf4,#aeb8c8,#f7f8fb)"></span>Glasscord ✦</button>
         </div>
+      </div>
+      <div class="field">
+        <div class="lbl">Прозрачность интерфейса <span id="themeOpacityValue" style="float:right;color:var(--accent)">16%</span></div>
+        <input id="themeOpacity" type="range" min="5" max="85" step="1" value="16" style="width:100%;accent-color:var(--accent)" oninput="setThemeOpacity(this.value)" />
+        <div class="item-sub">Настраивает прозрачность панелей и окон. Значение сохраняется отдельно от темы.</div>
       </div>
       <div class="field mobile-accent-field">
         <div class="lbl">Акцентный цвет</div>
@@ -4760,8 +4766,13 @@ const THEMES = {
     glow2: 'rgba(255, 168, 198, 0.24)', wallpaper: "url('/backgrounds/purple.jpg')",
     overlay: 'rgba(9, 7, 16, 0.52)', effect: 'sakura'
   },
+  australis: {
+    bg: '#06101f', panelRgb: '12, 29, 54', accent: '#244f9e',
+    glow2: 'rgba(36, 79, 158, 0.24)', wallpaper: "url('/backgrounds/blue.jpg')",
+    overlay: 'rgba(4, 10, 22, 0.30)', effect: 'none'
+  },
   'glasscord': {
-    bg: '#06121d', panelRgb: '44, 91, 112', accent: '#72e4df',
+    bg: '#06121d', panelRgb: '44, 91, 112', accent: '#e8e8ec',
     glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: "url('/backgrounds/blue.jpg')",
     overlay: 'rgba(4, 13, 24, 0.12)', effect: 'none'
   },
@@ -4799,10 +4810,15 @@ function applyTheme(name) {
   }
   document.documentElement.style.setProperty('--theme-overlay', t.overlay || 'rgba(7, 9, 15, 0.52)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
-  const panelAlpha = valid === 'discord' ? '1' : (valid === 'glasscord' ? '0.22' : '0.16');
+  const savedOpacity = Number(localStorage.getItem('rc_theme_opacity'));
+  const panelAlpha = String(Number.isFinite(savedOpacity) && savedOpacity >= 0.05 && savedOpacity <= 0.85 ? savedOpacity : (valid === 'glasscord' ? 0.22 : 0.16));
   document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
   document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
   document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
+  const opacityControl = document.getElementById('themeOpacity');
+  const opacityValue = document.getElementById('themeOpacityValue');
+  if (opacityControl) opacityControl.value = String(Math.round(Number(panelAlpha) * 100));
+  if (opacityValue) opacityValue.textContent = Math.round(Number(panelAlpha) * 100) + '%';
   document.documentElement.style.setProperty('--accent', t.accent);
   document.documentElement.style.setProperty('--accent-rgb', hexToRgb(t.accent));
   document.documentElement.style.setProperty('--glow-2', t.glow2);
@@ -4811,10 +4827,18 @@ function applyTheme(name) {
     el.classList.toggle('active', el.dataset.theme === valid);
   });
   syncThemeEffect();
-  if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) {
-    const mobileAccent = localStorage.getItem('rc_accent_color') || '#30d158';
-    applyAccentColor(mobileAccent, false);
-  }
+
+}
+
+function setThemeOpacity(value) {
+  const alpha = Math.max(0.05, Math.min(0.85, Number(value) / 100));
+  localStorage.setItem('rc_theme_opacity', String(alpha));
+  document.documentElement.style.setProperty('--panel-alpha', String(alpha));
+  const t = THEMES[activeThemeName] || THEMES.discord;
+  document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + alpha + ')');
+  document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + alpha + ')');
+  const label = document.getElementById('themeOpacityValue');
+  if (label) label.textContent = Math.round(alpha * 100) + '%';
 }
 
 function applyAccentColor(color, persist = true) {
