@@ -2415,6 +2415,51 @@ input,textarea,select { accent-color:var(--accent); }
   .modal-card,.incoming-card,.app-dialog{background:#313338;border-color:rgba(255,255,255,.10)}
 }
 
+
+/* Auralis wallpaper restoration: keep theme artwork visible behind translucent app surfaces. */
+body{
+  background:
+    linear-gradient(var(--theme-overlay),var(--theme-overlay)),
+    var(--theme-wallpaper),
+    radial-gradient(circle at 15% 15%,rgba(var(--accent-rgb),.22),transparent 45%),
+    radial-gradient(circle at 85% 20%,var(--glow-2),transparent 45%),
+    var(--bg) !important;
+  background-size:cover,cover,auto,auto,auto !important;
+  background-position:center,center,center,center,center !important;
+  background-repeat:no-repeat !important;
+  background-attachment:fixed !important;
+}
+html[data-theme="discord"] .sidebar,
+html[data-theme="discord"] .main{
+  background:linear-gradient(145deg,rgba(20,24,38,.70),rgba(10,13,22,.76)) !important;
+  backdrop-filter:blur(24px) saturate(1.25);
+  -webkit-backdrop-filter:blur(24px) saturate(1.25);
+}
+body.lite-mode html[data-theme="discord"] .sidebar,
+body.lite-mode html[data-theme="discord"] .main{
+  background:rgba(18,22,33,.78) !important;
+}
+@media(max-width:760px){
+  body{background-attachment:scroll !important}
+  html[data-theme="discord"] .sidebar{
+    background:linear-gradient(180deg,rgba(31,34,42,.88),rgba(24,26,32,.91)) !important;
+    backdrop-filter:blur(18px) saturate(1.15);
+    -webkit-backdrop-filter:blur(18px) saturate(1.15);
+  }
+  html[data-theme="discord"] .main{
+    background:rgba(35,37,44,.90) !important;
+    backdrop-filter:blur(18px) saturate(1.15);
+    -webkit-backdrop-filter:blur(18px) saturate(1.15);
+  }
+  html[data-theme="discord"] .panel-body,
+  html[data-theme="discord"] .top-tabs,
+  html[data-theme="discord"] .bottom-dock,
+  html[data-theme="discord"] .chat-header,
+  html[data-theme="discord"] .composer{
+    background-color:rgba(28,30,36,.68) !important;
+  }
+}
+
 </style>
 </head>
 <body>
