@@ -8220,7 +8220,7 @@ checkSession();
   // leave the composer button inert.
   button.addEventListener('click', (event) => {
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
     toggleStickerPicker();
   }, true);
   panel.addEventListener('click', (event) => event.stopPropagation());
