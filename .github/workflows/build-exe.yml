@@ -121,6 +121,8 @@ jobs:
         run: |
           $installer = Get-ChildItem "dist/*.exe" | Where-Object { $_.Name -notmatch "uninstaller" } | Select-Object -First 1
           if (-not $installer) { throw "Windows installer EXE was not produced" }
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          Copy-Item $installer.FullName "dist/Auralis-Setup-$version.exe" -Force
           Copy-Item $installer.FullName "dist/Auralis-Setup.exe" -Force
 
       - name: Upload Windows installer
@@ -139,5 +141,7 @@ jobs:
           body: Latest Auralis Windows installer.
           prerelease: true
           make_latest: false
-          files: dist/Auralis-Setup.exe
+          files: |
+            dist/Auralis-Setup-*.exe
+            dist/Auralis-Setup.exe
           overwrite_files: true
