@@ -34,18 +34,22 @@ footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);f
 <footer class="wrap"><span>© <span id="year"></span> Auralis</span><span>Для входа и синхронизации требуется подключение к интернету.</span></footer>
 <script>
 document.getElementById('year').textContent=new Date().getFullYear();
-// Stable direct links: no browser-side GitHub API lookup required.
+// Resolve the current release version from the same metadata used by the app.
 const windows=document.getElementById('windows');
-windows.href='https://github.com/ovaristed/rustcordex/releases/download/windows-latest/Auralis-Setup.exe';
-windows.classList.remove('disabled');
-windows.textContent='Скачать установщик EXE';
-windows.removeAttribute('target');
-windows.setAttribute('rel','noopener');
 const android=document.getElementById('android');
-android.href='https://github.com/ovaristed/rustcordex/releases/download/android-latest/Auralis-Android.apk';
-android.classList.remove('disabled');
-android.textContent='Скачать Auralis для Android';
-android.removeAttribute('target');
-android.setAttribute('rel','noopener');
+fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
+  const version = meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '') ? meta.version : '2.3.0';
+  document.getElementById('version').textContent = 'Актуальная версия Auralis ' + version;
+  windows.href = 'https://github.com/ovaristed/rustcordex/releases/download/windows-latest/Auralis-Setup-' + version + '.exe';
+  windows.classList.remove('disabled');
+  windows.textContent = 'Скачать Auralis Setup ' + version;
+  windows.setAttribute('rel','noopener');
+  android.href = 'https://github.com/ovaristed/rustcordex/releases/download/android-latest/Auralis-Android-' + version + '.apk';
+  android.classList.remove('disabled');
+  android.textContent = 'Скачать Auralis Android ' + version;
+  android.setAttribute('rel','noopener');
+}).catch(() => {
+  document.getElementById('version').textContent = 'Auralis · версия 2.3.0';
+});
 </script>
 </body></html>
