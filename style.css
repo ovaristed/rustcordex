@@ -1344,3 +1344,19 @@
   max-width: 100%;
   max-height: 75vh;
 }
+
+
+/* Hold-to-record voice messages with swipe-up lock */
+.composer.voice-recording #attachFileBtn,
+.composer.voice-recording #msgInput,
+.composer.voice-recording .send-btn,
+.composer.voice-recording > .rec-btn:not(#recVoiceBtn) { display:none !important; }
+.composer.voice-recording #recVoiceBtn { order:0; }
+.composer.voice-recording #recTimer { display:inline-flex !important; flex:1; align-items:center; font-variant-numeric:tabular-nums; }
+.voice-lock-actions { display:none; align-items:center; gap:8px; }
+.composer.voice-locked #recVoiceBtn { display:none; }
+.composer.voice-locked .voice-lock-actions { display:flex; }
+.voice-action-cancel,.voice-action-send { border:0; border-radius:12px; padding:0 14px; height:42px; color:#fff; font-weight:700; cursor:pointer; }
+.voice-action-cancel { background:rgba(255,255,255,.12); }
+.voice-action-send { background:var(--accent); }
+.composer.voice-recording { touch-action:pan-y; }
