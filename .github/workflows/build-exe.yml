@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: auralis-windows-build
@@ -116,6 +116,13 @@ jobs:
       - name: Build Windows installer (NSIS)
         run: npm run build:nsis -- --publish never
 
+      - name: Prepare stable Windows download filename
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem "dist/*.exe" | Where-Object { $_.Name -notmatch "uninstaller" } | Select-Object -First 1
+          if (-not $installer) { throw "Windows installer EXE was not produced" }
+          Copy-Item $installer.FullName "dist/Auralis-Setup.exe" -Force
+
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
@@ -123,3 +130,14 @@ jobs:
           path: dist/*.exe
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish Windows installer download
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-latest
+          name: Auralis for Windows (latest)
+          body: Latest Auralis Windows installer.
+          prerelease: true
+          make_latest: false
+          files: dist/Auralis-Setup.exe
+          overwrite_files: true
