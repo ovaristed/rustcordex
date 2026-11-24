@@ -47,6 +47,27 @@ jobs:
       - name: Sync Auralis web shell
         run: npx cap sync android
 
+      - name: Declare Android runtime permissions
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'android/app/src/main/AndroidManifest.xml';
+          let xml = fs.readFileSync(file, 'utf8');
+          const permissions = [
+            'android.permission.RECORD_AUDIO',
+            'android.permission.MODIFY_AUDIO_SETTINGS',
+            'android.permission.CAMERA'
+          ];
+          for (const permission of permissions) {
+            const tag = '<uses-permission android:name="' + permission + '" />';
+            if (!xml.includes('android:name="' + permission + '"')) {
+              xml = xml.replace(/<manifest\\b[^>]*>/, match => match + '\\n    ' + tag);
+            }
+          }
+          fs.writeFileSync(file, xml);
+          console.log('Declared microphone, audio routing and camera permissions');
+          NODE
+
       - name: Set Android app version from package.json
         run: |
           node <<'NODE'
