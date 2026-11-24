@@ -136,11 +136,10 @@
   .app-version-hint{font-size:10px;letter-spacing:0;opacity:.8}
     .mobile-accent-field{display:none}
   .accent-picker{display:flex;align-items:center;gap:14px;margin-top:10px}
-  .accent-choice,.accent-custom{position:relative;width:42px;height:42px;min-width:42px;border:2px solid rgba(255,255,255,.24);border-radius:50%;padding:4px;background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer}
+  .accent-choice{position:relative;width:44px;height:44px;min-width:44px;border:2px solid rgba(255,255,255,.22);border-radius:50%;padding:4px;background:rgba(255,255,255,.06);display:grid;place-items:center;cursor:pointer;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
   .accent-choice span{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
-  .accent-choice.active{border-color:#fff;box-shadow:0 0 0 3px rgba(var(--accent-rgb),.28),0 0 18px rgba(var(--accent-rgb),.28)}
-  .accent-custom{color:var(--text);font-size:22px;font-weight:400}
-  .accent-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+  .accent-choice.active{border-color:#fff;box-shadow:0 0 0 3px rgba(var(--accent-rgb),.28),0 0 18px rgba(var(--accent-rgb),.28);transform:scale(1.07)}
+  .accent-choice:active{transform:scale(.94)}
   @media(max-width:760px){
     .desktop-theme-field{display:none!important}
     .mobile-accent-field{display:block}
@@ -3272,12 +3271,11 @@ html[data-theme="discord"] .main{
         <div class="accent-picker" role="group" aria-label="Выбор акцентного цвета">
           <button type="button" class="accent-choice" data-accent="#30d158" aria-label="Зелёный" title="Зелёный" onclick="applyAccentColor('#30d158')"><span style="background:#30d158"></span></button>
           <button type="button" class="accent-choice" data-accent="#ff78ad" aria-label="Розовый" title="Розовый" onclick="applyAccentColor('#ff78ad')"><span style="background:#ff78ad"></span></button>
-          <label class="accent-custom" title="Свой цвет">
-            <input id="customAccentColor" type="color" value="#30d158" aria-label="Выбрать свой акцентный цвет" onchange="applyAccentColor(this.value)" />
-            <span aria-hidden="true">＋</span>
-          </label>
+          <button type="button" class="accent-choice" data-accent="#35c9f2" aria-label="Циан" title="Циан" onclick="applyAccentColor('#35c9f2')"><span style="background:#35c9f2"></span></button>
+          <button type="button" class="accent-choice" data-accent="#a78bfa" aria-label="Лавандовый" title="Лавандовый" onclick="applyAccentColor('#a78bfa')"><span style="background:#a78bfa"></span></button>
+          <button type="button" class="accent-choice" data-accent="#ff9f43" aria-label="Янтарный" title="Янтарный" onclick="applyAccentColor('#ff9f43')"><span style="background:#ff9f43"></span></button>
         </div>
-        <div class="item-sub">Выбери цвет интерфейса или задай собственный.</div>
+        <div class="item-sub">Выбери один из готовых акцентных цветов.</div>
       </div>
       <div class="field">
         <div class="lbl">Кэш и данные сессии</div>
@@ -3294,11 +3292,7 @@ html[data-theme="discord"] .main{
         <div class="lbl">Уведомления</div>
         <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
           <input id="desktopNotificationsToggle" type="checkbox" style="width:auto;" onchange="setDesktopNotifications(this.checked)" />
-          <span>Показывать уведомления о сообщениях</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
-          <input id="callNotificationsToggle" type="checkbox" style="width:auto;" onchange="setCallNotifications(this.checked)" />
-          <span>Уведомления о звонках</span>
+          <span>Уведомления о сообщениях и звонках</span>
         </label>
         <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
           <input id="notificationSoundsToggle" type="checkbox" style="width:auto;" onchange="setNotificationSounds(this.checked)" />
@@ -4353,7 +4347,7 @@ function playNotificationSound(name) {
 }
 
 function notifyDesktop(title, body, tag, kind = 'message') {
-  if (!desktopNotificationsEnabled || (kind === 'call' && !callNotificationsEnabled)) return;
+  if (!desktopNotificationsEnabled) return;
   const payload = {
     title: String(title || 'Auralis').slice(0, 100),
     body: String(body || '').slice(0, 220),
@@ -4383,10 +4377,8 @@ async function setDesktopNotifications(enabled, requestPermission = true) {
 }
 
 function setCallNotifications(enabled) {
-  callNotificationsEnabled = !!enabled;
-  localStorage.setItem('rc_call_notifications', callNotificationsEnabled ? '1' : '0');
-  const cb = document.getElementById('callNotificationsToggle');
-  if (cb) cb.checked = callNotificationsEnabled;
+  // Legacy compatibility: call and message notifications now share one switch.
+  setDesktopNotifications(enabled);
 }
 
 function setNotificationSounds(enabled) {
@@ -4816,8 +4808,7 @@ function applyAccentColor(color, persist = true) {
   document.querySelectorAll('.accent-choice').forEach((el) => {
     el.classList.toggle('active', el.dataset.accent === value);
   });
-  const custom = document.getElementById('customAccentColor');
-  if (custom) custom.value = value;
+
 }
 
 function setSidebarWidth(px) {
@@ -5019,7 +5010,6 @@ async function openSettings() {
   loadProfileForm();
   await populateAudioDevices();
   const n = document.getElementById('desktopNotificationsToggle'); if (n) n.checked = desktopNotificationsEnabled;
-  const calls = document.getElementById('callNotificationsToggle'); if (calls) calls.checked = callNotificationsEnabled;
   const snd = document.getElementById('notificationSoundsToggle'); if (snd) snd.checked = notificationSoundsEnabled;
   await setDesktopNotifications(desktopNotificationsEnabled, false);
 }
