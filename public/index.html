@@ -8222,7 +8222,7 @@ checkSession();
     event.preventDefault();
     event.stopPropagation();
     toggleStickerPicker();
-  });
+  }, true);
   panel.addEventListener('click', (event) => event.stopPropagation());
   document.addEventListener('click', (event) => {
     if (panel.classList.contains('hidden')) return;
