@@ -3,10 +3,10 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 
-app.setName('Rustcord');
-if (process.platform === 'win32') app.setAppUserModelId('com.ovarist.rustcord');
+app.setName('Auralis');
+if (process.platform === 'win32') app.setAppUserModelId('com.ovarist.auralis');
 
-const DEFAULT_SERVER_URL = process.env.RUSTCORD_SERVER_URL || 'https://rustcord.hostless.app';
+const DEFAULT_SERVER_URL = process.env.AURALIS_SERVER_URL || process.env.AURALIS_SERVER_URL || 'http://127.0.0.1:4173';
 const REQUEST_TIMEOUT_MS = 12000;
 
 let mainWindow = null;
@@ -39,7 +39,7 @@ function checkServerReachable(targetUrl, timeoutMs = REQUEST_TIMEOUT_MS) {
       parsed.toString(),
       {
         headers: {
-          'User-Agent': 'Rustcord-Desktop/1.0',
+          'User-Agent': 'Auralis-Desktop/1.0',
           'Accept': 'text/html,*/*'
         }
       },
@@ -80,7 +80,7 @@ function getStatusHtml() {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rustcord — Подключение</title>
+  <title>Auralis — Подключение</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -181,9 +181,9 @@ function getStatusHtml() {
 <body>
   <div class="card">
     <div class="badge">R</div>
-    <h1 id="title">Подключаемся к Rustcord...</h1>
+    <h1 id="title">Подключаемся к Auralis...</h1>
     <div id="spinner" class="spinner"></div>
-    <p id="message" class="desc">Загружаем Rustcord.</p>
+    <p id="message" class="desc">Загружаем Auralis.</p>
 
     <div id="controls" class="hidden">
       <input id="serverInput" class="url-box" type="text" placeholder="https://..." />
@@ -215,7 +215,7 @@ function getStatusHtml() {
         }
 
         if (payload.mode === 'loading') {
-          titleEl.textContent = payload.title || 'Подключаемся к Rustcord...';
+          titleEl.textContent = payload.title || 'Подключаемся к Auralis...';
           messageEl.textContent = payload.message || 'Проверяем соединение с сервером...';
           spinnerEl.classList.remove('hidden');
           controlsEl.classList.add('hidden');
@@ -266,7 +266,7 @@ async function connectToServer(rawUrl) {
 
   sendStatus({
     mode: 'loading',
-    title: 'Подключаемся к Rustcord...',
+    title: 'Подключаемся к Auralis...',
     message: `Проверяем доступность ${currentServerUrl}...`
   });
 
@@ -298,7 +298,7 @@ async function showConnectionError(message) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const statusUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(getStatusHtml());
   try { if (!mainWindow.webContents.getURL().startsWith('data:text/html')) await mainWindow.loadURL(statusUrl); } catch {}
-  sendStatus({ mode: 'error', title: 'Не удалось открыть Rustcord', message });
+  sendStatus({ mode: 'error', title: 'Не удалось открыть Auralis', message });
 }
 
 function isOurOrigin(url) {
@@ -389,7 +389,7 @@ function setupIpc() {
   ipcMain.on('rustcord:notify', (event, payload) => {
     if (!isOurOrigin((event.senderFrame && event.senderFrame.url) || '')) return;
     if (!Notification.isSupported()) return;
-    const title = String(payload && payload.title || 'Rustcord').slice(0, 100);
+    const title = String(payload && payload.title || 'Auralis').slice(0, 100);
     const body = String(payload && payload.body || '').slice(0, 220);
     const notification = new Notification({ title, body, silent: true, urgency: 'normal' });
     notification.on('click', () => {
@@ -423,11 +423,11 @@ function createTray() {
   let icon = nativeImage.createFromPath(iconPath);
   if (!icon || icon.isEmpty()) icon = nativeImage.createEmpty();
   tray = new Tray(icon);
-  tray.setToolTip('Rustcord');
+  tray.setToolTip('Auralis');
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Открыть Rustcord', click: showMainWindow },
+    { label: 'Открыть Auralis', click: showMainWindow },
     { type: 'separator' },
-    { label: 'Выйти из Rustcord', click: () => { isQuitting = true; app.quit(); } }
+    { label: 'Выйти из Auralis', click: () => { isQuitting = true; app.quit(); } }
   ]));
   tray.on('click', showMainWindow);
   tray.on('double-click', showMainWindow);
@@ -439,7 +439,7 @@ function createWindow() {
     height: 820,
     minWidth: 780,
     minHeight: 560,
-    title: 'Rustcord',
+    title: 'Auralis',
     backgroundColor: '#07090f',
     autoHideMenuBar: true,
     webPreferences: {
@@ -494,6 +494,6 @@ if (!gotLock) {
     });
   });
 
-  app.on('window-all-closed', () => { /* Rustcord remains available in the system tray. */ });
+  app.on('window-all-closed', () => { /* Auralis remains available in the system tray. */ });
   app.on('before-quit', () => { isQuitting = true; });
 }
