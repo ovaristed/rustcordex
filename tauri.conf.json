@@ -1,22 +1,22 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Rustcord",
+  "productName": "Auralis",
   "version": "0.1.0",
-  "identifier": "com.rustcord.client",
+  "identifier": "com.auralis.client",
   "build": {
     "frontendDist": "../public"
   },
   "app": {
     "windows": [
       {
-        "title": "Rustcord",
+        "title": "Auralis",
         "width": 1240,
         "height": 820,
         "minWidth": 800,
         "minHeight": 560,
         "resizable": true,
         "fullscreen": false,
-        "url": "https://rustcord-server.onrender.com"
+        "url": "http://127.0.0.1:4173"
       }
     ],
     "security": {
