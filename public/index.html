@@ -4875,13 +4875,27 @@ function toggleStickerPicker(forceState) {
   const panel = document.getElementById('stickerPicker');
   const button = document.getElementById('stickerPickerBtn');
   if (!panel) return;
-  // Keep the picker outside the transformed chat layout so its fixed layer
-  // is not trapped beneath the animated overlay canvas or clipped by chat panes.
+  // A fixed picker must be a direct body child: transformed app containers can
+  // otherwise capture its containing block and clip it outside the viewport.
   if (panel.parentElement !== document.body) document.body.appendChild(panel);
   const open = typeof forceState === 'boolean' ? forceState : panel.classList.contains('hidden');
+  if (open && button) {
+    const r = button.getBoundingClientRect();
+    panel.style.position = 'fixed';
+    panel.style.zIndex = '9999';
+    panel.style.left = 'auto';
+    panel.style.right = Math.max(12, Math.round(window.innerWidth - r.right)) + 'px';
+    panel.style.bottom = 'auto';
+    panel.style.top = Math.max(12, Math.round(r.top - 372)) + 'px';
+  }
   panel.classList.toggle('hidden', !open);
   if (button) button.setAttribute('aria-expanded', open ? 'true' : 'false');
-  if (open) setStickerPickerMode(stickerPickerMode);
+  if (open) {
+    if (!Array.isArray(recentStickers) || !recentStickers.length) {
+      recentStickers = ['🔥','😂','😎','🐸','💀','🎉','67','777','52','48'];
+    }
+    setStickerPickerMode(stickerPickerMode);
+  }
 }
 function setStickerPickerMode(mode) {
   stickerPickerMode = mode === 'gif' ? 'gif' : 'stickers';
@@ -8164,6 +8178,62 @@ checkSession();
     .call-stage .call-grid { width:100% !important; min-width:0 !important; }
   }
 </style>
+
+
+<style id="auralis-247-desktop-settings-stickers-fix">
+  /* Desktop settings must retain all destinations, even in a narrow desktop window. */
+  @media (min-width: 761px) {
+    #settingsModal .settings-tabs {
+      display:grid !important;
+      grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+      visibility:visible !important;
+      opacity:1 !important;
+    }
+    #settingsModal .settings-tabs #sTabAppearance,
+    #settingsModal .settings-tabs #sTabAudio,
+    #settingsModal .settings-tabs #sTabBinds,
+    #settingsModal .settings-tabs #sTabProfile {
+      display:block !important;
+      visibility:visible !important;
+      opacity:1 !important;
+      min-width:0 !important;
+    }
+  }
+  #stickerPicker:not(.hidden) {
+    display:flex !important;
+    position:fixed !important;
+    z-index:9999 !important;
+    max-height:min(360px,45vh) !important;
+    pointer-events:auto !important;
+  }
+  #stickerPicker .sticker-picker-grid,
+  #stickerPicker .sticker-picker-head,
+  #stickerPicker .sticker-picker-item { pointer-events:auto !important; }
+</style>
+<script id="auralis-247-sticker-settings-runtime-fix">
+(function bindStickerPickerReliably() {
+  const button = document.getElementById('stickerPickerBtn');
+  const panel = document.getElementById('stickerPicker');
+  if (!button || !panel || button.dataset.reliableStickerBinding === '1') return;
+  button.dataset.reliableStickerBinding = '1';
+  // Use a delegated listener so a visual layer or stale inline handler cannot
+  // leave the composer button inert.
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggleStickerPicker();
+  });
+  panel.addEventListener('click', (event) => event.stopPropagation());
+  document.addEventListener('click', (event) => {
+    if (panel.classList.contains('hidden')) return;
+    if (panel.contains(event.target) || button.contains(event.target)) return;
+    toggleStickerPicker(false);
+  });
+  window.addEventListener('resize', () => {
+    if (!panel.classList.contains('hidden')) toggleStickerPicker(true);
+  }, {passive:true});
+})();
+</script>
 
 </body>
 </html>
