@@ -5000,7 +5000,7 @@ function applyTheme(name) {
   }
   document.documentElement.style.setProperty('--theme-overlay', desktopThemeVisuals ? (t.overlay || 'rgba(7, 9, 15, 0.52)') : 'rgba(0,0,0,0)');
   document.documentElement.style.setProperty('--panel-rgb', t.panelRgb);
-   const panelAlpha = String(t.panelAlpha || 0.66);
+   const panelAlpha = '0.22';
    document.documentElement.style.setProperty('--panel-alpha', panelAlpha);
    document.documentElement.style.setProperty('--glass', 'rgba(' + t.panelRgb + ', ' + panelAlpha + ')');
    document.documentElement.style.setProperty('--glass-solid', 'rgba(' + t.panelRgb + ', ' + Math.min(0.92, Number(panelAlpha) + 0.12) + ')');
