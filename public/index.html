@@ -4957,9 +4957,9 @@ const THEMES = {
     overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.62, effect: 'aurora'
   },
   liquidglass: {
-    bg: '#07182b', panelRgb: '16, 43, 70', accent: '#78dcff',
-    glow2: 'rgba(42, 174, 255, 0.26)', wallpaper: "url('/backgrounds/liquid-glass.jpg')",
-    overlay: 'rgba(3, 20, 38, 0.10)', panelAlpha: 0.20, effect: 'none'
+    bg: '#07182b', panelRgb: '255, 255, 255', accent: '#dcefff',
+    glow2: 'rgba(255, 255, 255, 0.08)', wallpaper: "url('https://server.wallpaperalchemy.com/storage/wallpapers/350/macos-tahoe-4k-wallpaper.jpg')",
+    overlay: 'rgba(3, 12, 24, 0.025)', panelAlpha: 0.12, effect: 'none'
   },
 };
 
@@ -8045,6 +8045,14 @@ checkSession();
   html[data-theme="liquidglass"] body {
     background:#07182b url("https://server.wallpaperalchemy.com/storage/wallpapers/350/macos-tahoe-4k-wallpaper.jpg") center center / cover fixed no-repeat !important;
   }
+  html[data-theme="liquidglass"] .main,
+  html[data-theme="liquidglass"] #settingsModal .modal-card,
+  html[data-theme="liquidglass"] #emojiPicker,
+  html[data-theme="liquidglass"] #gifPicker,
+  html[data-theme="liquidglass"] .floating-menu,
+  html[data-theme="liquidglass"] .select-menu,
+  html[data-theme="liquidglass"] .reaction-picker,
+  html[data-theme="liquidglass"] .user-menu,
   html[data-theme="liquidglass"] .sidebar,
   html[data-theme="liquidglass"] .top-tabs,
   html[data-theme="liquidglass"] .bottom-dock,
@@ -8139,28 +8147,21 @@ checkSession();
     }
     html[data-theme="liquidglass"] body { background-attachment:scroll !important; }
   }
-  /* Restore the call stage's original full-width, flexible base dimensions. */
-  .call-stage {
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    height:auto !important;
-    min-height:220px !important;
-    max-height:min(75vh,calc(100dvh - 360px)) !important;
-    resize:vertical !important;
-    align-self:stretch !important;
-    flex:0 0 auto !important;
-    overflow:auto !important;
-  }
-  .call-stage .call-grid { width:100% !important; min-width:0 !important; }
-  @media(max-width:760px) {
+  /* Desktop only: restore the wide, resizable call panel and use the available chat width. */
+  @media(min-width:761px) {
     .call-stage {
       width:100% !important;
-      max-width:100% !important;
-      min-height:220px !important;
-      max-height:min(75dvh,calc(100dvh - 240px)) !important;
+      max-width:none !important;
+      min-width:0 !important;
       height:auto !important;
+      min-height:300px !important;
+      max-height:calc(100dvh - 220px) !important;
+      resize:both !important;
+      align-self:stretch !important;
+      flex:1 1 auto !important;
+      overflow:auto !important;
     }
+    .call-stage .call-grid { width:100% !important; min-width:0 !important; }
   }
 </style>
 
