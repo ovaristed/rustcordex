@@ -2519,6 +2519,137 @@ html[data-theme="discord"] .main{
     font-size: 16px !important;
   }
 }
+
+/* Final Android layout pass: safe areas, stable scrolling and touch-friendly sheets. */
+@media (max-width: 760px) {
+  html, body, #zoomRoot, #app {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  body { overscroll-behavior: none; }
+  .sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: 0 !important;
+  }
+  .sidebar-top {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+  .panel-body {
+    order: 1 !important;
+    display: flex;
+    flex: 1 1 auto !important;
+    flex-direction: column;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 16px !important;
+  }
+  .panel-body.hidden { display: none !important; }
+  .top-tabs {
+    order: 2 !important;
+    display: grid !important;
+    flex: 0 0 auto !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+  }
+  .bottom-dock {
+    flex: 0 0 auto !important;
+    padding-bottom: max(6px, env(safe-area-inset-bottom)) !important;
+  }
+  .list-stack { min-width: 0; }
+  .list-item { min-width: 0; }
+  .item-name, .item-sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .main {
+    display: none;
+    min-height: 0 !important;
+    flex-direction: column !important;
+  }
+  body.mobile-chat-open .main { display: flex !important; }
+  .chat-header { flex: 0 0 auto; padding-top: max(8px, env(safe-area-inset-top)) !important; }
+  .messages {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 12px !important;
+  }
+  .emoji-bar {
+    flex: 0 0 auto !important;
+    min-height: 44px;
+    border-radius: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .composer {
+    flex: 0 0 auto !important;
+    padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  }
+  .composer input, .field input:not([type="checkbox"]), .field select, .field textarea {
+    font-size: 16px !important;
+  }
+  .profile-popover {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: min(78dvh, 680px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+  .pop-banner { height: 76px !important; }
+  .pop-body { gap: 10px !important; padding-bottom: 18px !important; }
+  .pop-menu-btn { min-height: 50px !important; }
+  .modal-backdrop, .app-dialog-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    align-items: flex-end !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  .modal-card, .incoming-card, .app-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(92dvh - env(safe-area-inset-top)) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    padding: 16px 14px max(18px, env(safe-area-inset-bottom)) !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+  .modal-head { top: -16px !important; }
+  .settings-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+  .s-tab { min-width: 0 !important; padding-inline: 5px !important; }
+  button, input, select, textarea { touch-action: manipulation; }
+}
+@media (max-width: 380px) {
+  .sec-lbl { font-size: 11px !important; }
+  .list-item { padding-inline: 8px !important; }
+  .header-actions .sm-btn { max-width: 88px !important; }
+  .call-pill { padding-inline: 8px !important; }
+  .settings-tabs { gap: 3px !important; }
+  .s-tab { font-size: 11px !important; }
+}
 </style>
 </head>
 <body>
