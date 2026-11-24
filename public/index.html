@@ -7033,7 +7033,14 @@ async function toggleScreen() {
 
   if (!scrStream) {
     if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
-      showToast('Демонстрация экрана недоступна. Открой сайт по HTTPS или на localhost.', "error");
+      const isAndroidApp = /Android/i.test(navigator.userAgent || '') &&
+        !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'android');
+      showToast(
+        isAndroidApp
+          ? 'Демонстрация экрана пока не поддерживается в Android-приложении. Нужна системная запись экрана Android (MediaProjection); localhost здесь не поможет.'
+          : 'Демонстрация экрана недоступна в этом браузере. Открой Auralis по HTTPS и используй браузер с поддержкой захвата экрана.',
+        "error"
+      );
       return;
     }
 
