@@ -1,0 +1,15 @@
+{
+  "appId": "com.ovarist.auralis",
+  "appName": "Auralis",
+  "webDir": "public",
+  "server": {
+    "url": "https://rustcord.hostless.app",
+    "cleartext": false,
+    "allowNavigation": [
+      "rustcord.hostless.app"
+    ]
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
