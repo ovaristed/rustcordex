@@ -2084,6 +2084,26 @@
     .wallpaper-reset { font-size:10px; padding:6px 7px; }
   }
 
+
+  /* v1.8 — call controls, participant state indicators and safe resize bounds */
+  .call-stage { min-height:300px !important; }
+  .call-ctrls { position:relative; z-index:12; pointer-events:auto; }
+  .call-ctrls .round-btn { position:relative; z-index:13; pointer-events:auto !important; cursor:pointer; }
+  .call-ctrls .round-btn.off, html[data-theme="glasscord"] .call-ctrls .round-btn.off {
+    background:#ff453a !important; border:1px solid rgba(255,255,255,.42) !important; color:#fff !important;
+    box-shadow:0 0 0 3px rgba(255,69,58,.20),0 5px 16px rgba(0,0,0,.22) !important;
+  }
+  .call-ctrls .round-btn.off svg, html[data-theme="glasscord"] .call-ctrls .round-btn.off svg { color:#fff !important; }
+  .call-ctrls .round-btn.on, html[data-theme="glasscord"] .call-ctrls .round-btn.on {
+    background:#30d158 !important; border:1px solid rgba(255,255,255,.35) !important; color:#06140a !important;
+  }
+  .call-state-badges { position:absolute; top:9px; left:9px; z-index:8; display:flex; flex-wrap:wrap; gap:5px; max-width:calc(100% - 18px); pointer-events:none; }
+  .call-state-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 7px; border-radius:8px; color:#fff; background:rgba(190,35,35,.90); border:1px solid rgba(255,255,255,.28); box-shadow:0 2px 9px rgba(0,0,0,.25); font-size:10px; line-height:1.2; font-weight:750; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  .call-state-badge.deaf { background:rgba(126,35,55,.94); }
+  html[data-theme="glasscord"] .call-state-badge { background:rgba(190,35,35,.88) !important; color:#fff !important; }
+  html[data-theme="glasscord"] .call-state-badge.deaf { background:rgba(126,35,55,.94) !important; }
+  @media(max-width:640px) { .call-stage { min-height:280px !important; } }
+
 </style>
 </head>
 <body>
@@ -2223,6 +2243,7 @@
       <div id="callGrid" class="call-grid">
         <div id="localTile" class="tile">
           <div id="localAv" class="big-av">Я</div>
+          <div id="localCallState" class="call-state-badges" aria-live="polite"></div>
           <div id="localStreamNotice" class="stream-status-box hidden">
             <span class="live-pill">LIVE • ЭКРАН</span>
             <div style="font-size:13.5px;font-weight:700;">Вы стримите экран</div>
@@ -2608,7 +2629,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.7</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.8</div>
   </div>
 </div>
 
@@ -5692,6 +5713,12 @@ function connectWS() {
         playDiscordSfx('leave');
         endCall(false, callInitiator === (me && me.username));
       }
+    } else if (data.type === 'call-state') {
+      const eventCtx = data.callContext;
+      if (inCall && callContext && callSessionToken && data.callId === callSessionToken && eventCtx && callContext.kind === eventCtx.kind && String(callContext.id) === String(eventCtx.id)) {
+        remoteCallStates.set(data.from, {micMuted:!!(data.state && data.state.micMuted),deafened:!!(data.state && data.state.deafened)});
+        renderCallStateBadges(document.getElementById('remoteCallState_'+data.from),remoteCallStates.get(data.from));
+      }
     } else if (data.type === 'signal') {
       await handleSignal(data.signal, data.from, data.callContext, data.callId);
     }
@@ -5766,11 +5793,13 @@ function ensureRemoteTile(username) {
   tile.className = 'tile';
   tile.innerHTML = (
     '<div id="remoteAv_' + esc(username) + '" class="big-av">' + renderAvatarHtml(username) + '</div>' +
+    '<div id="remoteCallState_' + esc(username) + '" class="call-state-badges" aria-live="polite"></div>' +
     '<video id="remoteVideo_' + esc(username) + '" autoplay playsinline class="hidden"></video>' +
     '<button id="remoteFsBtn_' + esc(username) + '" type="button" class="fs-btn hidden">На весь экран</button>' +
     '<div id="remoteTag_' + esc(username) + '" class="tile-tag">' + esc(displayNameOf(username)) + '</div>'
   );
   grid.appendChild(tile);
+  renderCallStateBadges(document.getElementById('remoteCallState_' + username), remoteCallStates.get(username) || {});
 
   const rv = tile.querySelector('video');
   const fsBtn = tile.querySelector('button');
@@ -5794,6 +5823,7 @@ function cleanupPeerConnection(username) {
     peerConnections.delete(username);
   }
   pcState.delete(username);
+  remoteCallStates.delete(username);
   const aud = remoteAudios.get(username);
   if (aud) { aud.srcObject = null; try { aud.remove(); } catch {} remoteAudios.delete(username); }
   remoteSpeakingState.delete(username);
@@ -5998,6 +6028,7 @@ function endCall(notify = true, postLog = true) {
   // peerConnections entry, but their stale DOM tiles would reappear in the next DM call.
   document.querySelectorAll('#callGrid [id^="remoteTile_"]').forEach((tile) => tile.remove());
   remoteStreams.clear();
+  remoteCallStates.clear();
   remoteAudios.forEach((audio) => { try { audio.pause(); audio.srcObject = null; audio.remove(); } catch {} });
   remoteAudios.clear();
 
@@ -6034,6 +6065,7 @@ function getActiveOutgoingVideoTrack() {
 function ensurePC(peerUser) {
   if (peerConnections.has(peerUser)) return peerConnections.get(peerUser);
   ensureRemoteTile(peerUser);
+  sendCallStateTo(peerUser);
 
   const c = new RTCPeerConnection(RTC);
   // «Perfect negotiation»: при одновременных offer вежливая сторона (по логину) откатывается и принимает чужой offer
@@ -6203,12 +6235,33 @@ async function handleSignal(signal, fromUser, sigCtx, sigCallId) {
   return st.chain;
 }
 
+const remoteCallStates = new Map();
+function renderCallStateBadges(el, state) {
+  if (!el) return;
+  const badges = [];
+  if (state && state.micMuted) badges.push('<span class="call-state-badge">🎙 Микрофон выключен</span>');
+  if (state && state.deafened) badges.push('<span class="call-state-badge deaf">🔇 Без звука</span>');
+  el.innerHTML = badges.join('');
+}
+function sendCallStateTo(username) {
+  if (!username || !inCall || !callSessionToken || !callContext || !ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify({type:'call-state',to:username,callContext,callId:callSessionToken,state:{micMuted:!!micMuted,deafened:!!deafened}}));
+}
+function broadcastCallState() {
+  for (const username of peerConnections.keys()) sendCallStateTo(username);
+  if (callContext && callContext.kind === 'dm' && callContext.id && !peerConnections.has(callContext.id)) sendCallStateTo(callContext.id);
+}
 function updateCallButtons() {
-  document.getElementById('cMic').classList.toggle('off', micMuted);
-  document.getElementById('cDeaf').classList.toggle('off', deafened);
-  document.getElementById('cCam').classList.toggle('on', !!camStream);
-  document.getElementById('cScr').classList.toggle('on', !!scrStream);
-  document.getElementById('localTile').classList.toggle('streaming', !!(scrStream || camStream));
+  const mic = document.getElementById('cMic'), deaf = document.getElementById('cDeaf');
+  if (mic) { mic.classList.toggle('off', micMuted); mic.title = micMuted ? 'Включить микрофон' : 'Выключить микрофон'; mic.setAttribute('aria-pressed', micMuted ? 'true' : 'false'); }
+  if (deaf) { deaf.classList.toggle('off', deafened); deaf.title = deafened ? 'Включить звук' : 'Выключить звук и микрофон'; deaf.setAttribute('aria-pressed', deafened ? 'true' : 'false'); }
+  const cam = document.getElementById('cCam'), scr = document.getElementById('cScr');
+  if (cam) cam.classList.toggle('on', !!camStream);
+  if (scr) scr.classList.toggle('on', !!scrStream);
+  const local = document.getElementById('localTile');
+  if (local) local.classList.toggle('streaming', !!(scrStream || camStream));
+  renderCallStateBadges(document.getElementById('localCallState'), {micMuted,deafened});
+  for (const [username,state] of remoteCallStates) renderCallStateBadges(document.getElementById('remoteCallState_'+username),state);
 }
 
 function applyMicMuteState() {
@@ -6225,6 +6278,7 @@ function toggleMic() {
   }
   applyMicMuteState();
   updateCallButtons();
+  broadcastCallState();
 }
 
 function toggleDeaf() {
@@ -6235,6 +6289,7 @@ function toggleDeaf() {
   peerConnections.forEach((_, u) => applyRemotePeerAudioSettings(u));
   applyMicMuteState();
   updateCallButtons();
+  broadcastCallState();
 }
 
 function toggleFullscreenTarget(el) {
