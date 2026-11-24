@@ -2324,6 +2324,9 @@ let voiceRecordStream = null;
 async function startVoiceRecord(ev) {
   if (!activeChat || (mediaRecorder && mediaRecorder.state === 'recording')) return;
   ev.preventDefault();
+  if (ev.currentTarget && ev.pointerId !== undefined && ev.currentTarget.setPointerCapture) {
+    try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch {}
+  }
   voiceRecordPointerDown = true;
   voiceRecordLocked = false;
   voiceRecordCancel = false;
