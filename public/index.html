@@ -2912,7 +2912,9 @@ html[data-theme="discord"] .main{
 :root { --panel-alpha: .95; }
 .sidebar, .main, .card, .modal-card, .incoming-card, .profile-popover,
 .user-profile-card, .voice-ctx-menu, .group-ctx-menu {
-  background-color: var(--glass) !important;
+  background: linear-gradient(145deg,
+    rgba(var(--panel-rgb), var(--panel-alpha)),
+    rgba(var(--panel-rgb), calc(var(--panel-alpha) * .88))) !important;
 }
 .chat-header, .bottom-dock, .composer, .top-tabs, .panel-body {
   background-color: var(--glass) !important;
