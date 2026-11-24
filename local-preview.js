@@ -99,11 +99,25 @@ server.on('upgrade', (req, socket, head) => {
   });
 });
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log('');
-  console.log('  AURALIS — local preview');
-  console.log('  UI:      http://127.0.0.1:' + PORT);
-  console.log('  Backend: ' + BACKEND.origin);
-  console.log('');
-  console.log('  Press Ctrl+C to stop.');
-});
+function startLocalPreview() {
+  return new Promise((resolve, reject) => {
+    if (server.listening) return resolve(server);
+    const onError = (err) => { server.off('listening', onListening); reject(err); };
+    const onListening = () => {
+      server.off('error', onError);
+      console.log('');
+      console.log('  AURALIS — local preview');
+      console.log('  UI:      http://127.0.0.1:' + PORT);
+      console.log('  Backend: ' + BACKEND.origin);
+      console.log('');
+      resolve(server);
+    };
+    server.once('error', onError);
+    server.once('listening', onListening);
+    server.listen(PORT, '127.0.0.1');
+  });
+}
+if (require.main === module) {
+  startLocalPreview().catch((err) => { console.error('[Auralis preview] Не удалось запустить локальный сервер:', err); process.exitCode = 1; });
+}
+module.exports = { startLocalPreview, server, PORT, BACKEND };
