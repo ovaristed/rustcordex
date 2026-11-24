@@ -54,11 +54,11 @@ input::placeholder{color:rgba(230,236,255,.34)}
   <form id="registerForm" novalidate>
     <div class="field">
       <label for="username">Логин</label>
-      <div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg><input id="username" name="username" autocomplete="username" placeholder="Придумай логин" minlength="3" maxlength="32" required></div>
+      <div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg><input id="username" name="username" autocomplete="username" placeholder="Придумай логин" minlength="2" maxlength="32" required></div>
     </div>
     <div class="field">
       <label for="password">Пароль</label>
-      <div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><input id="password" name="password" type="password" autocomplete="new-password" placeholder="Создай пароль" minlength="6" required></div>
+      <div class="input-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><input id="password" name="password" type="password" autocomplete="new-password" placeholder="Создай пароль" minlength="10" required></div>
     </div>
     <div class="field">
       <label for="passwordConfirm">Повтори пароль</label>
@@ -81,7 +81,8 @@ form.addEventListener('submit',async event=>{
   const password=document.getElementById('password').value;
   const confirmation=document.getElementById('passwordConfirm').value;
   if(!username||!password)return errorEl.textContent='Заполни логин и пароль.';
-  if(password.length<6)return errorEl.textContent='Пароль должен содержать не менее 6 символов.';
+  if(username.length<2||username.length>32)return errorEl.textContent='Логин должен быть от 2 до 32 символов.';
+  if(password.length<10)return errorEl.textContent='Пароль должен содержать не менее 10 символов.';
   if(password!==confirmation)return errorEl.textContent='Пароли не совпадают.';
   button.disabled=true;
   button.querySelector('span').textContent='Создаём аккаунт…';
