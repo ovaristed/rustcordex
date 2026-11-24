@@ -10,9 +10,19 @@ if (location.protocol === 'data:') {
 }
 
 
-// Native notification bridge for the trusted Rustcord web origin.
-if (location.protocol === 'https:') {
+// Native bridges are exposed only inside Electron's isolated preload context.
+if (location.protocol === 'https:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
   contextBridge.exposeInMainWorld('rustcordDesktop', {
+    getVersion: () => ipcRenderer.invoke('auralis:update-version'),
+    checkForUpdates: () => ipcRenderer.invoke('auralis:update-check'),
+    downloadUpdate: () => ipcRenderer.invoke('auralis:update-download'),
+    installUpdate: () => ipcRenderer.send('auralis:update-install'),
+    onUpdateState: (callback) => {
+      if (typeof callback !== 'function') return () => {};
+      const listener = (_event, payload) => callback(payload);
+      ipcRenderer.on('auralis:update-state', listener);
+      return () => ipcRenderer.removeListener('auralis:update-state', listener);
+    },
     notify: (payload) => ipcRenderer.send('rustcord:notify', {
       title: String(payload && payload.title || 'Rustcord').slice(0, 100),
       body: String(payload && payload.body || '').slice(0, 220),
