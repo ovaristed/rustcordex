@@ -8027,30 +8027,28 @@ checkSession();
 })();
 </script>
 
-<style id="auralis-liquid-glass-theme-246">
+<style id="auralis-liquid-glass-theme-247">
+  /* Liquid Glass: neutral, wallpaper-driven glass. No blue/colored panel fills. */
   html[data-theme="liquidglass"] {
-    --text:#f5fbff;
-    --muted:rgba(230,245,255,.72);
-    --border:rgba(220,245,255,.30);
-    --glass:rgba(16,43,70,.20);
-    --glass-solid:rgba(18,48,77,.42);
-    --glass-2:rgba(224,246,255,.10);
-    --glass-hover:rgba(230,249,255,.19);
-    --input-bg:rgba(8,36,64,.28);
-    --input-focus-bg:rgba(8,36,64,.42);
-    --icon-color:#a9eaff;
-    --icon-muted:rgba(197,235,255,.78);
+    --text:#f7fbff;
+    --muted:rgba(245,250,255,.72);
+    --border:rgba(255,255,255,.20);
+    --glass:rgba(255,255,255,.035);
+    --glass-solid:rgba(255,255,255,.075);
+    --glass-2:rgba(255,255,255,.045);
+    --glass-hover:rgba(255,255,255,.085);
+    --input-bg:rgba(255,255,255,.035);
+    --input-focus-bg:rgba(255,255,255,.07);
+    --icon-color:#f3f9ff;
+    --icon-muted:rgba(235,245,255,.72);
   }
   html[data-theme="liquidglass"] body {
-    background-color:#07182b;
-    background-image:linear-gradient(rgba(3,18,35,.10),rgba(3,18,35,.10)),url("https://server.wallpaperalchemy.com/storage/wallpapers/350/macos-tahoe-4k-wallpaper.jpg");
-    background-size:cover,cover;
-    background-position:center,center;
-    background-attachment:fixed;
+    background:#07182b url("https://server.wallpaperalchemy.com/storage/wallpapers/350/macos-tahoe-4k-wallpaper.jpg") center center / cover fixed no-repeat !important;
   }
   html[data-theme="liquidglass"] .sidebar,
   html[data-theme="liquidglass"] .top-tabs,
   html[data-theme="liquidglass"] .bottom-dock,
+  html[data-theme="liquidglass"] .panel-body,
   html[data-theme="liquidglass"] .chat-header,
   html[data-theme="liquidglass"] .composer,
   html[data-theme="liquidglass"] .call-stage,
@@ -8062,84 +8060,111 @@ checkSession();
   html[data-theme="liquidglass"] .group-ctx-menu,
   html[data-theme="liquidglass"] .sticker-picker,
   html[data-theme="liquidglass"] .context-menu,
-  html[data-theme="liquidglass"] .incoming-card {
-    background:linear-gradient(145deg,rgba(225,247,255,.19),rgba(18,64,103,.22) 42%,rgba(6,30,57,.34)) !important;
-    border:1px solid rgba(226,247,255,.34) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(170,224,255,.10),0 14px 38px rgba(0,16,38,.22),0 2px 8px rgba(0,20,44,.12) !important;
-    backdrop-filter:blur(30px) saturate(185%) brightness(1.08) !important;
-    -webkit-backdrop-filter:blur(30px) saturate(185%) brightness(1.08) !important;
+  html[data-theme="liquidglass"] .incoming-card,
+  html[data-theme="liquidglass"] .emoji-picker,
+  html[data-theme="liquidglass"] .gif-picker,
+  html[data-theme="liquidglass"] [role="menu"],
+  html[data-theme="liquidglass"] [role="dialog"],
+  html[data-theme="liquidglass"] .dropdown-menu,
+  html[data-theme="liquidglass"] .popover,
+  html[data-theme="liquidglass"] .menu {
+    background:rgba(255,255,255,.045) !important;
+    background-image:none !important;
+    border:1px solid rgba(255,255,255,.20) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 12px 34px rgba(0,0,0,.16) !important;
+    backdrop-filter:blur(28px) saturate(135%) !important;
+    -webkit-backdrop-filter:blur(28px) saturate(135%) !important;
   }
-  html[data-theme="liquidglass"] .sidebar { border-radius:0 22px 22px 0 !important; }
-  html[data-theme="liquidglass"] .top-tabs,
-  html[data-theme="liquidglass"] .bottom-dock { border-radius:20px !important; }
   html[data-theme="liquidglass"] .main > .messages {
-    background:rgba(6,28,51,.10) !important;
-    backdrop-filter:none !important;
-    -webkit-backdrop-filter:none !important;
+    background:rgba(255,255,255,.012) !important;
+    background-image:none !important;
   }
   html[data-theme="liquidglass"] .msg-bubble,
   html[data-theme="liquidglass"] .message-bubble,
   html[data-theme="liquidglass"] .profile-bg-tools,
-  html[data-theme="liquidglass"] .user-profile-description {
-    background:rgba(13,48,78,.38) !important;
-    border:1px solid rgba(220,245,255,.20) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 5px 18px rgba(0,16,38,.10);
-    backdrop-filter:blur(14px) saturate(145%);
-    -webkit-backdrop-filter:blur(14px) saturate(145%);
-  }
-  html[data-theme="liquidglass"] button,
-  html[data-theme="liquidglass"] .icon-btn,
-  html[data-theme="liquidglass"] .tab-btn,
+  html[data-theme="liquidglass"] .user-profile-description,
   html[data-theme="liquidglass"] .list-item,
-  html[data-theme="liquidglass"] input:not([type="checkbox"]):not([type="range"]),
-  html[data-theme="liquidglass"] textarea,
-  html[data-theme="liquidglass"] select {
-    border-color:rgba(224,246,255,.22);
+  html[data-theme="liquidglass"] .theme-swatch,
+  html[data-theme="liquidglass"] .field input:not([type="checkbox"]):not([type="range"]),
+  html[data-theme="liquidglass"] .field select,
+  html[data-theme="liquidglass"] .field textarea {
+    background:rgba(255,255,255,.035) !important;
+    background-image:none !important;
+    border-color:rgba(255,255,255,.16) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10) !important;
+    backdrop-filter:blur(16px) saturate(125%);
+    -webkit-backdrop-filter:blur(16px) saturate(125%);
   }
   html[data-theme="liquidglass"] button:hover,
   html[data-theme="liquidglass"] .icon-btn:hover,
-  html[data-theme="liquidglass"] .list-item:hover {
-    background-color:rgba(223,246,255,.17) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 5px 18px rgba(0,28,58,.14);
+  html[data-theme="liquidglass"] .list-item:hover,
+  html[data-theme="liquidglass"] .theme-swatch:hover {
+    background:rgba(255,255,255,.09) !important;
+    background-image:none !important;
   }
   html[data-theme="liquidglass"] .theme-swatch.active,
   html[data-theme="liquidglass"] .tab-btn.active,
   html[data-theme="liquidglass"] .s-tab.active {
-    background:linear-gradient(135deg,rgba(174,233,255,.34),rgba(57,158,225,.28)) !important;
-    border:1px solid rgba(226,248,255,.42) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 4px 18px rgba(27,139,220,.20);
+    background:rgba(255,255,255,.13) !important;
+    border:1px solid rgba(255,255,255,.28) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22) !important;
   }
   html[data-theme="liquidglass"] .send-btn,
   html[data-theme="liquidglass"] .primary-btn,
   html[data-theme="liquidglass"] .sm-btn.blue {
-    background:linear-gradient(135deg,#73dfff,#2588e8) !important;
-    border:1px solid rgba(235,251,255,.72) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 5px 18px rgba(24,133,222,.30) !important;
+    background:rgba(255,255,255,.13) !important;
+    border:1px solid rgba(255,255,255,.28) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.24) !important;
   }
   html[data-theme="liquidglass"] .modal-backdrop {
-    background:rgba(3,16,31,.28) !important;
-    backdrop-filter:blur(12px) saturate(120%);
-    -webkit-backdrop-filter:blur(12px) saturate(120%);
-  }
-  html[data-theme="liquidglass"] .sidebar::before,
-  html[data-theme="liquidglass"] .top-tabs::before,
-  html[data-theme="liquidglass"] .bottom-dock::before,
-  html[data-theme="liquidglass"] .chat-header::before,
-  html[data-theme="liquidglass"] .composer::before {
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    pointer-events:none;
-    background:linear-gradient(118deg,rgba(255,255,255,.13),transparent 32%,transparent 70%,rgba(134,218,255,.09));
-    opacity:.85;
+    background:rgba(0,0,0,.12) !important;
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
   }
   html[data-theme="liquidglass"] :focus-visible {
-    outline:2px solid rgba(161,231,255,.82) !important;
+    outline:2px solid rgba(255,255,255,.72) !important;
     outline-offset:2px;
   }
+  /* Keep all settings destinations visible, including Hotkeys on mobile. */
+  html[data-theme="liquidglass"] .settings-tabs {
+    --settings-tab-count:4 !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    background:rgba(255,255,255,.035) !important;
+    border-color:rgba(255,255,255,.16) !important;
+  }
+  #sTabBinds { display:block !important; }
   @media(max-width:760px) {
-    html[data-theme="liquidglass"] body { background-attachment:scroll; }
+    #sTabBinds { display:block !important; }
+    #sPanelBinds:not(.hidden) { display:flex !important; }
+    .settings-tabs {
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+    .settings-tabs::before { display:none !important; }
+    .s-tab { min-height:40px !important; }
+    html[data-theme="liquidglass"] body { background-attachment:scroll !important; }
+  }
+  /* Restore the call stage's original full-width, flexible base dimensions. */
+  .call-stage {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    height:auto !important;
+    min-height:220px !important;
+    max-height:min(75vh,calc(100dvh - 360px)) !important;
+    resize:vertical !important;
+    align-self:stretch !important;
+    flex:0 0 auto !important;
+    overflow:auto !important;
+  }
+  .call-stage .call-grid { width:100% !important; min-width:0 !important; }
+  @media(max-width:760px) {
+    .call-stage {
+      width:100% !important;
+      max-width:100% !important;
+      min-height:220px !important;
+      max-height:min(75dvh,calc(100dvh - 240px)) !important;
+      height:auto !important;
+    }
   }
 </style>
 
