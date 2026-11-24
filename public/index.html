@@ -2897,6 +2897,15 @@ html[data-theme="glasscord"] .pop-profile-strip {
     }
   }
 </style>
+<style id="auralis-central-messages-opacity">
+  :root { --messages-opacity:.18; }
+  .main > .messages {
+    background:rgba(var(--panel-rgb),var(--messages-opacity)) !important;
+    background-color:rgba(var(--panel-rgb),var(--messages-opacity)) !important;
+    backdrop-filter:blur(18px) saturate(1.12);
+    -webkit-backdrop-filter:blur(18px) saturate(1.12);
+  }
+</style>
 </head>
 <body>
 
@@ -3289,6 +3298,8 @@ html[data-theme="glasscord"] .pop-profile-strip {
         <input id="headerOpacitySlider" type="range" min="0" max="100" value="48" oninput="setMenuOpacity('header',this.value)" />
         <label class="menu-opacity-row" for="composerOpacitySlider"><span>Нижняя панель ввода</span><b id="composerOpacityValue">48%</b></label>
         <input id="composerOpacitySlider" type="range" min="0" max="100" value="48" oninput="setMenuOpacity('composer',this.value)" />
+        <label class="menu-opacity-row" for="messagesOpacitySlider"><span>Центральная область переписки</span><b id="messagesOpacityValue">18%</b></label>
+        <input id="messagesOpacitySlider" type="range" min="0" max="100" value="18" oninput="setMenuOpacity('messages',this.value)" />
       </div>
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
          <div class="lbl">Уведомления</div>
@@ -4915,8 +4926,8 @@ function applyAccentColor(color, persist = true) {
 
 }
 
-const MENU_OPACITY_DEFAULTS = { sidebar: 78, nav: 22, dock: 24, popup: 92, groups: 30, header: 48, composer: 48 };
-const MENU_OPACITY_VARS = { sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity', popup: '--popup-opacity', groups: '--groups-opacity', header: '--header-opacity', composer: '--composer-opacity' };
+const MENU_OPACITY_DEFAULTS = { sidebar: 78, nav: 22, dock: 24, popup: 92, groups: 30, header: 48, composer: 48, messages: 18 };
+const MENU_OPACITY_VARS = { sidebar: '--sidebar-opacity', nav: '--nav-opacity', dock: '--dock-opacity', popup: '--popup-opacity', groups: '--groups-opacity', header: '--header-opacity', composer: '--composer-opacity', messages: '--messages-opacity' };
 function setMenuOpacity(section, rawValue, persist = true) {
   const key = String(section || '');
   const cssVar = MENU_OPACITY_VARS[key];
