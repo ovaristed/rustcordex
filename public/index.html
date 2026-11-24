@@ -2072,6 +2072,10 @@
   .wallpaper-credit { margin-top:3px; font-size:9px; color:rgba(255,255,255,.76); }
   .wallpaper-check { position:absolute; right:8px; top:8px; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:rgba(5,10,16,.55); border:1px solid rgba(255,255,255,.45); opacity:0; transform:scale(.8); transition:all .16s ease; }
   .wallpaper-card.active .wallpaper-check { opacity:1; transform:scale(1); background:var(--accent); border-color:rgba(255,255,255,.65); }
+
+  .wallpaper-item { min-width:0; display:flex; flex-direction:column; gap:5px; }
+  .wallpaper-source { align-self:flex-start; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); font-size:9px; text-decoration:none; }
+  .wallpaper-source:hover { color:var(--text); text-decoration:underline; }
   .wallpaper-license { margin-top:9px; color:var(--muted); font-size:10px; line-height:1.45; }
   @media(max-width:420px) {
     .wallpaper-grid { gap:7px; }
@@ -2438,30 +2442,38 @@
           <button type="button" class="sm-btn wallpaper-reset" onclick="selectWallpaper('')">Стандартный фон</button>
         </div>
         <div class="wallpaper-grid">
-          <button type="button" class="wallpaper-card" data-wallpaper="meadow" onclick="selectWallpaper('meadow')" aria-label="Установить фон: Альпийский луг" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=1400&q=82')">
-            <span class="wallpaper-card-title">Альпийский луг</span>
-            <span class="wallpaper-card-tag">Цветущие поля</span>
-            <span class="wallpaper-credit">Фото: Tomáš Hirsch</span>
-            <span class="wallpaper-check" aria-hidden="true">✓</span>
-          </button>
-          <button type="button" class="wallpaper-card" data-wallpaper="forest" onclick="selectWallpaper('forest')" aria-label="Установить фон: Тихий лес" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1712921675029-f455ad17bfc6?auto=format&fit=crop&w=1400&q=82')">
-            <span class="wallpaper-card-title">Тихий лес</span>
-            <span class="wallpaper-card-tag">Зелень и туман</span>
-            <span class="wallpaper-credit">Фото: William Warby</span>
-            <span class="wallpaper-check" aria-hidden="true">✓</span>
-          </button>
-          <button type="button" class="wallpaper-card" data-wallpaper="ocean" onclick="selectWallpaper('ocean')" aria-label="Установить фон: Морская гладь" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1575503588201-2ec789aa72a3?auto=format&fit=crop&w=1400&q=82')">
-            <span class="wallpaper-card-title">Морская гладь</span>
-            <span class="wallpaper-card-tag">Вода и волны</span>
-            <span class="wallpaper-credit">Фото: Ivan Bandura</span>
-            <span class="wallpaper-check" aria-hidden="true">✓</span>
-          </button>
-          <button type="button" class="wallpaper-card" data-wallpaper="blossom" onclick="selectWallpaper('blossom')" aria-label="Установить фон: Розовый лепесток" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1749307918200-5e37c3b2fbc4?auto=format&fit=crop&w=1400&q=82')">
-            <span class="wallpaper-card-title">Розовый лепесток</span>
-            <span class="wallpaper-card-tag">Нежная сакура</span>
-            <span class="wallpaper-credit">Фото: Danielle Suijkerbuijk</span>
-            <span class="wallpaper-check" aria-hidden="true">✓</span>
-          </button>
+          <div class="wallpaper-item">
+            <button type="button" class="wallpaper-card" data-wallpaper="meadow" onclick="selectWallpaper('meadow')" aria-label="Установить фон: Альпийский луг" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1686518110038-c9bff71bf3bf?auto=format&fit=crop&w=1400&q=82')">
+              <span class="wallpaper-card-title">Альпийский луг</span>
+              <span class="wallpaper-card-tag">Цветущие поля</span>
+              <span class="wallpaper-check" aria-hidden="true">✓</span>
+            </button>
+            <a class="wallpaper-source" href="https://unsplash.com/photos/a-grassy-field-with-flowers-and-mountains-in-the-background-YoY3nTtre7I" target="_blank" rel="noopener noreferrer">Фото: Tomáš Hirsch · Unsplash ↗</a>
+          </div>
+          <div class="wallpaper-item">
+            <button type="button" class="wallpaper-card" data-wallpaper="forest" onclick="selectWallpaper('forest')" aria-label="Установить фон: Тихий лес" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1712921675029-f455ad17bfc6?auto=format&fit=crop&w=1400&q=82')">
+              <span class="wallpaper-card-title">Тихий лес</span>
+              <span class="wallpaper-card-tag">Зелень и туман</span>
+              <span class="wallpaper-check" aria-hidden="true">✓</span>
+            </button>
+            <a class="wallpaper-source" href="https://unsplash.com/photos/a-lush-green-forest-filled-with-lots-of-trees-GhZ0Qr7-fpI" target="_blank" rel="noopener noreferrer">Фото: William Warby · Unsplash ↗</a>
+          </div>
+          <div class="wallpaper-item">
+            <button type="button" class="wallpaper-card" data-wallpaper="ocean" onclick="selectWallpaper('ocean')" aria-label="Установить фон: Морская гладь" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1575503588201-2ec789aa72a3?auto=format&fit=crop&w=1400&q=82')">
+              <span class="wallpaper-card-title">Морская гладь</span>
+              <span class="wallpaper-card-tag">Вода и волны</span>
+              <span class="wallpaper-check" aria-hidden="true">✓</span>
+            </button>
+            <a class="wallpaper-source" href="https://unsplash.com/photos/sea-waves-stpi6rLRQx0" target="_blank" rel="noopener noreferrer">Фото: Ivan Bandura · Unsplash ↗</a>
+          </div>
+          <div class="wallpaper-item">
+            <button type="button" class="wallpaper-card" data-wallpaper="blossom" onclick="selectWallpaper('blossom')" aria-label="Установить фон: Розовый лепесток" aria-pressed="false" style="--wallpaper-image:url('https://images.unsplash.com/photo-1749307918200-5e37c3b2fbc4?auto=format&fit=crop&w=1400&q=82')">
+              <span class="wallpaper-card-title">Розовый лепесток</span>
+              <span class="wallpaper-card-tag">Нежная сакура</span>
+              <span class="wallpaper-check" aria-hidden="true">✓</span>
+            </button>
+            <a class="wallpaper-source" href="https://unsplash.com/photos/a-pink-flower-floats-on-a-pink-background-4tl-lotlvEg" target="_blank" rel="noopener noreferrer">Фото: Danielle Suijkerbuijk · Unsplash ↗</a>
+          </div>
         </div>
         <div class="wallpaper-license">Фотографии опубликованы под лицензией Unsplash. Авторы указаны с ссылками на оригиналы.</div>
       </div>
