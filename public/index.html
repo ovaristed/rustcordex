@@ -8125,22 +8125,18 @@ checkSession();
     outline:2px solid rgba(255,255,255,.72) !important;
     outline-offset:2px;
   }
-  /* Keep all settings destinations visible, including Hotkeys on mobile. */
+  /* Desktop settings: show all four destinations. Mobile keeps its original 3-tab layout and hides Hotkeys. */
   html[data-theme="liquidglass"] .settings-tabs {
     --settings-tab-count:4 !important;
     grid-template-columns:repeat(4,minmax(0,1fr)) !important;
     background:rgba(255,255,255,.035) !important;
     border-color:rgba(255,255,255,.16) !important;
   }
-  #sTabBinds { display:block !important; }
   @media(max-width:760px) {
-    #sTabBinds { display:block !important; }
-    #sPanelBinds:not(.hidden) { display:flex !important; }
-    .settings-tabs {
-      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    html[data-theme="liquidglass"] .settings-tabs {
+      --settings-tab-count:3 !important;
+      grid-template-columns:repeat(3,minmax(0,1fr)) !important;
     }
-    .settings-tabs::before { display:none !important; }
-    .s-tab { min-height:40px !important; }
     html[data-theme="liquidglass"] body { background-attachment:scroll !important; }
   }
   /* Restore the call stage's original full-width, flexible base dimensions. */
