@@ -403,8 +403,9 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Аватарка слишком большая' });
     }
     if (stickerUrl) {
-      const stickerMatches = stickerUrl.match(/(?:[\u2600-\u27BF\u{1F300}-\u{1FAFF}])(?:\uFE0F|\u200D[\u2600-\u27BF\u{1F300}-\u{1FAFF}])*/gu) || [];
-      if (stickerMatches.length !== 1 || stickerMatches[0] !== stickerUrl) {
+      const stickerMatches = stickerUrl.match(/(?:[\u2600-\u27BF\u{1F300}-\u{1FAFF}])(?:\uFE0F|\u200D[\u2600-\u27BF\u{1FAFF}])*/gu) || [];
+      const numericSticker = /^(?:67|777|52|48)$/.test(stickerUrl);
+      if (!numericSticker && (stickerMatches.length !== 1 || stickerMatches[0] !== stickerUrl)) {
         return res.status(400).json({ error: 'Выбери один стикер из набора' });
       }
       if (stickerUrl.length > 32) return res.status(400).json({ error: 'Слишком длинный стикер' });
@@ -1105,6 +1106,18 @@ wss.on('connection', (ws) => {
         try { if (!(await canContact(ws.username, String(data.to)))) return; } catch { return; }
         sendToUser(String(data.to), { type: data.type, from: ws.username, callContext: data.callContext || null, callId: String(data.callId) });
       }
+      return;
+    }
+
+    if (data.type === 'call-state' && data.to && data.callId && data.callContext) {
+      try { if (!(await canContact(ws.username, String(data.to)))) return; } catch { return; }
+      sendToUser(String(data.to), {
+        type: 'call-state',
+        from: ws.username,
+        callContext: data.callContext,
+        callId: String(data.callId),
+        state: { micMuted: !!(data.state && data.state.micMuted), deafened: !!(data.state && data.state.deafened) }
+      });
       return;
     }
 
