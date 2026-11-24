@@ -1624,133 +1624,6 @@
   .voice-action-send { background:var(--accent); }
   .composer.voice-recording { touch-action:pan-y; }
 
-  /* Refined iOS Liquid Glass: neutral crystal, soft white light */
-  html[data-theme="glasscord"] body {
-    background-color:#06121d;
-    background-image:radial-gradient(ellipse at 16% 8%,rgba(42,225,211,.22),transparent 38%),radial-gradient(ellipse at 88% 18%,rgba(144,130,255,.20),transparent 42%),radial-gradient(ellipse at 52% 105%,rgba(74,163,220,.16),transparent 45%),linear-gradient(145deg,#050d18,#0b1b2b 54%,#07111e);
-  }
-  html[data-theme="glasscord"] .sidebar, html[data-theme="glasscord"] .main, html[data-theme="glasscord"] .card, html[data-theme="glasscord"] .modal-card, html[data-theme="glasscord"] .incoming-card, html[data-theme="glasscord"] .profile-popover, html[data-theme="glasscord"] .user-profile-card, html[data-theme="glasscord"] .voice-ctx-menu, html[data-theme="glasscord"] .group-ctx-menu {
-    background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(220,230,245,.035) 52%,rgba(255,255,255,.018)) !important;
-    border:1px solid rgba(255,255,255,.17) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.24),inset 0 -1px 0 rgba(255,255,255,.035),0 22px 65px rgba(0,0,0,.42),0 0 28px rgba(255,255,255,.045) !important;
-    backdrop-filter:blur(32px) saturate(125%);-webkit-backdrop-filter:blur(32px) saturate(125%);
-  }
-  html[data-theme="glasscord"] .chat-header, html[data-theme="glasscord"] .bottom-dock, html[data-theme="glasscord"] .composer, html[data-theme="glasscord"] .top-tabs, html[data-theme="glasscord"] .panel-body {
-    background:rgba(255,255,255,.028);border-color:rgba(255,255,255,.09);
-  }
-  html[data-theme="glasscord"] .list-item, html[data-theme="glasscord"] .msg-bubble, html[data-theme="glasscord"] .pop-card, html[data-theme="glasscord"] .pop-profile-strip {
-    background:rgba(255,255,255,.038);border-color:rgba(255,255,255,.085);
-  }
-  html[data-theme="glasscord"] .list-item.active {
-    background:linear-gradient(110deg,rgba(255,255,255,.14),rgba(255,255,255,.055));
-    border-color:rgba(255,255,255,.23);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 22px rgba(255,255,255,.055);
-  }
-  html[data-theme="glasscord"] .theme-swatch.active, html[data-theme="glasscord"] .sm-btn.blue, html[data-theme="glasscord"] .send-btn {
-    box-shadow:0 0 0 1px rgba(255,255,255,.16),0 0 24px rgba(255,255,255,.15),inset 0 1px 0 rgba(255,255,255,.22);
-  }
-  html[data-theme="glasscord"] .avatar { border-color:rgba(255,255,255,.2);box-shadow:0 4px 18px rgba(0,0,0,.28),0 0 12px rgba(255,255,255,.06); }
-  html[data-theme="glasscord"] button:hover, html[data-theme="glasscord"] .list-item:hover {
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.17),0 0 22px rgba(255,255,255,.075);
-  }
-  html[data-theme="glasscord"] ::selection { background:rgba(255,255,255,.24);color:#fff; }
-
-  /* Glasscord-inspired Auralis skin: custom liquid-glass treatment for native app components. */
-  html[data-theme="glasscord"] body {
-    background:linear-gradient(rgba(4,10,16,.38),rgba(4,10,16,.38)),var(--theme-wallpaper),radial-gradient(ellipse at 8% 8%,rgba(83,220,220,.16),transparent 34%),radial-gradient(ellipse at 92% 12%,rgba(150,132,255,.16),transparent 38%),linear-gradient(135deg,#07121f 0%,#101b2c 48%,#0a1424 100%) !important;
-     background-size:cover,cover,auto,auto,auto !important;background-position:center,center,center,center,center !important;background-repeat:no-repeat !important;background-attachment:fixed !important;
-  }
-  html[data-theme="glasscord"] .app { padding:14px; gap:9px; }
-  html[data-theme="glasscord"] .sidebar, html[data-theme="glasscord"] .main {
-    background:linear-gradient(145deg,rgba(225,244,255,.105),rgba(151,181,208,.045) 48%,rgba(255,255,255,.025)) !important;
-    border:1px solid rgba(225,242,255,.18) !important; border-radius:24px !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -1px 0 rgba(255,255,255,.035),0 22px 60px rgba(0,0,0,.34),0 0 28px rgba(119,203,239,.055) !important;
-    backdrop-filter:blur(28px) saturate(145%); -webkit-backdrop-filter:blur(28px) saturate(145%);
-  }
-  html[data-theme="glasscord"] .top-tabs, html[data-theme="glasscord"] .panel-body,
-  html[data-theme="glasscord"] .chat-header, html[data-theme="glasscord"] .composer,
-  html[data-theme="glasscord"] .bottom-dock {
-    background:rgba(224,241,255,.035) !important; border-color:rgba(230,245,255,.085) !important;
-  }
-  html[data-theme="glasscord"] .top-tabs { padding:12px 12px 10px; gap:8px; }
-  html[data-theme="glasscord"] .tab-btn, html[data-theme="glasscord"] .list-item,
-  html[data-theme="glasscord"] .sm-btn, html[data-theme="glasscord"] .mini-plus-btn,
-  html[data-theme="glasscord"] .round-btn {
-    border:1px solid rgba(232,246,255,.09); background:rgba(228,243,255,.045);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    transition:background .2s ease,border-color .2s ease,transform .2s ease,box-shadow .2s ease;
-  }
-  html[data-theme="glasscord"] .list-item { border-radius:15px; }
-  html[data-theme="glasscord"] .list-item:hover, html[data-theme="glasscord"] .tab-btn:hover,
-  html[data-theme="glasscord"] .sm-btn:hover {
-    background:rgba(231,246,255,.105) !important; border-color:rgba(235,248,255,.19);
-    transform:translateY(-1px); box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 7px 18px rgba(0,0,0,.13);
-  }
-  html[data-theme="glasscord"] .list-item.active, html[data-theme="glasscord"] .tab-btn.active {
-    background:linear-gradient(115deg,rgba(107,220,225,.18),rgba(167,158,255,.12)) !important;
-    border-color:rgba(170,229,255,.27) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 22px rgba(107,206,235,.10);
-  }
-  html[data-theme="glasscord"] .messages { background:transparent; }
-  html[data-theme="glasscord"] .msg-bubble {
-    background:linear-gradient(145deg,rgba(231,245,255,.085),rgba(231,245,255,.035)) !important;
-    border:1px solid rgba(230,245,255,.12) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 24px rgba(0,0,0,.10);
-    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  }
-  html[data-theme="glasscord"] .msg.mine .msg-bubble {
-    background:linear-gradient(135deg,rgba(73,181,214,.24),rgba(133,128,235,.22)) !important;
-    border-color:rgba(165,222,255,.22) !important;
-  }
-  /* Stickers are standalone artwork, not glass message cards. */
-  html[data-theme="glasscord"] .msg.sticker-only {
-    max-width:none;
-    width:auto;
-    align-items:flex-end;
-    gap:0;
-  }
-  html[data-theme="glasscord"] .msg.sticker-only .msg-bubble,
-  html[data-theme="glasscord"] .msg.mine.sticker-only .msg-bubble,
-  html[data-theme="glasscord"] .msg.other.sticker-only .msg-bubble {
-    background:transparent !important;
-    border:0 !important;
-    box-shadow:none !important;
-    backdrop-filter:none !important;
-    -webkit-backdrop-filter:none !important;
-    padding:0 !important;
-    min-width:0 !important;
-    border-radius:0 !important;
-  }
-  html[data-theme="glasscord"] .msg-sticker-big {
-    font-size:76px;
-    line-height:1.08;
-    filter:drop-shadow(0 5px 12px rgba(0,0,0,.24));
-  }
-  html[data-theme="glasscord"] .composer, html[data-theme="glasscord"] .channelTextArea,
-  html[data-theme="glasscord"] .scrollableContainer { border-radius:18px; }
-  html[data-theme="glasscord"] input, html[data-theme="glasscord"] textarea,
-  html[data-theme="glasscord"] select { background:rgba(225,241,255,.055); border-color:rgba(228,243,255,.13); }
-  html[data-theme="glasscord"] .profile-popover, html[data-theme="glasscord"] .user-profile-card,
-  html[data-theme="glasscord"] .modal-card, html[data-theme="glasscord"] .voice-ctx-menu,
-  html[data-theme="glasscord"] .group-ctx-menu {
-    border-radius:22px; background:linear-gradient(145deg,rgba(225,242,255,.13),rgba(119,150,180,.075)) !important;
-    border-color:rgba(232,246,255,.2) !important; backdrop-filter:blur(30px) saturate(145%);
-    -webkit-backdrop-filter:blur(30px) saturate(145%);
-  }
-  html[data-theme="glasscord"] .call-stage, html[data-theme="glasscord"] .call-tile {
-    border:1px solid rgba(232,246,255,.15); border-radius:20px; box-shadow:0 12px 34px rgba(0,0,0,.22);
-  }
-  html[data-theme="glasscord"] .send-btn, html[data-theme="glasscord"] .sm-btn.blue,
-  html[data-theme="glasscord"] .primary-btn {
-    background:linear-gradient(135deg,#56cbd6,#777ee8) !important;
-    border:1px solid rgba(255,255,255,.25) !important;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 20px rgba(83,173,220,.22);
-  }
-  @media (prefers-reduced-motion:reduce) {
-    html[data-theme="glasscord"] *,html[data-theme="glasscord"] *::before,html[data-theme="glasscord"] *::after {
-      transition-duration:.01ms !important; animation-duration:.01ms !important;
-    }
-  }
-
   .default-avatar-fox{display:inline-flex;position:relative;align-items:center;justify-content:center;width:100%;height:100%;overflow:hidden;background:#241a66;border-radius:inherit}
   .default-avatar-fox>img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
 
@@ -3316,8 +3189,6 @@ html[data-theme="glasscord"] .pop-profile-strip {
           <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Auralis</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
-          <button type="button" class="theme-swatch" data-theme="australis" onclick="applyTheme('australis')"><span class="dot" style="background:#244f9e"></span>Australis</button>
-          <button type="button" class="theme-swatch" data-theme="glasscord" title="Нейтральная стеклянная тема" onclick="applyTheme('glasscord')"><span class="dot" style="background:linear-gradient(135deg,#e9edf4,#aeb8c8,#f7f8fb)"></span>Glasscord ✦</button>
         </div>
       </div>
       <div class="field mobile-accent-field">
@@ -4875,16 +4746,6 @@ const THEMES = {
     glow2: 'rgba(255, 168, 198, 0.24)', wallpaper: "url('/backgrounds/purple.jpg')",
     overlay: 'rgba(9, 7, 16, 0.22)', panelAlpha: 0.64, effect: 'sakura'
   },
-  australis: {
-    bg: '#06101f', panelRgb: '12, 29, 54', accent: '#244f9e',
-    glow2: 'rgba(36, 79, 158, 0.24)', wallpaper: "url('/backgrounds/blue.jpg')",
-    overlay: 'rgba(4, 10, 22, 0.18)', panelAlpha: 0.62, effect: 'none'
-  },
-  'glasscord': {
-    bg: '#06121d', panelRgb: '44, 91, 112', accent: '#e8e8ec',
-    glow2: 'rgba(143, 163, 255, 0.30)', wallpaper: 'none',
-    overlay: 'rgba(4, 13, 24, 0.12)', panelAlpha: 0.38, effect: 'none'
-  },
 };
 
 function hexToRgb(hex) {
@@ -4903,7 +4764,7 @@ function syncThemeEffect() {
 try { localStorage.removeItem('rc_wallpaper'); localStorage.removeItem('rc_theme_opacity'); localStorage.removeItem('rc_clear_cache_exit'); } catch {}
 
 function applyTheme(name) {
-  const requested = name === 'dark' || name === 'crimson' ? 'discord' : (name === 'aurora-glass' || name === 'aurora' || name === 'liquid' ? 'glasscord' : name);
+  const requested = name === 'dark' || name === 'crimson' ? 'discord' : name;
   const valid = THEMES[requested] ? requested : 'discord';
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
