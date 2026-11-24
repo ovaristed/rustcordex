@@ -3343,16 +3343,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
         </div>
         <div class="item-sub">Выбери один из готовых акцентных цветов.</div>
       </div>
-      <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
-        <div class="lbl">Прозрачное стекло</div>
-        <div class="item-sub">Лёгкое стеклянное оформление автоматически подстраивается под тему: фон хорошо виден, а текст и элементы остаются читаемыми.</div>
-        <div class="field" style="padding:10px 0 0;border-top:1px solid var(--border);">
-          <div class="lbl">Размер панели звонка</div>
-          <label class="menu-opacity-row" for="callStageSizeSlider"><span>Размер панели звонка</span><b id="callStageSizeValue">380 px</b></label>
-          <input id="callStageSizeSlider" type="range" min="200" max="640" step="10" value="380" oninput="setCallStageHeight(this.value)" />
-          <div class="item-sub">Панель можно менять по ширине и высоте за нижний правый угол; элементы и превью подстраиваются автоматически.</div>
-        </div>
-      </div>
+
       <div class="field" style="border-top:1px solid var(--border);padding-top:14px;">
          <div class="lbl">Уведомления</div>
         <label style="display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer;margin:8px 0;">
@@ -5045,31 +5036,11 @@ function setAllMenuOpacity() {
   document.documentElement.style.setProperty('--glass', 'rgba(var(--panel-rgb),.22)');
   document.documentElement.style.setProperty('--glass-solid', 'rgba(var(--panel-rgb),.34)');
 }
-function setCallStageHeight(rawValue, persist = true) {
-  const value = Math.max(200, Math.min(640, Math.round((Number(rawValue) || 380) / 10) * 10));
-  document.documentElement.style.setProperty('--call-stage-height', value + 'px');
-  const stage = document.getElementById('callStage');
-  if (stage) {
-    stage.style.height = value + 'px';
-    stage.style.setProperty('--call-stage-height', value + 'px');
-    stage.querySelectorAll('.tile .big-av, .call-ctrls .round-btn').forEach(el => {
-      el.style.setProperty('--call-preview-height', value + 'px');
-    });
-  }
-  const slider = document.getElementById('callStageSizeSlider');
-  const label = document.getElementById('callStageSizeValue');
-  if (slider && slider.value !== String(value)) slider.value = String(value);
-  if (label) label.textContent = value + ' px';
-  if (persist) { try { localStorage.setItem('rc_call_stage_height', String(value)); } catch {} }
-}
 function initMenuOpacity() {
   let all = 48;
   try { const savedAll = localStorage.getItem('rc_menu_opacity_all'); if (savedAll !== null && savedAll !== '') all = Number(savedAll); } catch {}
   if (!Number.isFinite(all)) all = 48;
   setAllMenuOpacity(all, false);
-  let callHeight = 380;
-  try { const saved = localStorage.getItem('rc_call_stage_height'); if (saved) callHeight = Number(saved); } catch {}
-  setCallStageHeight(callHeight, false);
 }
  
 function setSidebarWidth(px) {
@@ -7891,12 +7862,13 @@ checkSession();
 <style id="auralis-call-layout-244">
   /* Screen share: keep a presentation-sized frame centered inside the call panel. */
   .call-stage {
-    resize: both !important;
+    resize: none !important;
     width: min(100%, 900px) !important;
     max-width: 100% !important;
-    min-width: min(280px, 100%) !important;
-    min-height: 220px !important;
-    max-height: min(78vh, calc(100dvh - 300px)) !important;
+    min-width: 0 !important;
+    height: 280px !important;
+    min-height: 280px !important;
+    max-height: 280px !important;
     overflow: auto !important;
     align-self: flex-start !important;
   }
@@ -7942,8 +7914,10 @@ checkSession();
     .call-stage {
       width: 100% !important;
       min-width: 0 !important;
-      resize: vertical !important;
-      max-height: min(72dvh, calc(100dvh - 250px)) !important;
+      height: 280px !important;
+      min-height: 280px !important;
+      max-height: 280px !important;
+      resize: none !important;
     }
     .call-stage .tile.screen-mode {
       width: 100% !important;
@@ -7999,13 +7973,36 @@ checkSession();
   @media (prefers-reduced-motion: reduce) {
     .settings-tabs::before, .settings-tabs .s-tab { transition: none !important; }
   }
+
+  /* Fixed compact call stage with full-size controls (same scale as the 640px layout). */
+  .call-stage {
+    height: 280px !important;
+    min-height: 280px !important;
+    max-height: 280px !important;
+    resize: none !important;
+  }
+  .call-stage .call-ctrls .round-btn,
+  .call-stage .call-ctrls .round-btn.end {
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    flex: 0 0 58px !important;
+  }
+  .call-stage .call-ctrls .round-btn svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  @media (max-width: 640px) {
+    .call-stage {
+      height: 280px !important;
+      min-height: 280px !important;
+      max-height: 280px !important;
+    }
+  }
 </style>
 <script id="auralis-call-layout-244-js">
 (function enhanceCallPanelAndSettingsTabs() {
   const tabs = document.querySelector('.settings-tabs');
-  const stage = document.getElementById('callStage');
-  const slider = document.getElementById('callStageSizeSlider');
-  const label = document.getElementById('callStageSizeValue');
   const syncTabs = () => {
     if (!tabs) return;
     const active = tabs.querySelector('.s-tab.active');
@@ -8019,19 +8016,6 @@ checkSession();
     new MutationObserver(syncTabs).observe(tabs, {subtree:true, attributes:true, attributeFilter:['class']});
     window.addEventListener('resize', syncTabs, {passive:true});
     syncTabs();
-  }
-  if (stage && typeof ResizeObserver !== 'undefined') {
-    let resizeFrame = 0;
-    const ro = new ResizeObserver(() => {
-      if (resizeFrame) cancelAnimationFrame(resizeFrame);
-      resizeFrame = requestAnimationFrame(() => {
-        if (stage.classList.contains('hidden')) return;
-        const h = Math.round(stage.getBoundingClientRect().height / 10) * 10;
-        if (slider && h >= 200 && h <= 640) slider.value = String(h);
-        if (label) label.textContent = Math.round(stage.getBoundingClientRect().height) + ' px';
-      });
-    });
-    ro.observe(stage);
   }
 })();
 </script>
