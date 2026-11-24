@@ -109,7 +109,16 @@ server.on('upgrade', (req, socket, head) => {
       console.error('[Auralis proxy] WebSocket:', err.message);
       if (client.readyState === WebSocket.OPEN) client.close(1011, 'Backend connection failed');
     });
-    client.on('close', () => { try { remote.close(); } catch {} });
+    client.on('close', () => {
+      try {
+        if (remote.readyState === WebSocket.OPEN || remote.readyState === WebSocket.CONNECTING) {
+          remote.close(1000, 'Local preview client disconnected');
+        }
+      } catch (err) {
+        console.error('[Auralis proxy] Could not close backend WebSocket:', err.message);
+        try { remote.terminate(); } catch {}
+      }
+    });
     client.on('error', () => { try { remote.terminate(); } catch {} });
     client.emit('auralis:connected');
   });
