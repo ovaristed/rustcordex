@@ -121,7 +121,7 @@ document.getElementById('year').textContent=new Date().getFullYear();
 const windows=document.getElementById('windows');
 const android=document.getElementById('android');
 fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
-  const version = meta && /^\d+\.\d+\.\d+$/.test(meta.version || '') ? meta.version : '2.5.12';
+  const version = meta && /^\d+\.\d+\.\d+$/.test(meta.version || '') ? meta.version : '2.5.13';
   document.getElementById('version').textContent = 'Актуальная версия Auralis ' + version;
   windows.href = 'https://github.com/ovaristed/rustcordex/releases/download/v' + version + '/Auralis-Setup-' + version + '.exe';
   windows.classList.remove('disabled');
@@ -132,7 +132,7 @@ fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).
   android.textContent = 'Скачать Auralis Android ' + version;
   android.setAttribute('rel','noopener');
 }).catch(() => {
-  document.getElementById('version').textContent = 'Auralis · версия 2.5.12';
+  document.getElementById('version').textContent = 'Auralis · версия 2.5.13';
 });
 </script>
 </body></html>
