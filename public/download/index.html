@@ -37,19 +37,25 @@ document.getElementById('year').textContent=new Date().getFullYear();
 (async()=>{
  const version=document.getElementById('version');
  try{
-  const response=await fetch('https://api.github.com/repos/ovaristed/rustcordex/releases/latest',{headers:{Accept:'application/vnd.github+json'}});
-  if(!response.ok)throw new Error('no release');
-  const release=await response.json();
-  version.textContent=(release.tag_name||'Последний релиз')+' · '+new Date(release.published_at).toLocaleDateString('ru-RU');
-  const assets=release.assets||[];
-  const find=(pattern)=>assets.find(a=>pattern.test(a.name));
-  const win=find(/auralis.*(setup|installer).*\.exe$/i)||find(/\.exe$/i);
-  const apk=find(/\.apk$/i);
-  for(const [id,asset,label] of [['windows',win,'Скачать EXE'],['android',apk,'Скачать APK']]){
-   const el=document.getElementById(id);
-   if(asset){el.href=asset.browser_download_url;el.classList.remove('disabled');el.textContent=label;el.setAttribute('download',asset.name);}
+  const headers={Accept:'application/vnd.github+json'};
+  const [desktopResponse,androidResponse]=await Promise.all([
+   fetch('https://api.github.com/repos/ovaristed/rustcordex/releases/latest',{headers}),
+   fetch('https://api.github.com/repos/ovaristed/rustcordex/releases/tags/android-latest',{headers})
+  ]);
+  const desktop=desktopResponse.ok?await desktopResponse.json():null;
+  const androidRelease=androidResponse.ok?await androidResponse.json():null;
+  if(desktop){
+   version.textContent=(desktop.tag_name||'Последний релиз')+' · '+new Date(desktop.published_at).toLocaleDateString('ru-RU');
+   const assets=desktop.assets||[];
+   const win=assets.find(a=>/auralis.*(setup|installer).*\.exe$/i.test(a.name))||assets.find(a=>/\.exe$/i.test(a.name));
+   const el=document.getElementById('windows');
+   if(win){el.href=win.browser_download_url;el.classList.remove('disabled');el.textContent='Скачать EXE';el.setAttribute('download',win.name);}
    else{el.textContent='Сборка скоро появится';}
-  }
+  }else{version.textContent='Релизные сборки готовятся';}
+  const apk=(androidRelease?.assets||[]).find(a=>/\.apk$/i.test(a.name));
+  const android=document.getElementById('android');
+  if(apk){android.href=apk.browser_download_url;android.classList.remove('disabled');android.textContent='Скачать APK';android.setAttribute('download',apk.name);}
+  else{android.textContent='Первая APK-сборка готовится';}
  }catch(e){version.textContent='Релизные сборки готовятся';}
 })();
 </script>
