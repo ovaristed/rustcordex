@@ -8522,5 +8522,37 @@ html[data-theme="liquidglass"] .modal-backdrop {
 }
 </style>
 
+<style id="auralis-251-restore-all-settings-tabs">
+/* Restore every settings destination on desktop and mobile. */
+#settingsModal .settings-tabs {
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  --settings-tab-count:4 !important;
+}
+#settingsModal .settings-tabs #sTabAppearance,
+#settingsModal .settings-tabs #sTabAudio,
+#settingsModal .settings-tabs #sTabBinds,
+#settingsModal .settings-tabs #sTabProfile {
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  min-width:0 !important;
+}
+@media (max-width:760px) {
+  #settingsModal .settings-tabs {
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    --settings-tab-count:4 !important;
+    gap:2px !important;
+  }
+  #settingsModal .settings-tabs .s-tab {
+    display:block !important;
+    min-width:0 !important;
+    padding:0 2px !important;
+    font-size:10px !important;
+    white-space:nowrap !important;
+  }
+}
+</style>
+
 </body>
 </html>
