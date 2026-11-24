@@ -41,7 +41,7 @@ jobs:
             --data "{\"commit\":\"$COMMIT_SHA\"}" \
             "https://api.hostless.cloud/v1/apps/$HOSTLESS_APP_NAME/deployments")"
           echo "$response"
-          echo "$response" | grep -Eq '"(started":true|"outcome":"already_in_progress")' || {
+          echo "$response" | jq -e '(.started == true) or (.outcome == "already_in_progress")' >/dev/null || {
             echo "::error::Hostless did not confirm that the deployment was queued."
             exit 1
           }
