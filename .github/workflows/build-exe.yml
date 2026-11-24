@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - '**.md'
-      - 'README*'
+    paths:
+      - '**'
+      - '!**.md'
+      - '!README*'
   workflow_dispatch:
 
 permissions:
@@ -14,7 +15,7 @@ permissions:
 
 concurrency:
   group: rustcord-windows-build
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-windows:
@@ -31,11 +32,18 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install dependencies
-        run: npm install
+      - name: Cache npm and electron-builder downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\AppData\Local\npm-cache
+            ~\AppData\Local\electron-builder\Cache
+          key: rustcord-win-build-${{ runner.os }}-node22-${{ hashFiles('package.json') }}
+          restore-keys: |
+            rustcord-win-build-${{ runner.os }}-node22-
 
-      - name: Install icon rendering tool
-        run: npm install --no-save --no-package-lock sharp
+      - name: Install dependencies
+        run: npm install --no-save --no-package-lock --prefer-offline --no-audit --no-fund sharp
 
       - name: Generate branded app and installer assets
         shell: pwsh
@@ -44,7 +52,6 @@ jobs:
           node -e "require('sharp')('build/rustcord-icon.svg').resize(512,512).png().toFile('build/rustcord-icon.png').then(()=>console.log('Icon rendered'))"
           Add-Type -AssemblyName System.Drawing
 
-          # Windows application icon (.ico), generated from the vector brand mark.
           $image = [System.Drawing.Image]::FromFile((Resolve-Path "build/rustcord-icon.png"))
           $bitmap = New-Object System.Drawing.Bitmap(256, 256)
           $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
@@ -69,7 +76,6 @@ jobs:
           $writer.Close()
           $file.Dispose()
 
-          # Branded NSIS wizard sidebar: 164 x 314 BMP.
           $side = New-Object System.Drawing.Bitmap(164, 314, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
           $g = [System.Drawing.Graphics]::FromImage($side)
           $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
@@ -95,7 +101,6 @@ jobs:
           $white.Dispose(); $muted.Dispose(); $accent.Dispose()
           $g.Dispose(); $side.Save("build/installer-sidebar.bmp",[System.Drawing.Imaging.ImageFormat]::Bmp); $side.Dispose()
 
-          # Compact branded header used by the NSIS wizard.
           $header = New-Object System.Drawing.Bitmap(150,57,[System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
           $hg = [System.Drawing.Graphics]::FromImage($header)
           $hg.Clear([System.Drawing.Color]::FromArgb(12,17,39))
