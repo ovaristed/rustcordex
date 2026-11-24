@@ -1386,6 +1386,19 @@
     filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
     user-select: text;
   }
+  .msg-sticker-big img {
+    display:block;
+    width:clamp(104px, 15vw, 156px);
+    height:auto;
+    object-fit:contain;
+    user-select:none;
+    -webkit-user-drag:none;
+    filter:drop-shadow(0 8px 15px rgba(0,0,0,.28));
+    animation:rcStickerPop .22s cubic-bezier(.2,.8,.25,1) both;
+  }
+  .emoji-btn-sticker { padding:1px !important; overflow:hidden; }
+  .emoji-sticker-icon { display:block; width:31px; height:31px; object-fit:contain; pointer-events:none; }
+  @keyframes rcStickerPop { from { opacity:0; transform:scale(.78) rotate(-5deg); } to { opacity:1; transform:scale(1) rotate(0); } }
 
   .att-img,
   .att-gif {
@@ -2550,7 +2563,7 @@
       </div>
     </div>
 
-    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 1.9</div>
+    <div style="margin-top:14px;padding-top:9px;border-top:1px solid var(--border);text-align:center;font-size:10.5px;color:var(--muted);opacity:.72;letter-spacing:.2px;" aria-label="Версия приложения">Rustcord · версия 2.0</div>
   </div>
 </div>
 
@@ -3807,7 +3820,13 @@ function saveRecentSticker(st) {
 function renderRecentStickers() {
   const box = document.getElementById('recentStickersBox');
   if (!box) return;
-  box.innerHTML = recentStickers.map((s) => '<button type="button" class="emoji-btn" data-sticker="' + esc(String(s)) + '">' + esc(String(s)) + '</button>').join('');
+  box.innerHTML = recentStickers.map((s) => {
+    const code = /^(?:67|777|52|48)$/.test(String(s));
+    const visual = code
+      ? '<img class="emoji-sticker-icon" src="/stickers/' + s + '.svg" alt="Стикер ' + s + '" draggable="false">'
+      : esc(String(s));
+    return '<button type="button" class="emoji-btn' + (code ? ' emoji-btn-sticker' : '') + '" data-sticker="' + esc(String(s)) + '" aria-label="Стикер ' + esc(String(s)) + '">' + visual + '</button>';
+  }).join('');
   box.querySelectorAll('.emoji-btn').forEach((btn) => {
     btn.addEventListener('click', () => insertSticker(btn.dataset.sticker || ''));
   });
@@ -5274,7 +5293,10 @@ function appendMsg(m) {
       }
     } catch { bodyHtml = '<div class="msg-text">Вложение</div>'; }
   } else if (bigSticker) {
-    bodyHtml = '<div class="msg-sticker-big">' + esc(rawText) + '</div>';
+    const stickerCode = /^(?:67|777|52|48)$/.test(String(rawText || '').trim()) ? String(rawText).trim() : '';
+    bodyHtml = '<div class="msg-sticker-big">' + (stickerCode
+      ? '<img src="/stickers/' + stickerCode + '.svg" alt="Стикер ' + stickerCode + '" draggable="false">'
+      : esc(rawText)) + '</div>';
   } else {
     bodyHtml = '<div class="msg-text">' + esc(rawText) + '</div>';
     editable = !!(isMine && m.id != null);
@@ -6442,7 +6464,7 @@ async function toggleScreen() {
 
 checkSession();
 
-/* v1.9: bind voice toggles directly so Glasscord visual layers cannot swallow inline actions. */
+/* v2.0: bind voice toggles directly so Glasscord visual layers cannot swallow inline actions. */
 (function bindCallToggleButtons() {
   const mic = document.getElementById('cMic');
   const deaf = document.getElementById('cDeaf');
