@@ -5806,7 +5806,7 @@ function mergeChatMessages(kind, id, incoming) {
   const byId = new Map();
   // Cached live WebSocket messages are applied last so a slower REST history
   // response cannot overwrite or hide a message that arrived during loading.
-  for (const m of [...readChatCache(kind, id), ...(Array.isArray(incoming) ? incoming : [])]) {
+  for (const m of [...(Array.isArray(incoming) ? incoming : []), ...readChatCache(kind, id)]) {
     if (!m || m.id == null) continue;
     byId.set(String(m.id), m);
   }
