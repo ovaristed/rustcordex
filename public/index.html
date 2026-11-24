@@ -3735,9 +3735,10 @@ fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).
 checkSession();
 }
 
-function logoutAndSwitchAccount(prefillUsername = '') {
+async function logoutAndSwitchAccount(prefillUsername = '') {
   closeProfilePopover();
-  logout();
+  const didLogout = await logout();
+  if (!didLogout) return;
   setMode('login');
   const uInp = document.getElementById('u');
   const pInp = document.getElementById('p');
@@ -4905,14 +4906,26 @@ async function checkSession() {
   if (!token) return;
   try {
     const res = await fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } });
-    if (!res.ok) return logout();
+    if (!res.ok) return performLogout();
     me = await res.json();
     persistSavedAccount(me, token);
     enterApp();
   } catch {}
 }
 
-function logout() {
+async function logout() {
+  const confirmed = await showConfirmDialog({
+    title: 'Выйти из аккаунта?',
+    message: 'Вы действительно хотите выйти из своего аккаунта?',
+    confirmText: 'Выйти',
+    danger: true
+  });
+  if (!confirmed) return false;
+  performLogout();
+  return true;
+}
+
+function performLogout() {
   closeProfilePopover(); hideIncomingCallModal(); closeVoiceContextMenu(); closeGroupModal();
   endCall(false, false); stopMicTest(); toggleGifPicker(false); closeSfxCtx();
   if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
