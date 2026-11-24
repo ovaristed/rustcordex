@@ -8668,5 +8668,76 @@ checkSession();
   }
 </style>
 
+
+<style id="auralis-universal-transparent-glass-v257">
+  /* Wallpaper-first glass: keep the active theme's colors and make every shell surface translucent. */
+  :root {
+    --theme-overlay:rgba(0,0,0,.12) !important;
+    --panel-alpha:.22 !important;
+    --glass:rgba(var(--panel-rgb),.22) !important;
+    --glass-solid:rgba(var(--panel-rgb),.34) !important;
+    --glass-2:rgba(var(--panel-rgb),.13) !important;
+    --glass-hover:rgba(235,244,255,.12) !important;
+    --input-bg:rgba(var(--panel-rgb),.17) !important;
+    --input-focus-bg:rgba(var(--panel-rgb),.25) !important;
+  }
+  body {
+    background:
+      linear-gradient(rgba(0,0,0,.12),rgba(0,0,0,.12)),
+      var(--theme-wallpaper),
+      radial-gradient(circle at 15% 15%,rgba(var(--accent-rgb),.18),transparent 45%),
+      radial-gradient(circle at 85% 20%,var(--glow-2),transparent 45%),
+      var(--bg) !important;
+    background-size:cover,cover,auto,auto,auto !important;
+    background-position:center !important;
+    background-attachment:fixed !important;
+  }
+  #app,#app > .sidebar,#app > .main,
+  .sidebar,.main,.top-tabs,.bottom-dock,.panel-body,
+  .main > .chat-header,.main > .messages,.main > .composer,
+  .call-stage,.call-tile,.emoji-bar,.gif-picker,
+  #panelChats,#groupsList,#chatsList {
+    background-color:rgba(var(--panel-rgb),.22) !important;
+    backdrop-filter:blur(24px) saturate(145%) !important;
+    -webkit-backdrop-filter:blur(24px) saturate(145%) !important;
+  }
+  #app { background:rgba(var(--panel-rgb),.12) !important; }
+  #app > .sidebar,.sidebar { background:rgba(var(--panel-rgb),.26) !important; }
+  #app > .main,.main { background:rgba(var(--panel-rgb),.16) !important; }
+  .top-tabs,.bottom-dock,.main > .chat-header,.main > .composer {
+    background:rgba(var(--panel-rgb),.25) !important;
+    border-color:rgba(225,237,250,.15) !important;
+  }
+  .main > .messages,.panel-body { background:rgba(var(--panel-rgb),.10) !important; }
+  .card,.modal-card,.incoming-card,.profile-popover,.user-profile-card,
+  .voice-ctx-menu,.group-ctx-menu,.context-menu,.app-dialog,
+  .sticker-picker,.emoji-picker,[role="dialog"],[role="menu"] {
+    background:rgba(var(--panel-rgb),.42) !important;
+    border-color:rgba(225,237,250,.18) !important;
+    backdrop-filter:blur(28px) saturate(150%) !important;
+    -webkit-backdrop-filter:blur(28px) saturate(150%) !important;
+  }
+  .list-item,.msg-bubble,.message-bubble,.pop-card,.pop-profile-strip,
+  .field input:not([type="checkbox"]):not([type="range"]),
+  .field select,.field textarea,.icon-btn,.tab-btn,.settings-tabs,.settings-tabs .s-tab {
+    background-color:rgba(var(--panel-rgb),.16) !important;
+    border-color:rgba(225,237,250,.14) !important;
+  }
+  .list-item:hover,.icon-btn:hover,.tab-btn:hover,.s-tab:hover {
+    background-color:rgba(235,244,255,.13) !important;
+  }
+  .modal-backdrop,.app-dialog-backdrop,.user-profile-overlay {
+    background:rgba(0,0,0,.24) !important;
+  }
+  @media(prefers-reduced-transparency:reduce) {
+    #app > .sidebar,#app > .main,.sidebar,.main,.top-tabs,.bottom-dock,
+    .main > .chat-header,.main > .messages,.main > .composer,
+    .card,.modal-card,[role="dialog"],[role="menu"] {
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+  }
+</style>
+
 </body>
 </html>
