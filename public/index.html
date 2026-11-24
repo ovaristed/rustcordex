@@ -2892,6 +2892,49 @@ html[data-theme="glasscord"] .pop-profile-strip {
   html[data-theme="aurora"] .chat-header, html[data-theme="aurora"] .composer, html[data-theme="aurora"] .bottom-dock { box-shadow:inset 0 1px 0 rgba(151,255,239,.07), 0 -8px 34px rgba(33,174,174,.035); }
   @media(max-width:760px) { #callStage.call-stage { max-height:34dvh !important; } #callStage .tile video { max-height:18dvh !important; } }
 </style>
+
+<style id="auralis-aurora-picker-polish-v2517">
+  /* Aurora is a background layer, never a foreground overlay on chat content. */
+  html[data-theme="aurora"] #bgCanvas { z-index:1 !important; }
+  /* Custom segmented tabs: avoid native browser button appearance. */
+  #stickerPicker .sticker-picker-tabs {
+    display:inline-flex; align-items:center; gap:4px; padding:4px;
+    border:1px solid var(--border); border-radius:12px;
+    background:rgba(8,12,22,.34);
+  }
+  #stickerPicker .sticker-mode-btn {
+    appearance:none; -webkit-appearance:none; display:inline-flex;
+    align-items:center; justify-content:center; min-width:88px; min-height:34px;
+    margin:0; padding:0 14px; border:1px solid transparent;
+    border-radius:9px; background:transparent; color:var(--muted);
+    font:600 12px/1 inherit; letter-spacing:.01em; cursor:pointer;
+    box-shadow:none; outline:none;
+  }
+  #stickerPicker .sticker-mode-btn:hover {
+    background:rgba(255,255,255,.07); color:var(--text);
+  }
+  #stickerPicker .sticker-mode-btn.active {
+    color:#fff; border-color:rgba(var(--accent-rgb),.42);
+    background:linear-gradient(135deg,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),.16));
+    box-shadow:0 3px 12px rgba(var(--accent-rgb),.18),inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  #stickerPicker .sticker-picker-head > .sm-btn {
+    width:32px; height:32px; min-width:32px; padding:0;
+    display:grid; place-items:center; border-radius:10px;
+    background:rgba(255,255,255,.055); border:1px solid var(--border);
+    color:var(--muted);
+  }
+  #stickerPicker .sticker-picker-head > .sm-btn:hover {
+    color:var(--text); background:rgba(255,255,255,.11);
+  }
+  #stickerPicker .gif-picker { margin:0; padding:8px 0 0; border:0; background:transparent; box-shadow:none; }
+  #stickerPicker .gif-head input { min-width:0; flex:1; color:var(--text); background:var(--input-bg); border:1px solid var(--border); }
+  #stickerPicker .gif-head > button { flex:0 0 auto; min-height:36px; border-radius:10px; }
+  @media(max-width:760px) {
+    #stickerPicker .sticker-mode-btn { min-width:82px; }
+  }
+</style>
+
 </head>
 <body>
 
@@ -4848,6 +4891,17 @@ function setStickerPickerMode(mode) {
     if (input) { input.focus(); if (!document.getElementById('gifResultsGrid').children.length) searchGifs(input.value.trim() || 'trending'); }
   }
 }
+
+/* Dismiss the sticker/GIF panel on any interaction outside it. */
+document.addEventListener('pointerdown', (event) => {
+  const panel = document.getElementById('stickerPicker');
+  const button = document.getElementById('stickerPickerBtn');
+  if (!panel || panel.classList.contains('hidden')) return;
+  const target = event.target;
+  if (panel.contains(target) || (button && button.contains(target))) return;
+  toggleStickerPicker(false);
+}, true);
+
 function renderStickerPicker() {
   const grid = document.getElementById('stickerPickerGrid');
   if (!grid) return;
