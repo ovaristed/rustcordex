@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <link rel="manifest" href="/manifest.webmanifest" />
-<meta name="theme-color" content="#090b12" />
+<meta name="theme-color" content="#00190e" />
 <link rel="icon" href="/auralis-icon.svg" type="image/svg+xml" />
 <title>Auralis</title>
 <style>
@@ -3134,6 +3134,160 @@ html[data-theme="glasscord"] .pop-profile-strip {
   }
   .gif-state { grid-column:1/-1; padding:12px 8px; text-align:center; line-height:1.45; }
   @media (prefers-reduced-motion:reduce) { .gif-card { transition:none !important; } }
+</style>
+
+<style id="auralis-android-emerald-experience">
+/* Auralis mobile visual system — botanical emerald / Material 3 */
+body.android-md3 {
+  --bg:#00190e; --panel-rgb:5,43,24; --panel-alpha:.88;
+  --glass:rgba(5,43,24,.88); --glass-solid:#062d1a;
+  --glass-2:rgba(104,221,145,.075); --glass-hover:rgba(104,221,145,.14);
+  --input-bg:rgba(4,38,21,.82); --input-focus-bg:rgba(10,73,39,.92);
+  --border:rgba(112,224,151,.16); --text:#effff3; --muted:rgba(211,241,220,.68);
+  --accent:#4cda83; --accent-rgb:76,218,131; --icon-color:#8bf0ae; --icon-muted:#68c98b;
+  --green:#66e69a; --red:#ffaaa3; --glow-2:rgba(22,154,78,.22);
+  color-scheme:dark;
+  background-color:#00190e;
+  background-image:linear-gradient(rgba(0,20,11,.24),rgba(0,20,11,.34)),url('/backgrounds/auralis-emerald.svg');
+  background-size:cover;
+  background-position:center top;
+  background-attachment:fixed;
+}
+body.android-md3::before, body.android-md3::after {
+  content:""; position:fixed; pointer-events:none; z-index:0; width:44vw; height:35vh;
+  opacity:.22; filter:blur(1px); background:linear-gradient(135deg,rgba(26,147,74,.28),rgba(4,58,30,.03));
+  clip-path:polygon(0 50%,12% 24%,34% 5%,62% 0,100% 12%,82% 48%,55% 80%,22% 100%);
+}
+body.android-md3::before { top:2%; left:-20vw; transform:rotate(-18deg); }
+body.android-md3::after { right:-22vw; bottom:4%; transform:rotate(162deg); }
+body.android-md3 #bgCanvas { opacity:.035; }
+body.android-md3 #zoomRoot { isolation:isolate; }
+body.android-md3 #app,
+body.android-md3 #authWrap { background:transparent !important; }
+body.android-md3 .app { padding:0; gap:0; }
+body.android-md3 .sidebar,
+body.android-md3 .main,
+body.android-md3 .card,
+body.android-md3 .modal-card,
+body.android-md3 .incoming-card,
+body.android-md3 .profile-popover,
+body.android-md3 .user-profile-card {
+  background:linear-gradient(155deg,rgba(5,48,26,.91),rgba(2,30,16,.88)) !important;
+  border:1px solid rgba(116,225,153,.15) !important;
+  box-shadow:0 18px 55px rgba(0,12,6,.22),inset 0 1px 0 rgba(219,255,229,.035) !important;
+  backdrop-filter:blur(22px) saturate(1.22);
+  -webkit-backdrop-filter:blur(22px) saturate(1.22);
+}
+body.android-md3 .sidebar { border-radius:0 !important; }
+body.android-md3 .main { border-radius:0 !important; background:rgba(1,27,14,.64) !important; }
+body.android-md3 .sidebar .sidebar-top,
+body.android-md3 .sidebar .top-tabs,
+body.android-md3 .sidebar .panel-body,
+body.android-md3 .sidebar .bottom-dock { background:transparent !important; }
+body.android-md3 .chat-header,
+body.android-md3 .top-tabs,
+body.android-md3 .bottom-dock,
+body.android-md3 .panel-body,
+body.android-md3 .composer {
+  background:rgba(4,39,21,.76) !important;
+  border-color:rgba(122,226,157,.14) !important;
+}
+body.android-md3 .chat-header { min-height:68px; box-shadow:0 1px 0 rgba(133,230,164,.08); }
+body.android-md3 .messages { background:transparent !important; padding:16px 14px; }
+body.android-md3 .list-item,
+body.android-md3 .call-log-row,
+body.android-md3 .pop-card,
+body.android-md3 .pop-profile-strip,
+body.android-md3 .pop-login-row {
+  background:linear-gradient(145deg,rgba(11,74,39,.76),rgba(5,47,25,.82)) !important;
+  border:1px solid rgba(123,228,158,.13) !important;
+  border-radius:20px !important;
+  box-shadow:inset 0 1px 0 rgba(220,255,230,.035);
+}
+body.android-md3 .list-item { min-height:68px; }
+body.android-md3 .list-item.active { background:linear-gradient(130deg,rgba(25,125,65,.68),rgba(9,75,38,.88)) !important; border-color:rgba(99,232,145,.48) !important; }
+body.android-md3 .user-bar { background:rgba(10,68,36,.76) !important; border:1px solid var(--border) !important; border-radius:22px !important; }
+body.android-md3 .sec-lbl { color:#9beab5 !important; letter-spacing:.07em; }
+body.android-md3 .msg-bubble {
+  background:linear-gradient(145deg,rgba(10,69,36,.94),rgba(5,48,25,.94)) !important;
+  border:1px solid rgba(121,225,155,.14) !important; border-radius:20px !important; color:#effff3 !important;
+  box-shadow:0 5px 18px rgba(0,15,7,.12);
+}
+body.android-md3 .msg.mine .msg-bubble { background:linear-gradient(135deg,#168b4b,#086332) !important; border-color:rgba(151,255,185,.28) !important; }
+body.android-md3 .msg.other .msg-bubble { border-bottom-left-radius:7px !important; }
+body.android-md3 .msg.mine .msg-bubble { border-bottom-right-radius:7px !important; }
+body.android-md3 input:not([type="checkbox"]):not([type="range"]),
+body.android-md3 select, body.android-md3 textarea {
+  background:rgba(2,38,20,.86) !important; color:#effff3 !important;
+  border:1px solid rgba(124,224,157,.19) !important; border-radius:17px !important;
+}
+body.android-md3 input:focus, body.android-md3 select:focus, body.android-md3 textarea:focus {
+  border-color:#55df88 !important; box-shadow:0 0 0 3px rgba(76,218,131,.15) !important;
+}
+body.android-md3 button.primary-btn, body.android-md3 .send-btn, body.android-md3 .sm-btn.blue,
+body.android-md3 .desktop-update-button {
+  background:linear-gradient(135deg,#32bd69,#0e914b) !important; color:#f3fff6 !important;
+  border:1px solid rgba(180,255,203,.2) !important; border-radius:999px !important;
+  font-weight:750; box-shadow:0 8px 22px rgba(16,151,73,.2),inset 0 1px 0 rgba(255,255,255,.18);
+}
+body.android-md3 .send-btn svg, body.android-md3 .primary-btn svg { color:#effff3 !important; }
+body.android-md3 .tab-btn, body.android-md3 .icon-btn, body.android-md3 .sm-btn, body.android-md3 .mini-plus-btn,
+body.android-md3 .sticker-mode-btn {
+  border-radius:16px !important; background:rgba(11,73,38,.68) !important;
+  border:1px solid rgba(127,229,160,.14) !important; color:#ddf8e5 !important;
+}
+body.android-md3 .tab-btn.active, body.android-md3 .sticker-mode-btn.active {
+  background:linear-gradient(135deg,#26a95b,#08733a) !important; color:#fff !important;
+  border-color:rgba(167,255,190,.3) !important; box-shadow:0 5px 18px rgba(16,148,72,.22);
+}
+body.android-md3 .gif-picker, body.android-md3 .sticker-picker {
+  background:rgba(3,39,20,.96) !important; border:1px solid rgba(122,228,157,.2) !important;
+  border-radius:26px !important; box-shadow:0 16px 48px rgba(0,12,5,.38);
+}
+body.android-md3 .gif-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+body.android-md3 .gif-card { aspect-ratio:1.35; border-radius:18px; border:1px solid rgba(134,231,165,.17); background:#0a3b20; overflow:hidden; }
+body.android-md3 .gif-card img { object-fit:cover; }
+body.android-md3 .att-gif { max-width:min(78vw,420px); max-height:360px; width:auto; height:auto; object-fit:contain; border-radius:20px; background:#062d18; }
+body.android-md3 .user-profile-overlay { align-items:flex-end; padding:0; background:rgba(0,15,7,.72); backdrop-filter:blur(14px); }
+body.android-md3 .user-profile-card { width:100%; max-width:560px; max-height:min(90dvh,780px); border-radius:30px 30px 0 0 !important; background:linear-gradient(155deg,rgba(5,48,26,.98),rgba(1,26,14,.98)) !important; }
+body.android-md3 .user-profile-banner { height:172px; background:linear-gradient(135deg,rgba(5,65,31,.35),rgba(0,26,13,.1)),url('/backgrounds/auralis-emerald.svg') center/cover !important; }
+body.android-md3 .user-profile-avatar { border-color:#07351d !important; background:#0b4728; }
+body.android-md3 .user-profile-thought { background:rgba(12,83,43,.85) !important; color:#effff3; border:1px solid var(--border); border-radius:19px; }
+body.android-md3 .user-profile-description { background:rgba(8,66,34,.78) !important; border:1px solid var(--border); border-radius:19px; }
+body.android-md3 .profile-popover { background:linear-gradient(155deg,rgba(5,48,26,.98),rgba(1,26,14,.98)) !important; border-radius:28px !important; }
+body.android-md3 .pop-banner { background:linear-gradient(135deg,rgba(5,65,31,.35),rgba(0,26,13,.1)),url('/backgrounds/auralis-emerald.svg') center/cover !important; }
+body.android-md3 .pop-av { border-color:#07351d !important; }
+body.android-md3 .pop-menu-btn { color:#effff3 !important; min-height:50px; border-radius:15px; }
+body.android-md3 .modal-card, body.android-md3 .incoming-card, body.android-md3 .app-dialog { background:linear-gradient(155deg,#07351e,#032414) !important; border-color:rgba(126,229,159,.2) !important; border-radius:26px !important; }
+body.android-md3 .empty-chat { color:#a9d9b8; }
+body.android-md3 .app-toast { background:#0b4a28; color:#effff3; border-color:rgba(130,230,163,.25); border-radius:18px; }
+body.android-md3 .app-version-link { color:#b4e9c3; border-color:rgba(123,228,157,.16); }
+body.android-md3 .accent-choice.active { border-color:#6df09b; box-shadow:0 0 0 3px rgba(76,218,131,.24),0 0 24px rgba(49,210,110,.32); }
+body.android-md3 .auth-wrap { background:transparent !important; }
+body.android-md3 .auth-wrap .card { border-radius:30px !important; }
+body.android-md3 .auth-brand-mark { background:linear-gradient(145deg,#42d982,#08733b) !important; box-shadow:0 8px 24px rgba(30,180,91,.28); }
+body.android-md3 .app-dialog-backdrop { background:rgba(0,15,7,.72); backdrop-filter:blur(14px); }
+body.android-md3 .voice-ctx-menu, body.android-md3 .group-ctx-menu { background:#07351e !important; border:1px solid var(--border) !important; border-radius:20px !important; color:#effff3 !important; }
+body.android-md3 .voice-ctx-btn, body.android-md3 .group-ctx-btn { color:#effff3 !important; border-radius:13px; }
+body.android-md3 .voice-ctx-btn:hover, body.android-md3 .group-ctx-btn:hover { background:rgba(82,218,130,.12) !important; }
+body.android-md3 .call-stage { background:rgba(1,26,13,.78) !important; }
+body.android-md3 .call-pill { background:linear-gradient(135deg,#1ca75a,#08733b) !important; color:white !important; border-radius:999px !important; }
+@media(max-width:760px) {
+  body.android-md3 { background-attachment:scroll; }
+  body.android-md3 .app { padding:0 !important; gap:0 !important; }
+  body.android-md3 .sidebar { border-radius:0 !important; }
+  body.android-md3 .main { border-radius:0 !important; }
+  body.android-md3 .chat-header { padding:12px 16px; min-height:72px; }
+  body.android-md3 .messages { padding:14px 12px 18px; }
+  body.android-md3 .composer { padding:10px 12px max(14px,env(safe-area-inset-bottom)) !important; background:rgba(3,38,19,.94) !important; }
+  body.android-md3 .gif-picker, body.android-md3 .sticker-picker { margin:0 10px 9px; }
+  body.android-md3 .user-profile-content { padding:0 20px max(26px,env(safe-area-inset-bottom)); }
+  body.android-md3 .list-item { margin:5px 10px; width:calc(100% - 20px); }
+  body.android-md3 .top-tabs { border-radius:24px !important; margin:10px 12px; padding:6px; }
+  body.android-md3 .bottom-dock { padding:8px 12px max(10px,env(safe-area-inset-bottom)); }
+  body.android-md3 .user-bar { padding:10px; }
+}
+@media(prefers-reduced-motion:reduce) { body.android-md3 *,body.android-md3 *::before,body.android-md3 *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
 </head>
 <body>
