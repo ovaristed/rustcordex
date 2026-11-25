@@ -645,7 +645,7 @@ jobs:
           test -x "$BUILD_TOOLS/apksigner"
           test -x "$BUILD_TOOLS/aapt"
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
-          "$BUILD_TOOLS/aapt" dump badging "$APK" | grep -E "^package: name='com\\.ovarist\\.auralis' versionCode='[0-9]+' versionName='2\\.5\\.33'"
+          "$BUILD_TOOLS/aapt" dump badging "$APK" | grep -E "^package: name='com\\.ovarist\\.auralis' versionCode='[0-9]+' versionName='2\\.5\\.34'"
           echo "APK integrity, package id, version and signer verified"
 
       - name: Give APK versioned and stable download filenames
