@@ -48,6 +48,9 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_description TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_sticker_url TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT NOT NULL DEFAULT '';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_reason TEXT NOT NULL DEFAULT '';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_until TIMESTAMPTZ;`);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS friendships (
@@ -129,16 +132,31 @@ function signToken(user) {
   return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
 }
 
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) return res.status(401).json({ error: 'Не авторизован' });
   try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const current = await pool.query('SELECT id, username, is_banned, ban_reason, ban_until FROM users WHERE id = $1 AND LOWER(username) = LOWER($2)', [decoded.id, decoded.username]);
+    if (!current.rows.length) return res.status(401).json({ error: 'Аккаунт не найден' });
+    const account = current.rows[0];
+    if (account.is_banned && (!account.ban_until || new Date(account.ban_until).getTime() > Date.now())) {
+      return res.status(403).json({ error: 'Аккаунт заблокирован', reason: account.ban_reason || 'Причина не указана', until: account.ban_until });
+    }
+    if (account.is_banned) await pool.query('UPDATE users SET is_banned = FALSE, ban_reason = \'\', ban_until = NULL WHERE id = $1', [account.id]);
+    req.user = { id: account.id, username: account.username };
+    return next();
   } catch {
     return res.status(401).json({ error: 'Сессия истекла' });
   }
+}
+
+function adminOnly(req, res, next) {
+  if (!req.user || String(req.user.username).toLowerCase() !== 'ovarist') {
+    return res.status(403).json({ error: 'Доступ только владельцу Auralis' });
+  }
+  return next();
 }
 
 function fetchJson(url, timeoutMs = 4500) {
@@ -358,7 +376,7 @@ app.post('/api/login', authLimiter, async (req, res) => {
     if (!username || !password) return res.status(400).json({ error: 'Введите логин и пароль' });
 
     const result = await pool.query(
-      'SELECT id, username, password_hash, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE LOWER(username) = LOWER($1)',
+      'SELECT id, username, password_hash, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, is_banned, ban_reason, ban_until FROM users WHERE LOWER(username) = LOWER($1)',
       [username]
     );
     if (result.rows.length === 0) return res.status(401).json({ error: 'Неверный логин или пароль' });
@@ -366,6 +384,10 @@ app.post('/api/login', authLimiter, async (req, res) => {
     const user = result.rows[0];
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Неверный логин или пароль' });
+    if (user.is_banned && (!user.ban_until || new Date(user.ban_until).getTime() > Date.now())) {
+      return res.status(403).json({ error: 'Аккаунт заблокирован', reason: user.ban_reason || 'Причина не указана', until: user.ban_until });
+    }
+    if (user.is_banned) await pool.query('UPDATE users SET is_banned = FALSE, ban_reason = \'\', ban_until = NULL WHERE id = $1', [user.id]);
 
     return res.json({
       token: signToken(user),
@@ -374,6 +396,83 @@ app.post('/api/login', authLimiter, async (req, res) => {
   } catch (err) {
     console.error('Login error:', err);
     return res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+
+app.get('/api/admin/users', authMiddleware, adminOnly, async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, username, nickname, profile_description, created_at, is_banned, ban_reason, ban_until
+       FROM users ORDER BY created_at DESC NULLS LAST, id DESC`
+    );
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json({ users: result.rows });
+  } catch (err) {
+    console.error('Admin users error:', err);
+    return res.status(500).json({ error: 'Не удалось загрузить пользователей' });
+  }
+});
+
+app.patch('/api/admin/users/:id/profile', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const nickname = String(req.body.nickname || '').trim();
+    const thought = String(req.body.thought || '').trim();
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Некорректный пользователь' });
+    if (nickname.length > 32 || thought.length > 50) return res.status(400).json({ error: 'Ник — до 32 символов, мысли — до 50' });
+    const updated = await pool.query(
+      'UPDATE users SET nickname = $1, profile_description = $2 WHERE id = $3 RETURNING id, username, nickname, profile_description',
+      [nickname, thought, id]
+    );
+    if (!updated.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
+    const u = updated.rows[0];
+    sendToUser(u.username, { type: 'profile-updated' });
+    return res.json({ user: u });
+  } catch (err) {
+    console.error('Admin profile update error:', err);
+    return res.status(500).json({ error: 'Не удалось изменить профиль' });
+  }
+});
+
+app.post('/api/admin/users/:id/ban', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const reason = String(req.body.reason || '').trim().slice(0, 300);
+    const hoursRaw = req.body.hours;
+    const hours = hoursRaw === null || hoursRaw === '' || hoursRaw === undefined ? null : Number(hoursRaw);
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Некорректный пользователь' });
+    if (!reason) return res.status(400).json({ error: 'Укажи причину блокировки' });
+    if (hours !== null && (!Number.isFinite(hours) || hours < 1 || hours > 87600)) return res.status(400).json({ error: 'Срок — от 1 часа до 10 лет или пусто для бессрочной блокировки' });
+    const until = hours === null ? null : new Date(Date.now() + hours * 3600000);
+    const updated = await pool.query(
+      'UPDATE users SET is_banned = TRUE, ban_reason = $1, ban_until = $2 WHERE id = $3 AND LOWER(username) <> \'ovarist\' RETURNING id, username, is_banned, ban_reason, ban_until',
+      [reason, until, id]
+    );
+    if (!updated.rows.length) return res.status(404).json({ error: 'Пользователь не найден или это аккаунт владельца' });
+    const u = updated.rows[0];
+    for (const sock of (socketsByUser.get(u.username) || [])) { try { sock.close(4003, 'Аккаунт заблокирован'); } catch {} }
+    return res.json({ user: u });
+  } catch (err) {
+    console.error('Admin ban error:', err);
+    return res.status(500).json({ error: 'Не удалось заблокировать пользователя' });
+  }
+});
+
+app.post('/api/admin/users/:id/unban', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Некорректный пользователь' });
+    const updated = await pool.query(
+      'UPDATE users SET is_banned = FALSE, ban_reason = \'\', ban_until = NULL WHERE id = $1 AND LOWER(username) <> \'ovarist\' RETURNING id, username',
+      [id]
+    );
+    if (!updated.rows.length) return res.status(404).json({ error: 'Пользователь не найден или это аккаунт владельца' });
+    sendToUser(updated.rows[0].username, { type: 'profile-updated' });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Admin unban error:', err);
+    return res.status(500).json({ error: 'Не удалось снять блокировку' });
   }
 });
 
@@ -930,6 +1029,14 @@ wss.on('connection', (ws) => {
       try {
         const decoded = jwt.verify(String(data.token || ''), JWT_SECRET);
         if (!decoded || !decoded.username) throw new Error('Invalid token');
+        const account = await pool.query('SELECT id, username, is_banned, ban_reason, ban_until FROM users WHERE id = $1 AND LOWER(username) = LOWER($2)', [decoded.id, decoded.username]);
+        if (!account.rows.length) throw new Error('Account not found');
+        const currentUser = account.rows[0];
+        if (currentUser.is_banned && (!currentUser.ban_until || new Date(currentUser.ban_until).getTime() > Date.now())) {
+          try { ws.send(JSON.stringify({ type: 'auth-error', error: 'Аккаунт заблокирован: ' + (currentUser.ban_reason || 'причина не указана') })); } catch {}
+          return;
+        }
+        if (currentUser.is_banned) await pool.query('UPDATE users SET is_banned = FALSE, ban_reason = '', ban_until = NULL WHERE id = $1', [currentUser.id]);
         if (ws.username && socketsByUser.has(ws.username)) {
           const oldSockets = socketsByUser.get(ws.username);
           oldSockets.delete(ws);
