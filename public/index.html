@@ -5920,7 +5920,9 @@ function desktopThemeKey() {
   return localStorage.getItem('rc_desktop_theme_mode') === 'custom' ? 'custom' : activeThemeName;
 }
 function readDesktopThemeSettings(key = desktopThemeKey()) {
-  const defaults = { opacity:64, blur:24, wallpaper:'theme', effect:(THEMES[activeThemeName] || THEMES.emerald).effect || 'none', accent:(THEMES[activeThemeName] || THEMES.emerald).accent || '#30d158', panel:'#0e1e16' };
+  const theme = THEMES[activeThemeName] || THEMES.emerald;
+  const panel = '#' + String(theme.panelRgb || '14, 30, 22').split(',').map(v => Math.max(0,Math.min(255,Number(v)||0)).toString(16).padStart(2,'0')).join('');
+  const defaults = { opacity:64, blur:24, wallpaper:'theme', effect:theme.effect || 'none', accent:theme.accent || '#30d158', panel };
   try {
     const saved = JSON.parse(localStorage.getItem('rc_theme_settings_' + key) || 'null');
     if (saved && typeof saved === 'object') return { ...defaults, ...saved };
