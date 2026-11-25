@@ -3545,13 +3545,15 @@ input[type="range"]::-moz-range-thumb { background: var(--accent) !important; }
 
 /* Remove the unwanted grey strips from settings; keep the sheet unified with its theme. */
 @media (max-width:760px) {
-  .modal-head, .settings-tabs {
+  .modal-head, .settings-tabs,
+  html[data-theme="emerald"] .modal-head,
+  html[data-theme="emerald"] .settings-tabs {
     background: transparent !important;
     border-color: var(--border) !important;
     box-shadow: none !important;
   }
-  .modal-head { border-bottom: 1px solid var(--border) !important; }
-  .settings-tabs { padding: 4px 0 !important; }
+  .modal-head, html[data-theme="emerald"] .modal-head { border-bottom: 1px solid var(--border) !important; }
+  .settings-tabs, html[data-theme="emerald"] .settings-tabs { padding: 4px 0 !important; }
   .s-tab { background: transparent !important; color: var(--muted) !important; }
   .s-tab.active {
     background: linear-gradient(135deg,var(--accent-mid),var(--accent-soft)) !important;
