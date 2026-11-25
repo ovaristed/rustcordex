@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auralis-shell-v2.5.29-android-material3-emerald';
+const CACHE_NAME = 'auralis-shell-v2.5.30-botanical-emerald';
 const SHELL = ['/download/', '/auralis-icon.svg', '/manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
