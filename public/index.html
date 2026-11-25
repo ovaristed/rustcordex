@@ -3966,6 +3966,7 @@ body.android-md3 .sm-btn.green {
       <button id="sTabAudio" type="button" class="s-tab" onclick="switchSettingsTab('audio')">Аудио</button>
       <button id="sTabBinds" type="button" class="s-tab" onclick="switchSettingsTab('binds')">Хоткеи</button>
       <button id="sTabProfile" type="button" class="s-tab" onclick="switchSettingsTab('profile')">Профиль</button>
+      <button id="sTabAdmin" type="button" class="s-tab hidden" onclick="switchSettingsTab('admin')">Админ-панель</button>
     </div>
 
     <div id="sPanelAppearance" class="s-section">
@@ -4147,6 +4148,38 @@ body.android-md3 .sm-btn.green {
         <button type="button" class="sm-btn green" onclick="saveProfile()">Сохранить профиль</button>
         <span id="profileStatus" class="item-sub"></span>
       </div>
+    </div>
+
+
+    <div id="sPanelAdmin" class="s-section hidden">
+      <div class="field">
+        <div class="lbl">Панель владельца Auralis</div>
+        <div class="item-sub">Доступна только аккаунту @ovarist. Все действия проверяются сервером.</div>
+      </div>
+      <div class="field">
+        <div class="lbl">Пользователь</div>
+        <select id="adminUserSelect" onchange="adminSelectUser(this.value)"><option value="">Загрузка пользователей…</option></select>
+        <div id="adminUserMeta" class="item-sub" style="margin-top:7px;"></div>
+      </div>
+      <div class="field">
+        <div class="lbl">Изменить имя пользователя</div>
+        <input id="adminNicknameInput" type="text" maxlength="32" placeholder="Отображаемое имя" />
+      </div>
+      <div class="field">
+        <div class="lbl">Изменить мысли пользователя</div>
+        <input id="adminThoughtInput" type="text" maxlength="50" placeholder="Что у пользователя на уме?" />
+      </div>
+      <button type="button" class="sm-btn green" style="width:100%;" onclick="adminSaveProfile()">Сохранить изменения профиля</button>
+      <div class="field" style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px;">
+        <div class="lbl" style="color:#ff7777;">Блокировка пользователя</div>
+        <label class="item-sub">Причина блокировки</label>
+        <textarea id="adminBanReason" maxlength="300" rows="3" placeholder="Укажи причину блокировки"></textarea>
+        <label class="item-sub" style="display:block;margin-top:10px;">Срок блокировки в часах (пусто — навсегда)</label>
+        <input id="adminBanHours" type="number" min="1" max="87600" step="1" placeholder="Например: 24" />
+        <button type="button" class="sm-btn red" style="width:100%;margin-top:10px;" onclick="adminBanUser()">Заблокировать пользователя</button>
+        <button type="button" class="sm-btn" style="width:100%;margin-top:8px;" onclick="adminUnbanUser()">Снять блокировку</button>
+      </div>
+      <div id="adminStatus" class="item-sub" role="status" aria-live="polite" style="margin-top:10px;"></div>
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
@@ -6219,20 +6252,125 @@ function switchTab(tab) {
   if (tab === 'friends' || tab === 'chats') renderLists();
 }
 
+
+let adminUsersCache = [];
+let adminSelectedUserId = '';
+
+function adminStatus(message, isError = false) {
+  const el = document.getElementById('adminStatus');
+  if (!el) return;
+  el.textContent = message || '';
+  el.style.color = isError ? '#ff7777' : 'var(--green)';
+}
+
+async function adminRequest(path, options = {}) {
+  const response = await fetch(path, {
+    ...options,
+    headers: { ...(options.headers || {}), Authorization: 'Bearer ' + token,
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}) }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || 'Ошибка запроса');
+  return data;
+}
+
+async function loadAdminUsers() {
+  if (!me || String(me.username).toLowerCase() !== 'ovarist') return;
+  const select = document.getElementById('adminUserSelect');
+  if (!select) return;
+  adminStatus('Загружаем список пользователей…');
+  try {
+    const data = await adminRequest('/api/admin/users');
+    adminUsersCache = Array.isArray(data.users) ? data.users : [];
+    select.innerHTML = '<option value="">Выбери пользователя</option>' + adminUsersCache.map((u) =>
+      '<option value="' + Number(u.id) + '">' + escapeHtml(u.username) + (u.is_banned ? ' · заблокирован' : '') + '</option>'
+    ).join('');
+    if (adminSelectedUserId && adminUsersCache.some((u) => String(u.id) === String(adminSelectedUserId))) select.value = String(adminSelectedUserId);
+    else if (adminUsersCache.length) select.value = String(adminUsersCache[0].id);
+    adminSelectUser(select.value);
+    adminStatus('Пользователей: ' + adminUsersCache.length);
+  } catch (err) {
+    document.getElementById('sTabAdmin')?.classList.add('hidden');
+    adminStatus(err.message || 'Нет доступа к админ-панели', true);
+  }
+}
+
+function adminSelectUser(id) {
+  adminSelectedUserId = String(id || '');
+  const user = adminUsersCache.find((u) => String(u.id) === adminSelectedUserId);
+  const meta = document.getElementById('adminUserMeta');
+  if (!user) {
+    if (meta) meta.textContent = '';
+    document.getElementById('adminNicknameInput').value = '';
+    document.getElementById('adminThoughtInput').value = '';
+    return;
+  }
+  document.getElementById('adminNicknameInput').value = user.nickname || '';
+  document.getElementById('adminThoughtInput').value = user.profile_description || '';
+  document.getElementById('adminBanReason').value = user.ban_reason || '';
+  const until = user.ban_until ? new Date(user.ban_until).toLocaleString() : 'бессрочно';
+  if (meta) meta.textContent = user.is_banned
+    ? 'Заблокирован · ' + until + ' · Причина: ' + (user.ban_reason || 'не указана')
+    : 'Аккаунт активен · логин @' + user.username;
+  const own = String(user.username).toLowerCase() === 'ovarist';
+  document.querySelectorAll('#sPanelAdmin button.sm-btn.red').forEach((b) => { b.disabled = own; });
+  const save = document.querySelector('#sPanelAdmin button.sm-btn.green');
+  if (save) save.disabled = own;
+}
+
+async function adminSaveProfile() {
+  if (!adminSelectedUserId) return adminStatus('Сначала выбери пользователя', true);
+  try {
+    await adminRequest('/api/admin/users/' + encodeURIComponent(adminSelectedUserId) + '/profile', {
+      method: 'PATCH',
+      body: JSON.stringify({ nickname: document.getElementById('adminNicknameInput').value, thought: document.getElementById('adminThoughtInput').value })
+    });
+    adminStatus('Профиль пользователя обновлён');
+    await loadAdminUsers();
+  } catch (err) { adminStatus(err.message, true); }
+}
+
+async function adminBanUser() {
+  if (!adminSelectedUserId) return adminStatus('Сначала выбери пользователя', true);
+  const reason = document.getElementById('adminBanReason').value.trim();
+  const hoursText = document.getElementById('adminBanHours').value.trim();
+  if (!reason) return adminStatus('Укажи причину блокировки', true);
+  if (hoursText && (!Number.isInteger(Number(hoursText)) || Number(hoursText) < 1 || Number(hoursText) > 87600)) return adminStatus('Срок должен быть от 1 до 87600 часов', true);
+  try {
+    await adminRequest('/api/admin/users/' + encodeURIComponent(adminSelectedUserId) + '/ban', {
+      method: 'POST', body: JSON.stringify({ reason, hours: hoursText || null })
+    });
+    adminStatus('Пользователь заблокирован');
+    await loadAdminUsers();
+  } catch (err) { adminStatus(err.message, true); }
+}
+
+async function adminUnbanUser() {
+  if (!adminSelectedUserId) return adminStatus('Сначала выбери пользователя', true);
+  try {
+    await adminRequest('/api/admin/users/' + encodeURIComponent(adminSelectedUserId) + '/unban', { method: 'POST' });
+    adminStatus('Блокировка снята');
+    await loadAdminUsers();
+  } catch (err) { adminStatus(err.message, true); }
+}
+
 function switchSettingsTab(tab) {
-  ['appearance', 'audio', 'binds', 'profile'].forEach((t) => {
+  ['appearance', 'audio', 'binds', 'profile', 'admin'].forEach((t) => {
     const cap = t[0].toUpperCase() + t.slice(1);
     document.getElementById('sTab' + cap).classList.toggle('active', t === tab);
     document.getElementById('sPanel' + cap).classList.toggle('hidden', t !== tab);
   });
   if (tab === 'audio') populateAudioDevices();
   if (tab === 'profile') loadProfileForm();
+  if (tab === 'admin') loadAdminUsers();
 }
 
 async function openSettings() {
   closeProfilePopover();
   switchSettingsTab('appearance');
   document.getElementById('settingsModal').classList.remove('hidden');
+  const adminTab = document.getElementById('sTabAdmin');
+  if (adminTab) adminTab.classList.toggle('hidden', !me || String(me.username).toLowerCase() !== 'ovarist');
   document.getElementById('micGainSlider').value = micGainPercent;
   document.getElementById('micGainVal').textContent = micGainPercent + '%';
   loadProfileForm();
