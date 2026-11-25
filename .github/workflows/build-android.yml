@@ -418,9 +418,11 @@ jobs:
                               JSONObject asset = assets.getJSONObject(i);
                               String name = asset.optString("name", "");
                               if (name.startsWith("Auralis-Android-") && name.endsWith(".apk")) {
-                                  apkUrl = asset.optString("browser_download_url", "");
-                                  available = name.substring("Auralis-Android-".length(), name.length() - 4);
-                                  break;
+                                  String candidate = name.substring("Auralis-Android-".length(), name.length() - 4);
+                                  if (compareVersions(candidate, available) > 0) {
+                                      available = candidate;
+                                      apkUrl = asset.optString("browser_download_url", "");
+                                  }
                               }
                           }
                           if (apkUrl.isEmpty() || !apkUrl.startsWith(APK_PREFIX)) throw new Exception("APK новой версии ещё не опубликован");
@@ -451,8 +453,9 @@ jobs:
               private int parsePart(String value) { try { return Integer.parseInt(value); } catch (Exception e) { return 0; } }
 
               @PluginMethod public void download(PluginCall call) {
-                  String url = call.getString("url", "");
-                  String version = call.getString("version", "latest");
+                  String url = call.getString("url");
+                  String version = call.getString("version");
+                  if (version == null || version.isEmpty()) version = "latest";
                   if (url == null || !url.startsWith(APK_PREFIX)) { call.reject("Недопустимая ссылка на APK"); return; }
                   try {
                       DownloadManager manager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
@@ -465,27 +468,29 @@ jobs:
                       request.setAllowedOverRoaming(false);
                       request.setDestinationInExternalFilesDir(getContext(), Environment.DIRECTORY_DOWNLOADS, downloadFileName);
                       downloadId = manager.enqueue(request);
-                      call.resolve(new JSObject().put("started", true));
+                      JSObject out = new JSObject();
+                      out.put("started", true);
+                      call.resolve(out);
                   } catch (Exception error) { call.reject("Не удалось начать загрузку APK", error); }
               }
 
               @PluginMethod public void getDownloadProgress(PluginCall call) {
-                  if (downloadId < 0) { call.resolve(new JSObject().put("percent", 0)); return; }
+                  if (downloadId < 0) { JSObject out = new JSObject(); out.put("percent", 0); call.resolve(out); return; }
                   DownloadManager manager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
                   Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(downloadId));
                   try {
-                      if (cursor == null || !cursor.moveToFirst()) { call.resolve(new JSObject().put("percent", 0)); return; }
+                      if (cursor == null || !cursor.moveToFirst()) { JSObject out = new JSObject(); out.put("percent", 0); call.resolve(out); return; }
                       int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
                       if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                          call.resolve(new JSObject().put("percent", 100).put("downloaded", true));
+                          JSObject out = new JSObject(); out.put("percent", 100); out.put("downloaded", true); call.resolve(out);
                       } else if (status == DownloadManager.STATUS_FAILED) {
                           int reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
-                          call.resolve(new JSObject().put("failed", true).put("reason", "код " + reason));
+                          JSObject out = new JSObject(); out.put("failed", true); out.put("reason", "код " + reason); call.resolve(out);
                       } else {
                           long total = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
                           long done = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
                           int percent = total > 0 ? (int) (done * 100 / total) : 0;
-                          call.resolve(new JSObject().put("percent", percent));
+                          JSObject out = new JSObject(); out.put("percent", percent); call.resolve(out);
                       }
                   } finally { if (cursor != null) cursor.close(); }
               }
@@ -595,6 +600,12 @@ jobs:
           fs.writeFileSync(file, gradle);
           console.log('Android version:', version, 'versionCode:', versionCode);
           NODE
+
+      - name: Reuse Android debug signing key for in-app upgrades
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: auralis-android-debug-keystore-v1
 
       - name: Build debug APK
         working-directory: android
