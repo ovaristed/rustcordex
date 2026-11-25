@@ -149,10 +149,8 @@
   .accent-choice span{display:block;width:100%;height:100%;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
   .accent-choice.active{border-color:#fff;box-shadow:0 0 0 3px rgba(var(--accent-rgb),.28),0 0 18px rgba(var(--accent-rgb),.28);transform:scale(1.07)}
   .accent-choice:active{transform:scale(.94)}
-  @media(max-width:760px){
-    .desktop-theme-field{display:none!important}
-    .mobile-accent-field{display:block}
-  }
+  @media(max-width:760px){.desktop-theme-field{display:none!important}}
+  .mobile-accent-field{display:none!important}
 
   /* Theme-aware custom checkbox and slider controls */
   input[type="checkbox"] {
@@ -3041,6 +3039,16 @@ html[data-theme="emerald"] .app-toast { background:#155331 !important; border-co
 }
 @media(max-width:760px){#sTabAdmin,#sPanelAdmin{display:none!important}}
 </style>
+<style id="auralis-admin-panel-polish">
+#sPanelAdmin{padding:8px 2px 20px}
+#sPanelAdmin>.field:first-child{padding:16px;border:1px solid var(--accent-border);border-radius:16px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.12),rgba(var(--panel-rgb),.3))}
+#sPanelAdmin .lbl{font-weight:750;letter-spacing:.01em}
+#sPanelAdmin select,#sPanelAdmin input,#sPanelAdmin textarea{width:100%;min-height:40px;border:1px solid var(--border);border-radius:11px;background:rgba(var(--panel-rgb),.72);color:var(--text);padding:9px 11px}
+#sPanelAdmin textarea{resize:vertical}
+#sPanelAdmin .sm-btn{border-radius:11px;min-height:40px;font-weight:650}
+#sPanelAdmin button:disabled{opacity:.35;cursor:not-allowed}
+#sPanelAdmin .admin-refresh-btn{width:100%;background:rgba(var(--accent-rgb),.12);border:1px solid var(--accent-border);color:var(--text)}
+</style>
 <style id="auralis-unified-opacity-fix">
 /* One transparency scale for every theme: 5% = nearly solid, 85% = very transparent. */
 :root { --panel-alpha: .95; }
@@ -3611,6 +3619,24 @@ body.android-md3 .sm-btn.green {
   .glass-upload input { display:none; }
   .glass-save-row { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:10px; }
   .glass-save-row input { height:38px; }
+  .glass-studio-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .glass-studio-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:12px;color:var(--accent);background:var(--accent-soft);font-size:19px}
+  .glass-choice-section{margin-top:16px}
+  .glass-choice-grid,.glass-effect-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:8px}
+  .glass-choice-grid button,.glass-effect-grid button{min-width:0;min-height:66px;padding:7px 4px;border:1px solid var(--border);border-radius:12px;background:rgba(var(--panel-rgb),.32);color:var(--text);font-size:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+  .glass-choice-grid button.active,.glass-effect-grid button.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent-border),0 5px 18px rgba(var(--accent-rgb),.12)}
+  .glass-choice-preview{width:100%;height:34px;border-radius:8px;border:1px solid rgba(255,255,255,.18);display:block}
+  .wallpaper-theme{background:linear-gradient(135deg,#1c2740,#5665ed,#0b172b)}
+  .wallpaper-green{background:linear-gradient(135deg,#071d12,#1d874b,#a0d68b)}
+  .wallpaper-purple{background:linear-gradient(135deg,#31142e,#d76ba7,#f3c5dd)}
+  .wallpaper-aurora{background:linear-gradient(135deg,#062c37,#35c7b0,#6d6be8)}
+  .wallpaper-custom{background:rgba(var(--accent-rgb),.15);display:grid;place-items:center;color:var(--accent);font-size:20px}
+  .glass-effect-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .glass-effect-grid button{min-height:38px;flex-direction:row;font-size:11px}
+  .glass-saved-label{display:flex;flex-direction:column;gap:6px;margin-top:14px;color:var(--muted);font-size:11px}
+  .glass-saved-label select{width:100%;height:38px;border:1px solid var(--border);border-radius:10px;padding:0 10px;background:rgba(var(--panel-rgb),.72);color:var(--text)}
+  .theme-custom-swatch .dot{display:grid;place-items:center;color:#fff;font-size:14px}
+  .glass-save-row{grid-template-columns:1fr auto}
 }
 @media(max-width:760px) { #desktopGlassStudio { display:none !important; } }
 </style>
@@ -3978,55 +4004,39 @@ body.android-md3 .sm-btn.green {
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
           <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#66e7d2"></span>Aurora</button>
+          <button type="button" class="theme-swatch theme-custom-swatch" data-theme="custom" onclick="applyTheme('custom')"><span class="dot">✦</span>Своя тема</button>
           
         </div>
       </div>
-      <div class="field desktop-theme-field auralis-glass-studio" id="desktopGlassStudio">
-        <div class="lbl">Стеклянный интерфейс</div>
-        <div class="glass-control-head"><span>Прозрачность интерфейса</span><strong id="glassOpacityValue">64%</strong></div>
+      <div class="field desktop-theme-field auralis-glass-studio hidden" id="desktopGlassStudio">
+        <div class="glass-studio-title"><div><div class="lbl">Конструктор своей темы</div><div class="item-sub">Все изменения сохраняются отдельно от стандартных тем</div></div><span class="glass-studio-mark">✦</span></div>
+        <div class="glass-control-head"><span>Прозрачность</span><strong id="glassOpacityValue">64%</strong></div>
         <input id="glassOpacitySlider" class="glass-range" type="range" min="10" max="85" step="1" value="64" oninput="updateDesktopGlassSettings()" />
-        <div class="glass-range-hints"><span>10 · Матовый</span><span>85 · Стекло</span></div>
+        <div class="glass-range-hints"><span>Матовая</span><span>Стеклянная</span></div>
         <div class="glass-control-head"><span>Сила размытия</span><strong id="glassBlurValue">24 px</strong></div>
         <input id="glassBlurSlider" class="glass-range" type="range" min="8" max="36" step="1" value="24" oninput="updateDesktopGlassSettings()" />
+        <div class="glass-choice-section"><div class="lbl">Фон темы</div><div class="glass-choice-grid" id="glassWallpaperChoices">
+          <button type="button" data-wallpaper="theme" onclick="chooseGlassWallpaper('theme')"><span class="glass-choice-preview wallpaper-theme"></span>Auralis</button>
+          <button type="button" data-wallpaper="green" onclick="chooseGlassWallpaper('green')"><span class="glass-choice-preview wallpaper-green"></span>Зелёный</button>
+          <button type="button" data-wallpaper="purple" onclick="chooseGlassWallpaper('purple')"><span class="glass-choice-preview wallpaper-purple"></span>Sakura</button>
+          <button type="button" data-wallpaper="aurora" onclick="chooseGlassWallpaper('aurora')"><span class="glass-choice-preview wallpaper-aurora"></span>Aurora</button>
+          <button type="button" class="glass-upload-choice" onclick="document.getElementById('glassWallpaperFile').click()"><span class="glass-choice-preview wallpaper-custom">＋</span>Свои обои</button>
+        </div><input id="glassWallpaperFile" type="file" accept="image/*" onchange="onDesktopWallpaperFile(event)" hidden /></div>
+        <div class="glass-choice-section"><div class="lbl">Эффекты</div><div class="glass-effect-grid" id="glassEffectChoices">
+          <button type="button" data-effect="none" onclick="chooseGlassEffect('none')">Без эффекта</button>
+          <button type="button" data-effect="leaves" onclick="chooseGlassEffect('leaves')">🍃 Листья</button>
+          <button type="button" data-effect="embers" onclick="chooseGlassEffect('embers')">✧ Искры</button>
+          <button type="button" data-effect="sakura" onclick="chooseGlassEffect('sakura')">🌸 Сакура</button>
+          <button type="button" data-effect="aurora" onclick="chooseGlassEffect('aurora')">🌌 Сияние</button>
+          <button type="button" data-effect="rain" onclick="chooseGlassEffect('rain')">☔ Дождь</button>
+        </div></div>
         <div class="glass-settings-grid">
-          <label>Фон темы
-            <select id="glassWallpaperSelect" onchange="updateDesktopGlassSettings()">
-              <option value="theme">Обои выбранной темы</option>
-              <option value="green">Зелёные обои</option>
-              <option value="purple">Sakura</option>
-              <option value="aurora">Aurora</option>
-              <option value="none">Без обоев</option>
-              <option value="custom">Моё изображение</option>
-            </select>
-          </label>
-          <label>Эффект
-            <select id="glassEffectSelect" onchange="updateDesktopGlassSettings()">
-              <option value="none">Без эффекта</option>
-              <option value="leaves">Листья</option>
-              <option value="embers">Искры</option>
-              <option value="sakura">Сакура</option>
-              <option value="aurora">Северное сияние</option>
-              <option value="rain">Дождь</option>
-            </select>
-          </label>
-          <label>Акцентный цвет
-            <input id="glassAccentColor" type="color" value="#30d158" oninput="updateDesktopGlassSettings()" />
-          </label>
-          <label>Цвет панелей
-            <input id="glassPanelColor" type="color" value="#0e1e16" oninput="updateDesktopGlassSettings()" />
-          </label>
+          <label>Цвет акцента<input id="glassAccentColor" type="color" value="#30d158" oninput="updateDesktopGlassSettings()" /></label>
+          <label>Цвет панелей<input id="glassPanelColor" type="color" value="#0e1e16" oninput="updateDesktopGlassSettings()" /></label>
         </div>
-        <label style="display:flex;flex-direction:column;gap:6px;margin-top:12px;color:var(--muted);font-size:11px;">Мои сохранённые темы
-          <select id="glassSavedThemes"><option value="">Выбери сохранённую тему</option></select>
-        </label>
-        <button type="button" class="sm-btn blue" style="width:100%;margin-top:7px;" onclick="applySavedDesktopTheme()">Применить мою тему</button>
-        <label class="glass-upload">Выбрать свои обои
-          <input id="glassWallpaperFile" type="file" accept="image/*" onchange="onDesktopWallpaperFile(event)" />
-        </label>
-        <div class="glass-save-row">
-          <input id="glassThemeName" type="text" maxlength="32" placeholder="Название своей темы" />
-          <button type="button" class="sm-btn green" onclick="saveDesktopCustomTheme()">Сохранить тему</button>
-        </div>
+        <label class="glass-saved-label">Сохранённые темы<select id="glassSavedThemes"><option value="">Выбери свою тему</option></select></label>
+        <button type="button" class="sm-btn blue" style="width:100%;margin-top:7px;" onclick="applySavedDesktopTheme()">Применить сохранённую тему</button>
+        <div class="glass-save-row"><input id="glassThemeName" type="text" maxlength="32" placeholder="Название темы" /><button type="button" class="sm-btn green" onclick="saveDesktopCustomTheme()">Сохранить тему</button></div>
         <div id="glassCustomThemeStatus" class="item-sub">Настройки применяются сразу и сохраняются на этом устройстве.</div>
       </div>
       <div class="field mobile-accent-field">
@@ -4156,6 +4166,7 @@ body.android-md3 .sm-btn.green {
       <div class="field">
         <div class="lbl">Панель владельца Auralis</div>
         <div class="item-sub">Доступна только аккаунту @ovarist. Все действия проверяются сервером.</div>
+        <button type="button" class="sm-btn blue admin-refresh-btn" style="margin-top:10px;" onclick="loadAdminUsers()">↻ Обновить список</button>
       </div>
       <div class="field">
         <div class="lbl">Пользователь</div>
@@ -5847,8 +5858,11 @@ function syncThemeEffect() {
 try { localStorage.removeItem('rc_clear_cache_exit'); } catch {}
 
 function applyTheme(name) {
+  const wantsCustom = name === 'custom';
   const requested = name === 'dark' || name === 'crimson' ? 'discord' : name;
-  const valid = THEMES[requested] ? requested : (document.body.classList.contains('android-md3') ? 'emerald' : 'discord');
+  const valid = wantsCustom ? (THEMES[localStorage.getItem('rc_desktop_base_theme')] ? localStorage.getItem('rc_desktop_base_theme') : activeThemeName) : (THEMES[requested] ? requested : (document.body.classList.contains('android-md3') ? 'emerald' : 'discord'));
+  if (wantsCustom) { localStorage.setItem('rc_desktop_theme_mode','custom'); localStorage.setItem('rc_desktop_base_theme',valid); }
+  else { localStorage.setItem('rc_desktop_theme_mode','preset'); localStorage.setItem('rc_desktop_base_theme',valid); }
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
   const t = THEMES[valid];
@@ -5875,8 +5889,11 @@ function applyTheme(name) {
   document.documentElement.style.setProperty('--glow-2', t.glow2);
   localStorage.setItem('rc_theme', valid);
   document.querySelectorAll('.theme-swatch').forEach((el) => {
-    el.classList.toggle('active', el.dataset.theme === valid);
+    el.classList.toggle('active', el.dataset.theme === (wantsCustom ? 'custom' : valid));
   });
+  const studio=document.getElementById('desktopGlassStudio');
+  if(studio)studio.classList.toggle('hidden',!wantsCustom);
+  if(wantsCustom)refreshDesktopCustomThemeList();
   syncThemeEffect();
   if (window.matchMedia && window.matchMedia('(min-width: 761px)').matches) applyDesktopGlassSettings(false);
 
@@ -5899,146 +5916,118 @@ function applyAccentColor(color, persist = true) {
   });
 }
 
+function desktopThemeKey() {
+  return localStorage.getItem('rc_desktop_theme_mode') === 'custom' ? 'custom' : activeThemeName;
+}
+function readDesktopThemeSettings(key = desktopThemeKey()) {
+  const defaults = { opacity:64, blur:24, wallpaper:'theme', effect:(THEMES[activeThemeName] || THEMES.emerald).effect || 'none', accent:(THEMES[activeThemeName] || THEMES.emerald).accent || '#30d158', panel:'#0e1e16' };
+  try {
+    const saved = JSON.parse(localStorage.getItem('rc_theme_settings_' + key) || 'null');
+    if (saved && typeof saved === 'object') return { ...defaults, ...saved };
+  } catch {}
+  if (key === 'emerald') {
+    const legacy = {
+      opacity:Number(localStorage.getItem('rc_desktop_glass_opacity') || 64),
+      blur:Number(localStorage.getItem('rc_desktop_glass_blur') || 24),
+      wallpaper:localStorage.getItem('rc_desktop_glass_wallpaper') || 'theme',
+      effect:localStorage.getItem('rc_desktop_glass_effect') || defaults.effect,
+      accent:localStorage.getItem('rc_desktop_glass_accent') || defaults.accent,
+      panel:localStorage.getItem('rc_desktop_glass_panel') || defaults.panel
+    };
+    return { ...defaults, ...legacy };
+  }
+  return defaults;
+}
+function writeDesktopThemeSettings(settings) {
+  const key = desktopThemeKey();
+  localStorage.setItem('rc_theme_settings_' + key, JSON.stringify(settings));
+  ['opacity','blur','wallpaper','effect','accent','panel'].forEach(k => localStorage.setItem('rc_desktop_glass_' + k, String(settings[k])));
+}
 function getDesktopGlassOpacity() {
-  const n = Number(localStorage.getItem('rc_desktop_glass_opacity') || 64);
+  const n = Number(readDesktopThemeSettings().opacity);
   return Math.max(10, Math.min(85, Number.isFinite(n) ? n : 64));
+}
+function syncGlassChoiceButtons() {
+  const settings = readDesktopThemeSettings();
+  document.querySelectorAll('#glassWallpaperChoices [data-wallpaper]').forEach(el => el.classList.toggle('active', el.dataset.wallpaper === settings.wallpaper));
+  document.querySelectorAll('#glassEffectChoices [data-effect]').forEach(el => el.classList.toggle('active', el.dataset.effect === settings.effect));
 }
 function applyDesktopGlassSettings(persist = true) {
   if (!(window.matchMedia && window.matchMedia('(min-width: 761px)').matches)) return;
-  let opacity = getDesktopGlassOpacity();
-  let blur = Math.max(8, Math.min(36, Number(localStorage.getItem('rc_desktop_glass_blur') || 24)));
-  let accent = localStorage.getItem('rc_desktop_glass_accent') || localStorage.getItem('rc_accent_color') || (THEMES[activeThemeName] || THEMES.emerald).accent;
-  let panel = localStorage.getItem('rc_desktop_glass_panel') || '#0e1e16';
-  let wallpaper = localStorage.getItem('rc_desktop_glass_wallpaper') || 'theme';
-  let effect = localStorage.getItem('rc_desktop_glass_effect') || (THEMES[activeThemeName] || THEMES.emerald).effect || 'none';
-  const slider = document.getElementById('glassOpacitySlider');
-  const blurSlider = document.getElementById('glassBlurSlider');
-  const wallpaperSelect = document.getElementById('glassWallpaperSelect');
-  const effectSelect = document.getElementById('glassEffectSelect');
-  const accentInput = document.getElementById('glassAccentColor');
-  const panelInput = document.getElementById('glassPanelColor');
-  if (slider) { slider.value = String(opacity); }
-  if (blurSlider) blurSlider.value = String(blur);
-  if (wallpaperSelect) wallpaperSelect.value = wallpaper;
-  if (effectSelect) effectSelect.value = effect;
-  if (accentInput) accentInput.value = accent;
-  if (panelInput) panelInput.value = panel;
-  const opacityLabel = document.getElementById('glassOpacityValue');
-  const blurLabel = document.getElementById('glassBlurValue');
-  if (opacityLabel) opacityLabel.textContent = opacity + '%';
-  if (blurLabel) blurLabel.textContent = blur + ' px';
-  const alpha = 1 - opacity / 100;
-  const root = document.documentElement;
-  root.style.setProperty('--auralis-glass-blur', blur + 'px');
-  root.style.setProperty('--panel-rgb', hexToRgb(panel));
-  root.style.setProperty('--panel-alpha', String(alpha));
-  root.style.setProperty('--glass', 'rgba(' + hexToRgb(panel) + ',' + alpha + ')');
-  root.style.setProperty('--glass-solid', 'rgba(' + hexToRgb(panel) + ',' + Math.min(.96, alpha + .12) + ')');
-  ['--sidebar-opacity','--nav-opacity','--dock-opacity','--popup-opacity','--groups-opacity','--header-opacity','--composer-opacity','--messages-opacity','--call-stage-opacity'].forEach((v) => root.style.setProperty(v, String(alpha)));
-  applyAccentColor(accent, false);
-  const wallpapers = { green:"url('/backgrounds/green.jpg')", purple:"url('/backgrounds/purple.jpg')", aurora:"url('/backgrounds/aurora.svg')", none:'none', theme:(THEMES[activeThemeName] || THEMES.emerald).wallpaper || 'none' };
-  const customWallpaper = localStorage.getItem('rc_desktop_custom_wallpaper');
-  const wallpaperValue = wallpaper === 'custom' ? (customWallpaper ? 'url("' + customWallpaper + '")' : wallpapers.theme) : (wallpapers[wallpaper] || wallpapers.theme);
-  root.style.setProperty('--theme-wallpaper', wallpaperValue);
-  const themeOverlay = (THEMES[activeThemeName] || THEMES.emerald).overlay || 'rgba(5,13,9,.22)';
-  root.style.setProperty('--theme-overlay', themeOverlay);
-  if (persist) {
-    localStorage.setItem('rc_desktop_glass_opacity', String(opacity));
-    localStorage.setItem('rc_desktop_glass_blur', String(blur));
-    localStorage.setItem('rc_desktop_glass_wallpaper', wallpaper);
-    localStorage.setItem('rc_desktop_glass_effect', effect);
-    localStorage.setItem('rc_desktop_glass_accent', accent);
-    localStorage.setItem('rc_desktop_glass_panel', panel);
-  }
+  const settings = readDesktopThemeSettings();
+  const opacity = Math.max(10,Math.min(85,Number(settings.opacity)||64));
+  const blur = Math.max(8,Math.min(36,Number(settings.blur)||24));
+  const accent = /^#[0-9a-f]{6}$/i.test(settings.accent) ? settings.accent : (THEMES[activeThemeName] || THEMES.emerald).accent;
+  const panel = /^#[0-9a-f]{6}$/i.test(settings.panel) ? settings.panel : '#0e1e16';
+  const wallpaper = settings.wallpaper || 'theme';
+  const effect = settings.effect || 'none';
+  const slider=document.getElementById('glassOpacitySlider'), blurSlider=document.getElementById('glassBlurSlider');
+  if(slider)slider.value=String(opacity); if(blurSlider)blurSlider.value=String(blur);
+  const accentInput=document.getElementById('glassAccentColor'),panelInput=document.getElementById('glassPanelColor');
+  if(accentInput)accentInput.value=accent;if(panelInput)panelInput.value=panel;
+  const ol=document.getElementById('glassOpacityValue'),bl=document.getElementById('glassBlurValue');
+  if(ol)ol.textContent=opacity+'%';if(bl)bl.textContent=blur+' px';
+  const root=document.documentElement,alpha=1-opacity/100;
+  root.style.setProperty('--auralis-glass-blur',blur+'px');
+  root.style.setProperty('--panel-rgb',hexToRgb(panel));
+  root.style.setProperty('--panel-alpha',String(alpha));
+  root.style.setProperty('--glass','rgba('+hexToRgb(panel)+','+alpha+')');
+  root.style.setProperty('--glass-solid','rgba('+hexToRgb(panel)+','+Math.min(.96,alpha+.12)+')');
+  ['--sidebar-opacity','--nav-opacity','--dock-opacity','--popup-opacity','--groups-opacity','--header-opacity','--composer-opacity','--messages-opacity','--call-stage-opacity'].forEach(v=>root.style.setProperty(v,String(alpha)));
+  applyAccentColor(accent,false);
+  const wallpapers={theme:(THEMES[activeThemeName]||THEMES.emerald).wallpaper||'none',green:"url('/backgrounds/green.jpg')",purple:"url('/backgrounds/purple.jpg')",aurora:"url('/backgrounds/aurora.svg')"};
+  const custom=localStorage.getItem('rc_desktop_custom_wallpaper');
+  root.style.setProperty('--theme-wallpaper',wallpaper==='custom'?(custom?'url("'+custom+'")':wallpapers.theme):(wallpapers[wallpaper]||wallpapers.theme));
+  root.style.setProperty('--theme-overlay',(THEMES[activeThemeName]||THEMES.emerald).overlay||'rgba(5,13,9,.22)');
+  if(persist)writeDesktopThemeSettings({opacity,blur,wallpaper,effect,accent,panel});
   setBgEffect(effect);
+  syncGlassChoiceButtons();
 }
 function updateDesktopGlassSettings() {
-  if (!(window.matchMedia && window.matchMedia('(min-width: 761px)').matches)) return;
-  const get = (id, fallback) => document.getElementById(id)?.value ?? fallback;
-  localStorage.setItem('rc_desktop_glass_opacity', String(Math.max(10, Math.min(85, Number(get('glassOpacitySlider',64)) || 64))));
-  localStorage.setItem('rc_desktop_glass_blur', String(Math.max(8, Math.min(36, Number(get('glassBlurSlider',24)) || 24))));
-  localStorage.setItem('rc_desktop_glass_wallpaper', get('glassWallpaperSelect','theme'));
-  localStorage.setItem('rc_desktop_glass_effect', get('glassEffectSelect','none'));
-  localStorage.setItem('rc_desktop_glass_accent', get('glassAccentColor','#30d158'));
-  localStorage.setItem('rc_desktop_glass_panel', get('glassPanelColor','#0e1e16'));
+  if(!(window.matchMedia&&window.matchMedia('(min-width: 761px)').matches))return;
+  const old=readDesktopThemeSettings();
+  const get=(id,fallback)=>document.getElementById(id)?.value??fallback;
+  writeDesktopThemeSettings({
+    ...old,
+    opacity:Math.max(10,Math.min(85,Number(get('glassOpacitySlider',old.opacity))||old.opacity)),
+    blur:Math.max(8,Math.min(36,Number(get('glassBlurSlider',old.blur))||old.blur)),
+    accent:get('glassAccentColor',old.accent),
+    panel:get('glassPanelColor',old.panel)
+  });
   applyDesktopGlassSettings(false);
 }
+function chooseGlassWallpaper(value){const v=readDesktopThemeSettings();v.wallpaper=value;writeDesktopThemeSettings(v);applyDesktopGlassSettings(false);}
+function chooseGlassEffect(value){const v=readDesktopThemeSettings();v.effect=value;writeDesktopThemeSettings(v);applyDesktopGlassSettings(false);}
 function onDesktopWallpaperFile(event) {
-  const file = event && event.target && event.target.files && event.target.files[0];
-  if (!file || !/^image\//i.test(file.type)) return;
-  if (file.size > 3 * 1024 * 1024) {
-    const status = document.getElementById('glassCustomThemeStatus');
-    if (status) status.textContent = 'Изображение слишком большое. Выбери файл до 3 МБ.';
-    event.target.value = '';
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      localStorage.setItem('rc_desktop_custom_wallpaper', String(reader.result));
-      localStorage.setItem('rc_desktop_glass_wallpaper', 'custom');
-      updateDesktopGlassSettings();
-      const status = document.getElementById('glassCustomThemeStatus');
-      if (status) status.textContent = 'Свои обои установлены и сохранены на этом устройстве.';
-    } catch {
-      const status = document.getElementById('glassCustomThemeStatus');
-      if (status) status.textContent = 'Не удалось сохранить изображение: попробуй файл меньше.';
-    }
-  };
-  reader.readAsDataURL(file);
+  const file=event&&event.target&&event.target.files&&event.target.files[0];if(!file||!/^image\//i.test(file.type))return;
+  if(file.size>3*1024*1024){const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Изображение слишком большое. Максимум 3 МБ.';event.target.value='';return;}
+  const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('rc_desktop_custom_wallpaper',String(reader.result));chooseGlassWallpaper('custom');const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Свои обои установлены.';}catch{const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Не удалось сохранить изображение.';}};reader.readAsDataURL(file);
 }
-function refreshDesktopCustomThemeList(selectedName = '') {
-  const select = document.getElementById('glassSavedThemes');
-  if (!select) return;
-  let saved = [];
-  try { saved = JSON.parse(localStorage.getItem('rc_desktop_custom_themes') || '[]'); } catch {}
-  select.innerHTML = '<option value="">Выбери сохранённую тему</option>' +
-    saved.map(t => '<option value="' + esc(t.name) + '">' + esc(t.name) + '</option>').join('');
-  if (selectedName) select.value = selectedName;
+function refreshDesktopCustomThemeList(selectedName='') {
+  const select=document.getElementById('glassSavedThemes');if(!select)return;let saved=[];
+  try{saved=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');}catch{}
+  select.innerHTML='<option value="">Выбери свою тему</option>'+saved.map(t=>'<option value="'+esc(t.name)+'">'+esc(t.name)+'</option>').join('');
+  if(selectedName)select.value=selectedName;
 }
 function applySavedDesktopTheme() {
-  const select = document.getElementById('glassSavedThemes');
-  if (!select || !select.value) return;
-  let saved = [];
-  try { saved = JSON.parse(localStorage.getItem('rc_desktop_custom_themes') || '[]'); } catch {}
-  const theme = saved.find(t => t.name === select.value);
-  if (!theme) return;
-  localStorage.setItem('rc_desktop_glass_opacity', String(theme.opacity));
-  localStorage.setItem('rc_desktop_glass_blur', String(theme.blur));
-  localStorage.setItem('rc_desktop_glass_wallpaper', theme.wallpaper);
-  localStorage.setItem('rc_desktop_glass_effect', theme.effect);
-  localStorage.setItem('rc_desktop_glass_accent', theme.accent);
-  localStorage.setItem('rc_desktop_glass_panel', theme.panel);
-  applyDesktopGlassSettings(false);
-  const status = document.getElementById('glassCustomThemeStatus');
-  if (status) status.textContent = 'Тема «' + theme.name + '» применена.';
+  const select=document.getElementById('glassSavedThemes');if(!select||!select.value)return;let saved=[];
+  try{saved=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');}catch{}
+  const theme=saved.find(t=>t.name===select.value);if(!theme)return;
+  localStorage.setItem('rc_desktop_theme_mode','custom');
+  localStorage.setItem('rc_desktop_base_theme',theme.baseTheme||activeThemeName);
+  activeThemeName=THEMES[theme.baseTheme]?theme.baseTheme:activeThemeName;
+  const settings={opacity:theme.opacity,blur:theme.blur,wallpaper:theme.wallpaper,effect:theme.effect,accent:theme.accent,panel:theme.panel};
+  writeDesktopThemeSettings(settings);applyTheme(activeThemeName);localStorage.setItem('rc_desktop_theme_mode','custom');applyDesktopGlassSettings(false);
+  const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Тема «'+theme.name+'» применена.';
 }
 function saveDesktopCustomTheme() {
-  const name = (document.getElementById('glassThemeName')?.value || '').trim().slice(0,32);
-  if (!name) {
-    const status = document.getElementById('glassCustomThemeStatus');
-    if (status) status.textContent = 'Введи название темы перед сохранением.';
-    return;
-  }
-  const theme = {
-    name, opacity:getDesktopGlassOpacity(),
-    blur:Number(localStorage.getItem('rc_desktop_glass_blur') || 24),
-    wallpaper:localStorage.getItem('rc_desktop_glass_wallpaper') || 'theme',
-    effect:localStorage.getItem('rc_desktop_glass_effect') || 'none',
-    accent:localStorage.getItem('rc_desktop_glass_accent') || '#30d158',
-    panel:localStorage.getItem('rc_desktop_glass_panel') || '#0e1e16'
-  };
-  try {
-    const saved = JSON.parse(localStorage.getItem('rc_desktop_custom_themes') || '[]');
-    const next = [...saved.filter(t => t.name !== name), theme].slice(-12);
-    localStorage.setItem('rc_desktop_custom_themes', JSON.stringify(next));
-    refreshDesktopCustomThemeList(name);
-    const status = document.getElementById('glassCustomThemeStatus');
-    if (status) status.textContent = 'Тема «' + name + '» сохранена. Её настройки останутся на этом компьютере.';
-  } catch {
-    const status = document.getElementById('glassCustomThemeStatus');
-    if (status) status.textContent = 'Не удалось сохранить тему: очисти место в хранилище браузера.';
-  }
+  const name=(document.getElementById('glassThemeName')?.value||'').trim().slice(0,32);
+  const status=document.getElementById('glassCustomThemeStatus');
+  if(!name){if(status)status.textContent='Введи название темы.';return;}
+  const settings=readDesktopThemeSettings();
+  const theme={name,baseTheme:activeThemeName,...settings};
+  try{const saved=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');const next=[...saved.filter(t=>t.name!==name),theme].slice(-20);localStorage.setItem('rc_desktop_custom_themes',JSON.stringify(next));refreshDesktopCustomThemeList(name);if(status)status.textContent='«'+name+'» сохранена отдельно. Можно выбрать её в списке.';}
+  catch{if(status)status.textContent='Не удалось сохранить тему: недостаточно места.';}
 }
 
 const MENU_GLASS_ALPHA = {
@@ -6291,8 +6280,9 @@ async function loadAdminUsers() {
     adminSelectUser(select.value);
     adminStatus('Пользователей: ' + adminUsersCache.length);
   } catch (err) {
-    document.getElementById('sTabAdmin')?.classList.add('hidden');
-    adminStatus(err.message || 'Нет доступа к админ-панели', true);
+    adminUsersCache = [];
+    select.innerHTML = '<option value="">Не удалось загрузить пользователей</option>';
+    adminStatus((err.message || 'Ошибка загрузки') + ' · нажми «Обновить» для повтора', true);
   }
 }
 
@@ -6354,22 +6344,24 @@ async function adminUnbanUser() {
 }
 
 function switchSettingsTab(tab) {
+  if (tab === 'admin' && (!me || String(me.username).toLowerCase() !== 'ovarist')) return;
   ['appearance', 'audio', 'binds', 'profile', 'admin'].forEach((t) => {
     const cap = t[0].toUpperCase() + t.slice(1);
-    document.getElementById('sTab' + cap).classList.toggle('active', t === tab);
-    document.getElementById('sPanel' + cap).classList.toggle('hidden', t !== tab);
+    const button=document.getElementById('sTab'+cap),panel=document.getElementById('sPanel'+cap);
+    if(button)button.classList.toggle('active',t===tab);
+    if(panel)panel.classList.toggle('hidden',t!==tab);
   });
-  if (tab === 'audio') populateAudioDevices();
-  if (tab === 'profile') loadProfileForm();
-  if (tab === 'admin') loadAdminUsers();
+  if(tab==='audio')populateAudioDevices();
+  if(tab==='profile')loadProfileForm();
+  if(tab==='admin')loadAdminUsers();
 }
 
 async function openSettings() {
   closeProfilePopover();
-  switchSettingsTab('appearance');
+  const adminTab=document.getElementById('sTabAdmin');
+  if(adminTab)adminTab.classList.toggle('hidden',!me||String(me.username).toLowerCase()!=='ovarist');
   document.getElementById('settingsModal').classList.remove('hidden');
-  const adminTab = document.getElementById('sTabAdmin');
-  if (adminTab) adminTab.classList.toggle('hidden', !me || String(me.username).toLowerCase() !== 'ovarist');
+  switchSettingsTab('appearance');
   document.getElementById('micGainSlider').value = micGainPercent;
   document.getElementById('micGainVal').textContent = micGainPercent + '%';
   loadProfileForm();
