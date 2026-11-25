@@ -627,7 +627,7 @@ jobs:
           CERT=$(keytool -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey | awk -F': ' '/SHA256:/{gsub(/:/,"",$2); print tolower($2); exit}')
           EXPECTED="2f5986f7a76464f966ab213844608ee6e9189d9d15f4867e63727252daee21ac"
           if [ "$CERT" != "$EXPECTED" ]; then
-            echo "::error::Cached signing key does not match the certificate used by Auralis 2.5.33. Refusing to publish an incompatible APK."
+            echo "::error::Cached signing key does not match the original Auralis release certificate. Refusing to publish an incompatible APK."
             echo "Found certificate: $CERT"
             exit 1
           fi
