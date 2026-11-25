@@ -6,8 +6,8 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#090b12",
-  "theme_color": "#090b12",
+  "background_color": "#06351f",
+  "theme_color": "#06351f",
   "orientation": "any",
   "icons": [
     {"src": "/auralis-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
