@@ -3695,7 +3695,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .sidebar,.main,.card,.modal-card,.incoming-card,.app-dialog,.chat-header,.profile-popover,.user-profile-card,.voice-ctx-menu,.group-ctx-menu,.member-pick-row,.glass-studio-panel,.auralis-glass-studio,.settings-panel,.call-ctrls,.modal-content,.theme-card,.glass-saved-theme-card{background:rgba(var(--panel-rgb),var(--panel-alpha))!important;-webkit-backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important;backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important}
 .modal-backdrop,.app-dialog-backdrop{backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
 @media(max-width:760px){body::before{background-attachment:scroll}}
-</style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.2">
+</style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.3">
+<link rel="stylesheet" href="/call-fix.css?v=3.3.3">
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -4249,7 +4250,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">3.3.2</span></span>
+      <span>Auralis · версия <span id="appVersion">3.3.3</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -6411,7 +6412,7 @@ async function adminRequest(path, options = {}) {
   try { data = raw ? JSON.parse(raw) : {}; } catch {}
   if (!response.ok) {
     const message = data.error || (response.status === 404
-      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.2.'
+      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.3.'
       : 'Ошибка запроса (' + response.status + ')');
     throw new Error(message);
   }
@@ -8305,7 +8306,7 @@ function ensureRemoteTile(username) {
   tile.innerHTML = (
     '<div id="remoteAv_' + esc(username) + '" class="big-av">' + renderAvatarHtml(username) + '</div>' +
     '<div id="remoteCallState_' + esc(username) + '" class="call-state-badges" aria-live="polite"></div>' +
-    '<video id="remoteVideo_' + esc(username) + '" autoplay playsinline class="hidden"></video>' +
+    '<video id="remoteVideo_' + esc(username) + '" autoplay playsinline class="remote-video hidden"></video>' +
     '<button id="remoteFsBtn_' + esc(username) + '" type="button" class="fs-btn hidden">На весь экран</button>' +
     '<div id="remoteTag_' + esc(username) + '" class="tile-tag">' + esc(displayNameOf(username)) + '</div>'
   );
@@ -8667,6 +8668,7 @@ function ensurePC(peerUser) {
         }
         // Screen shares should fit the whole phone viewport instead of being cropped like a webcam.
         const isScreenTrack = /screen|display|window/i.test(String(e.track.label || ''));
+        if (rv) rv.classList.toggle('screen-video', isScreenTrack);
         if (rTile) {
           rTile.classList.add('streaming');
           rTile.classList.toggle('screen-mode', isScreenTrack);
@@ -8680,7 +8682,7 @@ function ensurePC(peerUser) {
         const fsBtn = document.getElementById('remoteFsBtn_' + peerUser);
         const rAv = document.getElementById('remoteAv_' + peerUser);
         const rTile = document.getElementById('remoteTile_' + peerUser);
-        if (rv) { rv.srcObject = null; rv.classList.add('hidden'); }
+        if (rv) { rv.srcObject = null; rv.classList.add('hidden'); rv.classList.remove('screen-video'); }
         if (fsBtn) fsBtn.classList.add('hidden');
         if (rAv) rAv.classList.remove('hidden');
         if (rTile) rTile.classList.remove('streaming', 'screen-mode');

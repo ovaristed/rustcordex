@@ -1,0 +1,150 @@
+/* Auralis 3.3.3 — fixed-size adaptive call tiles and contained video. */
+#callStage.call-stage:not(.hidden) {
+  display:flex !important;
+  flex:1 1 auto !important;
+  align-self:stretch !important;
+  width:100% !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  max-height:none !important;
+  resize:none !important;
+  overflow:hidden !important;
+  box-sizing:border-box !important;
+  padding:12px !important;
+  gap:12px !important;
+}
+#callStage #callGrid {
+  display:grid !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr)) !important;
+  grid-auto-rows:max-content !important;
+  align-content:start !important;
+  align-items:start !important;
+  gap:16px !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+#callStage #callGrid > .tile {
+  position:relative !important;
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  min-height:220px !important;
+  height:auto !important;
+  aspect-ratio:16 / 9 !important;
+  box-sizing:border-box !important;
+  padding:0 !important;
+  margin:0 !important;
+  overflow:hidden !important;
+  border-radius:16px !important;
+  background:rgba(0,0,0,.42) !important;
+}
+#callStage #callGrid > .tile.screen-mode {
+  height:auto !important;
+  min-height:220px !important;
+  max-height:none !important;
+  padding:0 !important;
+  justify-content:initial !important;
+  background:#000 !important;
+}
+#callStage #callGrid > .tile video,
+#callStage #callGrid > .tile #localVideo {
+  position:absolute !important;
+  inset:0 !important;
+  display:block;
+  width:100% !important;
+  height:100% !important;
+  max-width:none !important;
+  max-height:none !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  background:#000 !important;
+}
+#callStage #callGrid > .tile video.hidden { display:none !important; }
+#callStage #callGrid > .tile.screen-mode video,
+#callStage #callGrid > .tile video.screen-video,
+#callStage #callGrid > .tile #localVideo.is-screen {
+  object-fit:contain !important;
+  background:#000 !important;
+}
+#callStage #callGrid > .tile .big-av {
+  position:absolute !important;
+  top:50% !important;
+  left:50% !important;
+  transform:translate(-50%,-50%) !important;
+  display:flex;
+  align-items:center !important;
+  justify-content:center !important;
+  width:clamp(76px,22%,140px) !important;
+  height:clamp(76px,22%,140px) !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  margin:0 !important;
+  border:3px solid rgba(255,255,255,.28) !important;
+  border-radius:50% !important;
+  font-size:clamp(28px,5vw,48px) !important;
+  font-weight:700 !important;
+  z-index:2 !important;
+}
+#callStage #callGrid > .tile .tile-tag,
+#callStage #callGrid > .tile .tile-label {
+  position:absolute !important;
+  left:12px !important;
+  right:12px !important;
+  bottom:12px !important;
+  top:auto !important;
+  z-index:4 !important;
+  width:max-content !important;
+  max-width:calc(100% - 24px) !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  padding:7px 11px !important;
+  border-radius:10px !important;
+  background:rgba(0,0,0,.68) !important;
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:600 !important;
+  text-align:left !important;
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+}
+#callStage .call-ctrls {
+  position:relative !important;
+  inset:auto !important;
+  align-self:center !important;
+  flex:0 0 auto !important;
+  width:max-content !important;
+  max-width:100% !important;
+  min-height:0 !important;
+  margin:0 auto !important;
+  padding:8px 12px !important;
+  gap:12px !important;
+  border-radius:16px !important;
+  background:rgba(var(--panel-rgb),.62) !important;
+  border:1px solid var(--border) !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:blur(12px) !important;
+  backdrop-filter:blur(12px) !important;
+}
+@media(max-width:760px) {
+  #callStage.call-stage:not(.hidden) { padding:8px !important; gap:10px !important; }
+  #callStage #callGrid {
+    grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr)) !important;
+    gap:10px !important;
+  }
+  #callStage #callGrid > .tile { min-height:0 !important; }
+  #callStage .call-ctrls { gap:8px !important; padding:7px 9px !important; }
+}
+@media(max-width:380px) {
+  #callStage #callGrid { grid-template-columns:minmax(0,1fr) !important; }
+}
