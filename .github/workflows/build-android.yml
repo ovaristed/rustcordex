@@ -8,6 +8,7 @@ on:
       - 'capacitor.config.json'
       - 'package.json'
       - 'public/**'
+      - 'build/auralis-icon*.svg'
       - '.github/workflows/build-android.yml'
   workflow_dispatch:
 
