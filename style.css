@@ -29,8 +29,8 @@
   --ui-zoom: 1;
 
   /* Liquid Glass Pro tokens */
-  --lg-blur: 30px;
-  --lg-sat: 185%;
+  --lg-blur: 7px;
+  --lg-sat: 135%;
   --lg-shadow: 0 20px 60px rgba(0, 0, 0, 0.38);
   --lg-spec: inset 0 1px 0 rgba(255, 255, 255, 0.5),
              inset 0 -1px 0 rgba(255, 255, 255, 0.1),
@@ -63,7 +63,6 @@ body {
 }
 
 body.minimal-mode {
-  --glass: rgba(var(--panel-rgb), 0.96);
   --msg-gap: 4px;
   --bubble-pad: 6px 11px;
 }
@@ -90,7 +89,7 @@ body.minimal-mode {
 .incoming-card,
 .profile-popover,
 .voice-ctx-menu {
-  background: var(--lg-sheen), rgba(var(--panel-rgb), calc(var(--panel-alpha) + 0.3));
+  background: var(--lg-sheen), rgba(var(--panel-rgb), var(--panel-alpha));
 }
 
 /* Specular rim — тонкий светящийся ободок по краям */
@@ -137,13 +136,13 @@ body.minimal-mode {
 .top-tabs,
 .chat-header,
 .bottom-dock {
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(var(--panel-rgb), var(--panel-alpha));
   border-color: rgba(255, 255, 255, 0.14);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .call-stage {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(var(--panel-rgb), var(--panel-alpha));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
@@ -339,8 +338,8 @@ input[type="range"], input[type="color"] {
    ═══════════════════════════════════════════════════════ */
 .modal-backdrop {
   background: rgba(4, 6, 12, 0.38);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
-  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(2px) saturate(115%);
+  backdrop-filter: blur(2px) saturate(115%);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -361,9 +360,9 @@ body.minimal-mode .card,
 body.minimal-mode .modal-card,
 body.minimal-mode .incoming-card,
 body.minimal-mode .profile-popover {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  background: rgba(var(--panel-rgb), 0.97);
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+  background: var(--lg-sheen), var(--glass);
 }
 
 @media (prefers-reduced-transparency: reduce) {

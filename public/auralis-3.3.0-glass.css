@@ -1,0 +1,42 @@
+/* Auralis 3.3.0 — unified Liquid Glass surfaces.
+   Theme settings continue to drive panel opacity and blur.
+   Theme wallpaper and Sakura/canvas effects remain separate layers. */
+:root {
+  --lg-blur: var(--auralis-glass-blur, 4px);
+  --lg-sat: 135%;
+  --lg-shadow: 0 16px 42px rgba(0,0,0,.28);
+}
+@media (min-width:761px) {
+  .sidebar,.main,.card,.modal-card,.incoming-card,.profile-popover,
+  .voice-ctx-menu,.group-ctx-menu,.app-dialog,.gif-picker,.sticker-picker,
+  .member-pick-row,.settings-panel,.modal-content,.theme-card,
+  .glass-saved-theme-card,.top-tabs,.chat-header,.bottom-dock,.call-stage,
+  .call-ctrls,.s-section,.list-item,.panel-body {
+    background-color: rgba(var(--panel-rgb),var(--panel-alpha, .34)) !important;
+    -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) !important;
+    backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat)) !important;
+  }
+  .sidebar,.main,.card,.modal-card,.incoming-card,.profile-popover,
+  .voice-ctx-menu,.group-ctx-menu,.app-dialog,.gif-picker,.sticker-picker,
+  .member-pick-row,.settings-panel,.modal-content,.theme-card,
+  .glass-saved-theme-card {
+    box-shadow: var(--lg-shadow), inset 0 1px 0 rgba(255,255,255,.13);
+  }
+  #authWrap > .card {
+    -webkit-backdrop-filter: blur(8px) saturate(135%) !important;
+    backdrop-filter: blur(8px) saturate(135%) !important;
+  }
+}
+.modal-backdrop,.app-dialog-backdrop {
+  -webkit-backdrop-filter: blur(2px) saturate(115%) !important;
+  backdrop-filter: blur(2px) saturate(115%) !important;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .sidebar,.main,.card,.modal-card,.incoming-card,.profile-popover,
+  .voice-ctx-menu,.group-ctx-menu,.app-dialog,.gif-picker,.sticker-picker,
+  .member-pick-row,.settings-panel,.modal-content,.theme-card,
+  .glass-saved-theme-card,.top-tabs,.chat-header,.bottom-dock,.call-stage {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}

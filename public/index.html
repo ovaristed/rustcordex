@@ -3666,7 +3666,8 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .sidebar,.main,.card,.modal-card,.incoming-card,.app-dialog,.chat-header,.profile-popover,.user-profile-card,.voice-ctx-menu,.group-ctx-menu,.member-pick-row,.glass-studio-panel,.auralis-glass-studio,.settings-panel,.call-ctrls,.modal-content,.theme-card,.glass-saved-theme-card{background:rgba(var(--panel-rgb),var(--panel-alpha))!important;-webkit-backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important;backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important}
 .modal-backdrop,.app-dialog-backdrop{backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
 @media(max-width:760px){body::before{background-attachment:scroll}}
-</style></head>
+</style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.0">
+</head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
 <canvas id="bgCanvas"></canvas>
@@ -4220,7 +4221,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">3.2.0</span></span>
+      <span>Auralis · версия <span id="appVersion">3.3.0</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -6372,7 +6373,7 @@ async function adminRequest(path, options = {}) {
   try { data = raw ? JSON.parse(raw) : {}; } catch {}
   if (!response.ok) {
     const message = data.error || (response.status === 404
-      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.2.0.'
+      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.0.'
       : 'Ошибка запроса (' + response.status + ')');
     throw new Error(message);
   }

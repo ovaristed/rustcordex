@@ -827,7 +827,7 @@ function playDiscordSfx(name) {
 }
 
 function setPanelOpacity(transparencyPct) {
-  const tr = Math.max(0, Math.min(75, Number(transparencyPct) || 0));
+  const tr = Math.max(0, Math.min(100, Number(transparencyPct) || 0));
   const alpha = ((100 - tr) / 100).toFixed(2);
   document.documentElement.style.setProperty('--panel-alpha', alpha);
   localStorage.setItem('rc_panel_transparency', String(tr));
