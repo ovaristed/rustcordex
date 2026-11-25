@@ -3503,6 +3503,83 @@ body.android-md3 .call-pill { background:linear-gradient(135deg,#1ca75a,#08733b)
 }
 @media(prefers-reduced-motion:reduce) { body.android-md3 *,body.android-md3 *::before,body.android-md3 *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 </style>
+<style id="auralis-accent-and-settings-final-fix">
+/* The accent is a real app-wide color, including Android's body-scoped theme. */
+:root, body.android-md3 {
+  --accent-soft: rgba(var(--accent-rgb),.16);
+  --accent-mid: rgba(var(--accent-rgb),.30);
+  --accent-border: rgba(var(--accent-rgb),.42);
+  --accent-glow: rgba(var(--accent-rgb),.24);
+}
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline-color: var(--accent) !important;
+}
+.tab-btn.active, .s-tab.active, .list-item.active, .member-pick-row.selected,
+.theme-swatch.active, .accent-choice.active {
+  border-color: var(--accent-border) !important;
+  box-shadow: 0 0 0 1px var(--accent-soft), 0 5px 18px var(--accent-glow) !important;
+}
+.tab-btn.active, .s-tab.active, .member-pick-row.selected .member-pick-pill {
+  background: linear-gradient(135deg, var(--accent-mid), var(--accent-soft)) !important;
+  color: var(--text) !important;
+}
+.primary-btn, .send-btn, .sm-btn.green, .mini-plus-btn, .round-btn.active,
+input[type="checkbox"]:checked, input[type="range"] {
+  accent-color: var(--accent) !important;
+}
+.primary-btn, .send-btn, .sm-btn.green {
+  background: linear-gradient(135deg, var(--accent), rgba(var(--accent-rgb),.78)) !important;
+  border-color: transparent !important;
+  box-shadow: 0 7px 20px var(--accent-glow) !important;
+}
+.icon-btn:hover, .sm-btn:hover, .tab-btn:hover, .list-item:hover {
+  border-color: var(--accent-border) !important;
+}
+a, .app-version-link:hover, .sec-lbl, .icon-btn.accent, .msg .mention {
+  color: var(--accent) !important;
+}
+input[type="checkbox"] { border-color: var(--accent-border) !important; }
+input[type="checkbox"]:checked { background: var(--accent) !important; }
+input[type="range"]::-webkit-slider-thumb { background: var(--accent) !important; }
+input[type="range"]::-moz-range-thumb { background: var(--accent) !important; }
+
+/* Remove the unwanted grey strips from settings; keep the sheet unified with its theme. */
+@media (max-width:760px) {
+  .modal-head, .settings-tabs {
+    background: transparent !important;
+    border-color: var(--border) !important;
+    box-shadow: none !important;
+  }
+  .modal-head { border-bottom: 1px solid var(--border) !important; }
+  .settings-tabs { padding: 4px 0 !important; }
+  .s-tab { background: transparent !important; color: var(--muted) !important; }
+  .s-tab.active {
+    background: linear-gradient(135deg,var(--accent-mid),var(--accent-soft)) !important;
+    color: var(--text) !important;
+  }
+  .modal-card, .incoming-card, .app-dialog {
+    background: linear-gradient(155deg,rgba(var(--panel-rgb),.98),rgba(var(--panel-rgb),.94)) !important;
+  }
+  .sidebar, .main, .top-tabs, .bottom-dock, .chat-header, .composer {
+    background-color: rgba(var(--panel-rgb),.94) !important;
+  }
+  .sidebar { background: linear-gradient(180deg,rgba(var(--panel-rgb),.98),rgba(var(--panel-rgb),.94)) !important; }
+  .list-item.active { background: linear-gradient(120deg,var(--accent-soft),rgba(var(--panel-rgb),.72)) !important; }
+}
+/* Android emerald is the default surface palette, not a hard-coded accent. */
+body.android-md3 .tab-btn.active,
+body.android-md3 .s-tab.active,
+body.android-md3 .list-item.active {
+  background: linear-gradient(135deg,var(--accent-mid),var(--accent-soft)) !important;
+  border-color: var(--accent-border) !important;
+}
+body.android-md3 .primary-btn,
+body.android-md3 .send-btn,
+body.android-md3 .sm-btn.green {
+  background: linear-gradient(135deg,var(--accent),rgba(var(--accent-rgb),.78)) !important;
+  color: #062313 !important;
+}
+</style>
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -5691,14 +5768,19 @@ function applyTheme(name) {
 
 function applyAccentColor(color, persist = true) {
   const value = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? String(color).toLowerCase() : '#30d158';
-  document.documentElement.style.setProperty('--accent', value);
-  document.documentElement.style.setProperty('--accent-rgb', hexToRgb(value));
-  document.documentElement.style.setProperty('--auralis-mark-rgb', hexToRgb(value));
+  const rgb = hexToRgb(value);
+  [document.documentElement, document.body].forEach((node) => {
+    if (!node) return;
+    node.style.setProperty('--accent', value);
+    node.style.setProperty('--accent-rgb', rgb);
+    node.style.setProperty('--icon-color', 'rgba(' + rgb + ',.94)');
+    node.style.setProperty('--icon-muted', 'rgba(' + rgb + ',.68)');
+    node.style.setProperty('--auralis-mark-rgb', rgb);
+  });
   if (persist) localStorage.setItem('rc_accent_color', value);
   document.querySelectorAll('.accent-choice').forEach((el) => {
     el.classList.toggle('active', el.dataset.accent === value);
   });
-
 }
 
 const MENU_GLASS_ALPHA = {
