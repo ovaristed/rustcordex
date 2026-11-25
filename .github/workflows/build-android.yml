@@ -349,6 +349,194 @@ jobs:
           console.log('Declared microphone, audio routing, camera and screen capture permissions');
           NODE
 
+      - name: Install native Android in-app updater
+        run: |
+          set -euo pipefail
+          APP_ID=$(node -p "require('./capacitor.config.json').appId")
+          PACKAGE_PATH="${APP_ID//./\/}"
+          JAVA_DIR="android/app/src/main/java/$PACKAGE_PATH"
+          mkdir -p "$JAVA_DIR" android/app/src/main/res/xml
+          cat > "$JAVA_DIR/AuralisUpdaterPlugin.java" <<'JAVA'
+          package com.ovarist.auralis;
+
+          import android.app.DownloadManager;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.database.Cursor;
+          import android.net.Uri;
+          import android.os.Environment;
+          import android.provider.Settings;
+          import androidx.core.content.FileProvider;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import java.io.BufferedReader;
+          import java.io.InputStreamReader;
+          import java.net.HttpURLConnection;
+          import java.net.URL;
+          import java.io.File;
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+
+          @CapacitorPlugin(name = "AuralisUpdater")
+          public class AuralisUpdaterPlugin extends Plugin {
+              private static final String RELEASE_API = "https://api.github.com/repos/ovaristed/rustcordex/releases/tags/android-latest";
+              private static final String APK_PREFIX = "https://github.com/ovaristed/rustcordex/releases/download/android-latest/";
+              private long downloadId = -1;
+              private String downloadFileName = "";
+
+              @PluginMethod public void getVersion(PluginCall call) {
+                  JSObject out = new JSObject();
+                  out.put("version", BuildConfig.VERSION_NAME);
+                  call.resolve(out);
+              }
+
+              @PluginMethod public void check(PluginCall call) {
+                  new Thread(() -> {
+                      HttpURLConnection connection = null;
+                      try {
+                          connection = (HttpURLConnection) new URL(RELEASE_API).openConnection();
+                          connection.setRequestMethod("GET");
+                          connection.setConnectTimeout(12000);
+                          connection.setReadTimeout(12000);
+                          connection.setRequestProperty("Accept", "application/vnd.github+json");
+                          connection.setRequestProperty("User-Agent", "Auralis-Android-Updater");
+                          int code = connection.getResponseCode();
+                          if (code != 200) throw new Exception("GitHub вернул HTTP " + code);
+                          BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                          StringBuilder body = new StringBuilder();
+                          String line;
+                          while ((line = reader.readLine()) != null) body.append(line);
+                          reader.close();
+                          JSONObject release = new JSONObject(body.toString());
+                          JSONArray assets = release.optJSONArray("assets");
+                          String apkUrl = "";
+                          String available = "";
+                          if (assets != null) for (int i = 0; i < assets.length(); i++) {
+                              JSONObject asset = assets.getJSONObject(i);
+                              String name = asset.optString("name", "");
+                              if (name.startsWith("Auralis-Android-") && name.endsWith(".apk")) {
+                                  apkUrl = asset.optString("browser_download_url", "");
+                                  available = name.substring("Auralis-Android-".length(), name.length() - 4);
+                                  break;
+                              }
+                          }
+                          if (apkUrl.isEmpty() || !apkUrl.startsWith(APK_PREFIX)) throw new Exception("APK новой версии ещё не опубликован");
+                          String current = BuildConfig.VERSION_NAME;
+                          boolean newer = compareVersions(available, current) > 0;
+                          JSObject out = new JSObject();
+                          out.put("version", current);
+                          out.put("availableVersion", available);
+                          out.put("updateAvailable", newer);
+                          out.put("downloadUrl", newer ? apkUrl : "");
+                          call.resolve(out);
+                      } catch (Exception error) {
+                          call.reject("Проверка обновлений не удалась: " + error.getMessage(), error);
+                      } finally { if (connection != null) connection.disconnect(); }
+                  }).start();
+              }
+
+              private int compareVersions(String left, String right) {
+                  String[] a = left.split("\\.");
+                  String[] b = right.split("\\.");
+                  for (int i = 0; i < Math.max(a.length, b.length); i++) {
+                      int x = i < a.length ? parsePart(a[i]) : 0;
+                      int y = i < b.length ? parsePart(b[i]) : 0;
+                      if (x != y) return x > y ? 1 : -1;
+                  }
+                  return 0;
+              }
+              private int parsePart(String value) { try { return Integer.parseInt(value); } catch (Exception e) { return 0; } }
+
+              @PluginMethod public void download(PluginCall call) {
+                  String url = call.getString("url", "");
+                  String version = call.getString("version", "latest");
+                  if (url == null || !url.startsWith(APK_PREFIX)) { call.reject("Недопустимая ссылка на APK"); return; }
+                  try {
+                      DownloadManager manager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                      downloadFileName = "Auralis-Android-" + version.replaceAll("[^0-9.]", "") + ".apk";
+                      DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                      request.setTitle("Обновление Auralis");
+                      request.setDescription("Загрузка новой версии приложения");
+                      request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                      request.setAllowedOverMetered(true);
+                      request.setAllowedOverRoaming(false);
+                      request.setDestinationInExternalFilesDir(getContext(), Environment.DIRECTORY_DOWNLOADS, downloadFileName);
+                      downloadId = manager.enqueue(request);
+                      call.resolve(new JSObject().put("started", true));
+                  } catch (Exception error) { call.reject("Не удалось начать загрузку APK", error); }
+              }
+
+              @PluginMethod public void getDownloadProgress(PluginCall call) {
+                  if (downloadId < 0) { call.resolve(new JSObject().put("percent", 0)); return; }
+                  DownloadManager manager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                  Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(downloadId));
+                  try {
+                      if (cursor == null || !cursor.moveToFirst()) { call.resolve(new JSObject().put("percent", 0)); return; }
+                      int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                      if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                          call.resolve(new JSObject().put("percent", 100).put("downloaded", true));
+                      } else if (status == DownloadManager.STATUS_FAILED) {
+                          int reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                          call.resolve(new JSObject().put("failed", true).put("reason", "код " + reason));
+                      } else {
+                          long total = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                          long done = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                          int percent = total > 0 ? (int) (done * 100 / total) : 0;
+                          call.resolve(new JSObject().put("percent", percent));
+                      }
+                  } finally { if (cursor != null) cursor.close(); }
+              }
+
+              @PluginMethod public void install(PluginCall call) {
+                  try {
+                      File apk = new File(getContext().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), downloadFileName);
+                      if (!apk.isFile()) { call.reject("Сначала скачай обновление"); return; }
+                      if (android.os.Build.VERSION.SDK_INT >= 26 && !getContext().getPackageManager().canRequestPackageInstalls()) {
+                          Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getContext().getPackageName()));
+                          settings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                          getContext().startActivity(settings);
+                          call.reject("Разреши Auralis устанавливать обновления, затем нажми «Установить» ещё раз");
+                          return;
+                      }
+                      Uri contentUri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", apk);
+                      Intent install = new Intent(Intent.ACTION_VIEW);
+                      install.setDataAndType(contentUri, "application/vnd.android.package-archive");
+                      install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                      getContext().startActivity(install);
+                      call.resolve();
+                  } catch (Exception error) { call.reject("Не удалось открыть установщик Android", error); }
+              }
+          }
+          JAVA
+          cat > android/app/src/main/res/xml/auralis_file_paths.xml <<'XML'
+          <paths xmlns:android="http://schemas.android.com/apk/res/android">
+              <external-files-path name="auralis_updates" path="Download/" />
+          </paths>
+          XML
+          MAIN_ACTIVITY=$(find android/app/src/main/java -name MainActivity.java -print -quit)
+          node - "$MAIN_ACTIVITY" <<'NODE'
+          const fs = require('fs');
+          const file = process.argv[2];
+          let s = fs.readFileSync(file, 'utf8');
+          if (!s.includes('import com.ovarist.auralis.AuralisUpdaterPlugin;')) s = s.replace('import com.ovarist.auralis.ScreenCapturePlugin;', 'import com.ovarist.auralis.ScreenCapturePlugin;\\nimport com.ovarist.auralis.AuralisUpdaterPlugin;');
+          if (!s.includes('registerPlugin(AuralisUpdaterPlugin.class);')) s = s.replace('registerPlugin(ScreenCapturePlugin.class);', 'registerPlugin(ScreenCapturePlugin.class);\\n        registerPlugin(AuralisUpdaterPlugin.class);');
+          fs.writeFileSync(file, s);
+          NODE
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'android/app/src/main/AndroidManifest.xml';
+          let xml = fs.readFileSync(file, 'utf8');
+          const permission = '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />';
+          if (!xml.includes('REQUEST_INSTALL_PACKAGES')) xml = xml.replace(/<manifest\\b[^>]*>/, m => m + '\\n    ' + permission);
+          const provider = '<provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.fileprovider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/auralis_file_paths" /></provider>';
+          if (!xml.includes('androidx.core.content.FileProvider')) xml = xml.replace(/<application\\b[^>]*>/, m => m + '\\n        ' + provider);
+          fs.writeFileSync(file, xml);
+          NODE
+          echo "Installed Auralis in-app APK updater"
+          
       - name: Apply desktop Auralis icon to Android launcher
         run: |
           set -euo pipefail
