@@ -3587,7 +3587,7 @@ body.android-md3 .sm-btn.green {
 <style id="auralis-desktop-glass-studio">
 @media (min-width:761px) {
   :root { --auralis-glass-blur:24px; }
-  .app,.sidebar,.main,.card,.panel-body,.top-tabs,.bottom-dock,.chat-header,.messages,.composer,
+  .app,.sidebar,.main,.card,.list-item,.panel-body,.top-tabs,.bottom-dock,.chat-header,.messages,.msg-bubble,.composer,.tab-btn,.s-tab,.theme-swatch,
   .modal-card,.incoming-card,.profile-popover,.user-profile-card,.voice-ctx-menu,.group-ctx-menu,
   .app-dialog,.gif-picker,.sticker-picker,.call-stage,.call-tile,.settings-tabs,.s-section {
     backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.3) !important;
@@ -4014,6 +4014,10 @@ body.android-md3 .sm-btn.green {
             <input id="glassPanelColor" type="color" value="#0e1e16" oninput="updateDesktopGlassSettings()" />
           </label>
         </div>
+        <label style="display:flex;flex-direction:column;gap:6px;margin-top:12px;color:var(--muted);font-size:11px;">Мои сохранённые темы
+          <select id="glassSavedThemes"><option value="">Выбери сохранённую тему</option></select>
+        </label>
+        <button type="button" class="sm-btn blue" style="width:100%;margin-top:7px;" onclick="applySavedDesktopTheme()">Применить мою тему</button>
         <label class="glass-upload">Выбрать свои обои
           <input id="glassWallpaperFile" type="file" accept="image/*" onchange="onDesktopWallpaperFile(event)" />
         </label>
@@ -5949,6 +5953,32 @@ function onDesktopWallpaperFile(event) {
   };
   reader.readAsDataURL(file);
 }
+function refreshDesktopCustomThemeList(selectedName = '') {
+  const select = document.getElementById('glassSavedThemes');
+  if (!select) return;
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem('rc_desktop_custom_themes') || '[]'); } catch {}
+  select.innerHTML = '<option value="">Выбери сохранённую тему</option>' +
+    saved.map(t => '<option value="' + esc(t.name) + '">' + esc(t.name) + '</option>').join('');
+  if (selectedName) select.value = selectedName;
+}
+function applySavedDesktopTheme() {
+  const select = document.getElementById('glassSavedThemes');
+  if (!select || !select.value) return;
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem('rc_desktop_custom_themes') || '[]'); } catch {}
+  const theme = saved.find(t => t.name === select.value);
+  if (!theme) return;
+  localStorage.setItem('rc_desktop_glass_opacity', String(theme.opacity));
+  localStorage.setItem('rc_desktop_glass_blur', String(theme.blur));
+  localStorage.setItem('rc_desktop_glass_wallpaper', theme.wallpaper);
+  localStorage.setItem('rc_desktop_glass_effect', theme.effect);
+  localStorage.setItem('rc_desktop_glass_accent', theme.accent);
+  localStorage.setItem('rc_desktop_glass_panel', theme.panel);
+  applyDesktopGlassSettings(false);
+  const status = document.getElementById('glassCustomThemeStatus');
+  if (status) status.textContent = 'Тема «' + theme.name + '» применена.';
+}
 function saveDesktopCustomTheme() {
   const name = (document.getElementById('glassThemeName')?.value || '').trim().slice(0,32);
   if (!name) {
@@ -5968,6 +5998,7 @@ function saveDesktopCustomTheme() {
     const saved = JSON.parse(localStorage.getItem('rc_desktop_custom_themes') || '[]');
     const next = [...saved.filter(t => t.name !== name), theme].slice(-12);
     localStorage.setItem('rc_desktop_custom_themes', JSON.stringify(next));
+    refreshDesktopCustomThemeList(name);
     const status = document.getElementById('glassCustomThemeStatus');
     if (status) status.textContent = 'Тема «' + name + '» сохранена. Её настройки останутся на этом компьютере.';
   } catch {
@@ -6019,6 +6050,7 @@ function setSidebarWidth(px) {
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
   applyDesktopGlassSettings(false);
+  refreshDesktopCustomThemeList();
 
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
