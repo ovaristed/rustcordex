@@ -526,8 +526,8 @@ jobs:
           const fs = require('fs');
           const file = process.argv[2];
           let s = fs.readFileSync(file, 'utf8');
-          if (!s.includes('import com.ovarist.auralis.AuralisUpdaterPlugin;')) s = s.replace('import com.ovarist.auralis.ScreenCapturePlugin;', 'import com.ovarist.auralis.ScreenCapturePlugin;\\nimport com.ovarist.auralis.AuralisUpdaterPlugin;');
-          if (!s.includes('registerPlugin(AuralisUpdaterPlugin.class);')) s = s.replace('registerPlugin(ScreenCapturePlugin.class);', 'registerPlugin(ScreenCapturePlugin.class);\\n        registerPlugin(AuralisUpdaterPlugin.class);');
+          if (!s.includes('import com.ovarist.auralis.AuralisUpdaterPlugin;')) s = s.replace('import com.ovarist.auralis.ScreenCapturePlugin;', 'import com.ovarist.auralis.ScreenCapturePlugin;\nimport com.ovarist.auralis.AuralisUpdaterPlugin;');
+          if (!s.includes('registerPlugin(AuralisUpdaterPlugin.class);')) s = s.replace('registerPlugin(ScreenCapturePlugin.class);', 'registerPlugin(ScreenCapturePlugin.class);\n        registerPlugin(AuralisUpdaterPlugin.class);');
           fs.writeFileSync(file, s);
           NODE
           node <<'NODE'
@@ -535,9 +535,9 @@ jobs:
           const file = 'android/app/src/main/AndroidManifest.xml';
           let xml = fs.readFileSync(file, 'utf8');
           const permission = '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />';
-          if (!xml.includes('REQUEST_INSTALL_PACKAGES')) xml = xml.replace(/<manifest\\b[^>]*>/, m => m + '\\n    ' + permission);
+          if (!xml.includes('REQUEST_INSTALL_PACKAGES')) xml = xml.replace(/<manifest\b[^>]*>/, m => m + '\n    ' + permission);
           const provider = '<provider android:name="androidx.core.content.FileProvider" android:authorities="${applicationId}.fileprovider" android:exported="false" android:grantUriPermissions="true"><meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/auralis_file_paths" /></provider>';
-          if (!xml.includes('androidx.core.content.FileProvider')) xml = xml.replace(/<application\\b[^>]*>/, m => m + '\\n        ' + provider);
+          if (!xml.includes('androidx.core.content.FileProvider')) xml = xml.replace(/<application\b[^>]*>/, m => m + '\n        ' + provider);
           fs.writeFileSync(file, xml);
           NODE
           echo "Installed Auralis in-app APK updater"
