@@ -610,6 +610,20 @@ jobs:
           console.log('Android version:', version, 'versionCode:', versionCode);
           NODE
 
+      - name: Prepare persistent Android debug signing key
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.android
+          if [ ! -s ~/.android/debug.keystore ]; then
+            keytool -genkeypair -v \\
+              -keystore ~/.android/debug.keystore \\
+              -storepass android \\
+              -alias androiddebugkey \\
+              -keypass android \\
+              -dname "CN=Android Debug,O=Android,C=US" \\
+              -keyalg RSA -keysize 2048 -validity 10000
+          fi
+
       - name: Reuse Android debug signing key for in-app upgrades
         uses: actions/cache@v4
         with:
