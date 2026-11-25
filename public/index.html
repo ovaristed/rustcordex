@@ -1882,6 +1882,35 @@
 
   /* v1.8 — call controls, participant state indicators and safe resize bounds */
   .call-stage { min-height:300px !important; max-height:calc(100dvh - 360px) !important; }
+  /* Compact call panel: don't leave a large empty strip behind the control buttons. */
+  .call-stage:not(.hidden) {
+    min-height:0 !important;
+    height:auto !important;
+    max-height:min(72vh, calc(100dvh - 220px)) !important;
+    padding:10px !important;
+    gap:8px !important;
+    resize:none !important;
+    overflow:auto;
+  }
+  .call-stage:not(.hidden) .call-grid { flex:0 0 auto; min-height:0; }
+  .call-stage:not(.hidden) .tile { min-height:112px; }
+  .call-stage:not(.hidden) .call-ctrls {
+    position:relative !important;
+    inset:auto !important;
+    align-self:center;
+    flex:0 0 auto;
+    width:max-content;
+    max-width:100%;
+    min-height:0 !important;
+    margin:0 auto !important;
+    padding:2px 0 !important;
+    background:transparent !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+  }
   .call-ctrls { position:relative; z-index:12; pointer-events:auto; }
   .call-ctrls .round-btn { position:relative; z-index:101; pointer-events:auto !important; cursor:pointer; touch-action:manipulation; }
   .call-ctrls .round-btn.off, html[data-theme="glasscord"] .call-ctrls .round-btn.off {
@@ -3666,7 +3695,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .sidebar,.main,.card,.modal-card,.incoming-card,.app-dialog,.chat-header,.profile-popover,.user-profile-card,.voice-ctx-menu,.group-ctx-menu,.member-pick-row,.glass-studio-panel,.auralis-glass-studio,.settings-panel,.call-ctrls,.modal-content,.theme-card,.glass-saved-theme-card{background:rgba(var(--panel-rgb),var(--panel-alpha))!important;-webkit-backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important;backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important}
 .modal-backdrop,.app-dialog-backdrop{backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
 @media(max-width:760px){body::before{background-attachment:scroll}}
-</style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.1">
+</style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.2">
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -4027,7 +4056,6 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
       <div class="field desktop-theme-field">
         <div class="lbl">Тема оформления</div>
         <div class="theme-grid">
-          <button type="button" class="theme-swatch" data-theme="discord" onclick="applyTheme('discord')"><span class="dot" style="background:#5865f2"></span>Auralis</button>
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
           <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#66e7d2"></span>Aurora</button>
@@ -4221,7 +4249,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">3.3.1</span></span>
+      <span>Auralis · версия <span id="appVersion">3.3.2</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -5873,7 +5901,7 @@ function hexToRgb(hex) {
   return ((num >> 16) & 255) + ', ' + ((num >> 8) & 255) + ', ' + (num & 255);
 }
 
-let activeThemeName = document.body.classList.contains('android-md3') ? 'emerald' : 'discord';
+let activeThemeName = 'emerald';
 function syncThemeEffect() {
   const theme = THEMES[activeThemeName] || THEMES.discord;
   const desktop = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
@@ -5885,8 +5913,8 @@ try { localStorage.removeItem('rc_clear_cache_exit'); } catch {}
 
 function applyTheme(name) {
   const wantsCustom = name === 'custom';
-  const requested = name === 'dark' || name === 'crimson' ? 'discord' : name;
-  const valid = wantsCustom ? (THEMES[localStorage.getItem('rc_desktop_base_theme')] ? localStorage.getItem('rc_desktop_base_theme') : activeThemeName) : (THEMES[requested] ? requested : (document.body.classList.contains('android-md3') ? 'emerald' : 'discord'));
+  const requested = ['dark','crimson','discord','auralis'].includes(String(name).toLowerCase()) ? 'emerald' : name;
+  const valid = wantsCustom ? (THEMES[localStorage.getItem('rc_desktop_base_theme')] ? localStorage.getItem('rc_desktop_base_theme') : activeThemeName) : (THEMES[requested] ? requested : 'emerald');
   if (wantsCustom) { localStorage.setItem('rc_desktop_theme_mode','custom'); localStorage.setItem('rc_desktop_base_theme',valid); }
   else { localStorage.setItem('rc_desktop_theme_mode','preset'); localStorage.setItem('rc_desktop_base_theme',valid); }
   activeThemeName = valid;
@@ -6184,7 +6212,7 @@ function setSidebarWidth(px) {
   } catch {}
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
   const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
-  applyTheme(isMobileAppearance ? 'emerald' : (savedTheme && savedTheme !== 'discord' ? savedTheme : 'emerald'));
+  applyTheme(isMobileAppearance ? 'emerald' : (savedTheme && savedTheme !== 'discord' && savedTheme !== 'auralis' ? savedTheme : 'emerald'));
   const savedAccent = localStorage.getItem('rc_accent_color');
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
@@ -6383,7 +6411,7 @@ async function adminRequest(path, options = {}) {
   try { data = raw ? JSON.parse(raw) : {}; } catch {}
   if (!response.ok) {
     const message = data.error || (response.status === 404
-      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.1.'
+      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.2.'
       : 'Ошибка запроса (' + response.status + ')');
     throw new Error(message);
   }
