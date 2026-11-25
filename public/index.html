@@ -8633,9 +8633,10 @@ checkSession();
     if (panel.contains(event.target) || button.contains(event.target)) return;
     toggleStickerPicker(false);
   });
-  window.addEventListener('resize', () => {
-    if (!panel.classList.contains('hidden')) toggleStickerPicker(true);
-  }, {passive:true});
+  // Android fires resize when the soft keyboard opens. Reopening the picker
+  // here re-runs its setup while the GIF search input is focused and can
+  // steal focus from the input, making the keyboard flash and disappear.
+  // The dedicated positioning runtime below handles viewport changes.
 })();
 </script>
 
@@ -8689,7 +8690,12 @@ checkSession();
       if(picker.contains(e.target)||trigger?.contains(e.target)) return;
       window.toggleStickerPicker(false);
     });
+    // Reposition only; never re-run picker setup on keyboard/viewport resize.
     window.addEventListener('resize',placePicker,{passive:true});
+    if(window.visualViewport){
+      window.visualViewport.addEventListener('resize',placePicker,{passive:true});
+      window.visualViewport.addEventListener('scroll',placePicker,{passive:true});
+    }
     window.addEventListener('scroll',placePicker,true);
   }
   const tile=document.getElementById('localTile');
