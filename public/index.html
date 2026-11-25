@@ -2823,6 +2823,220 @@ input:focus, select:focus, textarea:focus {
     body.android-md3 .user-profile-content { padding:0 20px max(24px,env(safe-area-inset-bottom)); }
   }
 
+
+
+/* Auralis Emerald refresh — consistent desktop + Android visual language */
+html[data-theme="emerald"] {
+  --bg:#03170d;
+  --panel-rgb:7,43,25;
+  --panel-alpha:.94;
+  --glass:rgba(7,43,25,.94);
+  --glass-solid:#082d1b;
+  --glass-2:rgba(117,232,157,.075);
+  --glass-hover:rgba(117,232,157,.14);
+  --input-bg:rgba(3,34,18,.86);
+  --input-focus-bg:rgba(8,57,31,.96);
+  --border:rgba(137,231,165,.17);
+  --text:#effff3;
+  --muted:rgba(211,241,220,.68);
+  --accent:#43df83;
+  --accent-rgb:67,223,131;
+  --icon-color:#8bf0ae;
+  --icon-muted:#68c98b;
+  --glow-2:rgba(22,154,78,.22);
+  color-scheme:dark;
+}
+html[data-theme="emerald"] body {
+  background:
+    linear-gradient(rgba(0,20,11,.30),rgba(0,20,11,.42)),
+    url('/backgrounds/auralis-emerald.svg') center top / cover fixed,
+    radial-gradient(ellipse at 12% 5%,rgba(32,174,91,.20),transparent 42%),
+    linear-gradient(145deg,#03170d,#082817 55%,#021108) !important;
+}
+html[data-theme="emerald"] .sidebar,
+html[data-theme="emerald"] .main {
+  border-color:rgba(137,231,165,.16) !important;
+  background:linear-gradient(155deg,rgba(8,48,28,.94),rgba(3,25,14,.96)) !important;
+  box-shadow:0 18px 54px rgba(0,0,0,.28),inset 0 1px rgba(210,255,222,.035) !important;
+}
+html[data-theme="emerald"] .chat-header,
+html[data-theme="emerald"] .panel-body,
+html[data-theme="emerald"] .top-tabs,
+html[data-theme="emerald"] .bottom-dock {
+  background:rgba(6,39,22,.88) !important;
+  border-color:rgba(137,231,165,.13) !important;
+  backdrop-filter:blur(22px) saturate(1.25);
+  -webkit-backdrop-filter:blur(22px) saturate(1.25);
+}
+html[data-theme="emerald"] .list-item {
+  min-height:58px;
+  border:1px solid transparent !important;
+  border-radius:17px !important;
+  background:rgba(11,58,33,.58) !important;
+  margin:4px 5px !important;
+}
+html[data-theme="emerald"] .list-item:hover {
+  background:rgba(25,91,51,.72) !important;
+  border-color:rgba(137,231,165,.18) !important;
+}
+html[data-theme="emerald"] .list-item.active,
+html[data-theme="emerald"] .list-item.selected {
+  background:linear-gradient(110deg,rgba(46,176,94,.30),rgba(20,91,49,.42)) !important;
+  border-color:rgba(111,235,153,.34) !important;
+  box-shadow:inset 3px 0 #54e78e,0 5px 18px rgba(0,0,0,.12) !important;
+}
+html[data-theme="emerald"] .user-bar,
+html[data-theme="emerald"] .composer {
+  background:rgba(8,48,28,.94) !important;
+  border:1px solid rgba(137,231,165,.18) !important;
+  border-radius:20px !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.18),inset 0 1px rgba(220,255,228,.035) !important;
+}
+html[data-theme="emerald"] .msg-bubble {
+  background:rgba(11,57,33,.94) !important;
+  border:1px solid rgba(137,231,165,.12) !important;
+  border-radius:18px !important;
+  color:#effff3 !important;
+}
+html[data-theme="emerald"] .msg.mine .msg-bubble {
+  background:linear-gradient(135deg,#145d35,#0d4829) !important;
+  border-color:rgba(115,235,155,.22) !important;
+}
+html[data-theme="emerald"] input:not([type="checkbox"]):not([type="range"]),
+html[data-theme="emerald"] select,
+html[data-theme="emerald"] textarea {
+  background:var(--input-bg) !important;
+  color:var(--text) !important;
+  border:1px solid var(--border) !important;
+  border-radius:14px !important;
+}
+html[data-theme="emerald"] input:focus,
+html[data-theme="emerald"] select:focus,
+html[data-theme="emerald"] textarea:focus {
+  border-color:rgba(83,231,139,.72) !important;
+  box-shadow:0 0 0 3px rgba(67,223,131,.13) !important;
+}
+html[data-theme="emerald"] .tab-btn,
+html[data-theme="emerald"] .icon-btn,
+html[data-theme="emerald"] .sm-btn,
+html[data-theme="emerald"] .mini-plus-btn,
+html[data-theme="emerald"] .round-btn {
+  border-radius:15px;
+  border-color:rgba(137,231,165,.16);
+}
+html[data-theme="emerald"] .tab-btn.active {
+  background:linear-gradient(135deg,rgba(52,177,98,.34),rgba(20,92,49,.50)) !important;
+  border-color:rgba(112,237,153,.36) !important;
+  color:#f2fff5 !important;
+}
+html[data-theme="emerald"] .primary-btn,
+html[data-theme="emerald"] .send-btn,
+html[data-theme="emerald"] .sm-btn.green {
+  background:linear-gradient(135deg,#69ee9a,#35c975) !important;
+  color:#062313 !important;
+  border:0 !important;
+  font-weight:800;
+  box-shadow:0 6px 18px rgba(33,190,96,.20);
+}
+html[data-theme="emerald"] .modal-card,
+html[data-theme="emerald"] .incoming-card,
+html[data-theme="emerald"] .app-dialog,
+html[data-theme="emerald"] .user-profile-card,
+html[data-theme="emerald"] .profile-popover {
+  background:linear-gradient(155deg,#0b3822,#062515) !important;
+  border:1px solid rgba(137,231,165,.20) !important;
+  box-shadow:0 24px 76px rgba(0,0,0,.48) !important;
+}
+html[data-theme="emerald"] .modal-head {
+  border-bottom:1px solid rgba(137,231,165,.13);
+}
+html[data-theme="emerald"] .settings-tabs {
+  background:rgba(2,25,13,.62) !important;
+  border-color:rgba(137,231,165,.14) !important;
+  border-radius:17px !important;
+}
+html[data-theme="emerald"] .s-tab.active {
+  background:linear-gradient(135deg,rgba(48,179,97,.40),rgba(20,91,49,.48)) !important;
+  color:#f0fff4 !important;
+}
+html[data-theme="emerald"] .user-profile-banner,
+html[data-theme="emerald"] .pop-banner {
+  background:linear-gradient(125deg,rgba(38,153,79,.92),rgba(5,55,29,.96)),url('/backgrounds/auralis-emerald.svg') center/cover !important;
+}
+html[data-theme="emerald"] .user-profile-avatar { border-color:#0b3822 !important; background:#174b2d !important; }
+html[data-theme="emerald"] .user-profile-thought,
+html[data-theme="emerald"] .user-profile-description,
+html[data-theme="emerald"] .pop-profile-strip,
+html[data-theme="emerald"] .pop-card,
+html[data-theme="emerald"] .pop-login-row {
+  background:rgba(20,77,44,.72) !important;
+  border:1px solid rgba(137,231,165,.13) !important;
+  color:#eaffef !important;
+  border-radius:16px !important;
+}
+html[data-theme="emerald"] .gif-picker {
+  background:rgba(5,38,21,.98) !important;
+  border:1px solid rgba(137,231,165,.20) !important;
+  border-radius:24px !important;
+  box-shadow:0 18px 55px rgba(0,0,0,.42) !important;
+}
+html[data-theme="emerald"] .gif-grid { gap:10px !important; }
+html[data-theme="emerald"] .gif-card {
+  overflow:hidden;
+  border:1px solid rgba(137,231,165,.18) !important;
+  border-radius:16px !important;
+  background:#104128 !important;
+}
+html[data-theme="emerald"] .gif-card img { width:100%; height:100%; object-fit:cover; }
+html[data-theme="emerald"] .att-gif {
+  max-width:min(78vw,460px);
+  max-height:420px;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  border-radius:17px;
+  background:#082d1b;
+}
+html[data-theme="emerald"] .avatar {
+  box-shadow:0 0 0 1px rgba(137,231,165,.12);
+}
+html[data-theme="emerald"] .sec-lbl { color:#a9e9bb !important; }
+html[data-theme="emerald"] .app-toast { background:#155331 !important; border-color:rgba(137,231,165,.22) !important; }
+@media (max-width:760px) {
+  html[data-theme="emerald"] body {
+    background:
+      linear-gradient(rgba(0,20,11,.30),rgba(0,20,11,.42)),
+      url('/backgrounds/auralis-emerald.svg') center top / cover,
+      #03170d !important;
+    background-attachment:scroll !important;
+  }
+  html[data-theme="emerald"] .sidebar {
+    background:linear-gradient(180deg,rgba(7,48,27,.98),rgba(2,24,13,.99)) !important;
+  }
+  html[data-theme="emerald"] .main { background:rgba(3,27,15,.97) !important; }
+  html[data-theme="emerald"] .top-tabs,
+  html[data-theme="emerald"] .bottom-dock {
+    background:rgba(4,35,19,.97) !important;
+    border-top:1px solid rgba(137,231,165,.16) !important;
+  }
+  html[data-theme="emerald"] .chat-header { min-height:62px !important; }
+  html[data-theme="emerald"] .composer {
+    margin:7px 9px max(8px,env(safe-area-inset-bottom)) !important;
+    padding:8px 10px !important;
+    border-radius:20px !important;
+  }
+  html[data-theme="emerald"] .list-item { min-height:62px !important; border-radius:17px !important; }
+  html[data-theme="emerald"] .modal-card,
+  html[data-theme="emerald"] .incoming-card,
+  html[data-theme="emerald"] .app-dialog {
+    background:linear-gradient(160deg,#0b3822,#062515) !important;
+  }
+  html[data-theme="emerald"] .user-profile-card {
+    border-radius:26px 26px 0 0 !important;
+    background:linear-gradient(160deg,#0b3822,#062515) !important;
+  }
+  html[data-theme="emerald"] .gif-picker { max-height:min(58dvh,520px) !important; }
+}
 </style>
 <style id="auralis-unified-opacity-fix">
 /* One transparency scale for every theme: 5% = nearly solid, 85% = very transparent. */
