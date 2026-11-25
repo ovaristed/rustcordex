@@ -5934,7 +5934,7 @@ function applyTheme(name) {
   document.documentElement.style.setProperty('--bg', t.bg);
   const desktopThemeVisuals = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
   const themeWallpaperEnabled = desktopThemeVisuals;
-  document.documentElement.style.setProperty('--theme-wallpaper', themeWallpaperEnabled ? (t.wallpaper || 'none') : 'none');
+  document.documentElement.style.setProperty('--theme-wallpaper', themeWallpaperEnabled ? 'none' : (t.wallpaper || 'none'));
   if (themeWallpaperEnabled && t.wallpaper && t.wallpaper !== 'none') {
     const wallpaperUrl = t.wallpaper.slice(5, -2);
     if (wallpaperUrl) {
