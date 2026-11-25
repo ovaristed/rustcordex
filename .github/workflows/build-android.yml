@@ -380,8 +380,8 @@ jobs:
           const fs = require('fs');
           const file = 'android/app/src/main/AndroidManifest.xml';
           let xml = fs.readFileSync(file, 'utf8');
-          xml = xml.replace(/<application\\b[^>]*>/, tag => {
-            tag = tag.replace(/\\sandroid:icon="[^"]*"/, '').replace(/\\sandroid:roundIcon="[^"]*"/, '');
+          xml = xml.replace(/<application\b[^>]*>/, tag => {
+            tag = tag.replace(/\sandroid:icon="[^"]*"/, '').replace(/\sandroid:roundIcon="[^"]*"/, '');
             return tag.slice(0, -1) + ' android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round">';
           });
           fs.writeFileSync(file, xml);
