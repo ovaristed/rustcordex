@@ -3666,7 +3666,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .sidebar,.main,.card,.modal-card,.incoming-card,.app-dialog,.chat-header,.profile-popover,.user-profile-card,.voice-ctx-menu,.group-ctx-menu,.member-pick-row,.glass-studio-panel,.auralis-glass-studio,.settings-panel,.call-ctrls,.modal-content,.theme-card,.glass-saved-theme-card{background:rgba(var(--panel-rgb),var(--panel-alpha))!important;-webkit-backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important;backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important}
 .modal-backdrop,.app-dialog-backdrop{backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
 @media(max-width:760px){body::before{background-attachment:scroll}}
-</style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.0">
+</style>  <link rel="stylesheet" href="/auralis-3.3.1-glass.css?v=3.3.1">
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -4221,7 +4221,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">3.3.0</span></span>
+      <span>Auralis · версия <span id="appVersion">3.3.1</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -5853,17 +5853,17 @@ const THEMES = {
   emerald: {
     bg: '#050d09', panelRgb: '14, 30, 22', accent: '#30d158',
     glow2: 'rgba(16, 185, 129, 0.22)', wallpaper: "url('/backgrounds/green.jpg')",
-    overlay: 'rgba(5, 13, 9, 0.22)', panelAlpha: 0.64, effect: 'leaves'
+    overlay: 'rgba(5, 13, 9, 0.22)', panelAlpha: 0.18, effect: 'leaves'
   },
   violet: {
-    bg: '#090710', panelRgb: '24, 18, 38', accent: '#ff78ad',
+    bg: '#090710', panelRgb: '59, 29, 43', accent: '#ff78ad',
     glow2: 'rgba(255, 168, 198, 0.24)', wallpaper: "url('/backgrounds/purple.jpg')",
-    overlay: 'rgba(9, 7, 16, 0.22)', panelAlpha: 0.64, effect: 'sakura'
+    overlay: 'rgba(9, 7, 16, 0.22)', panelAlpha: 0.18, effect: 'sakura'
   },
   aurora: {
-    bg: '#06121b', panelRgb: '10, 30, 40', accent: '#66e7d2',
+    bg: '#06121b', panelRgb: '22, 42, 64', accent: '#35c9f2',
     glow2: 'rgba(70, 220, 202, 0.28)', wallpaper: "url('/backgrounds/aurora.svg')",
-    overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.62, effect: 'aurora'
+    overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.15, effect: 'aurora'
   },
 };
 
@@ -5892,6 +5892,16 @@ function applyTheme(name) {
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
   const t = THEMES[valid];
+  // Built-in appearance presets have their own fixed glass settings.
+  // The custom theme workspace remains independent and keeps its own values.
+  if (!wantsCustom) {
+    const presetGlass = {
+      violet: { opacity: 82, blur: 3, wallpaper: 'purple', effect: 'sakura', accent: '#ff78ad', panel: '#3b1d2b' },
+      emerald: { opacity: 82, blur: 3, wallpaper: 'green', effect: 'leaves', accent: '#30d158', panel: '#0e1e16' },
+      aurora: { opacity: 85, blur: 6, wallpaper: 'aurora', effect: 'aurora', accent: '#35c9f2', panel: '#162a40' }
+    };
+    if (presetGlass[valid]) writeDesktopThemeSettings(presetGlass[valid]);
+  }
   document.documentElement.style.setProperty('--bg', t.bg);
   const desktopThemeVisuals = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
   const themeWallpaperEnabled = desktopThemeVisuals;
@@ -6373,7 +6383,7 @@ async function adminRequest(path, options = {}) {
   try { data = raw ? JSON.parse(raw) : {}; } catch {}
   if (!response.ok) {
     const message = data.error || (response.status === 404
-      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.0.'
+      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.3.1.'
       : 'Ошибка запроса (' + response.status + ')');
     throw new Error(message);
   }
