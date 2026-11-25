@@ -377,6 +377,7 @@ jobs:
           import java.net.HttpURLConnection;
           import java.net.URL;
           import java.io.File;
+          import android.content.pm.PackageInfo;
           import org.json.JSONArray;
           import org.json.JSONObject;
 
@@ -387,10 +388,17 @@ jobs:
               private long downloadId = -1;
               private String downloadFileName = "";
 
+              private String getInstalledVersion() throws Exception {
+                  PackageInfo info = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
+                  return info.versionName == null ? "0.0.0" : info.versionName;
+              }
+
               @PluginMethod public void getVersion(PluginCall call) {
-                  JSObject out = new JSObject();
-                  out.put("version", BuildConfig.VERSION_NAME);
-                  call.resolve(out);
+                  try {
+                      JSObject out = new JSObject();
+                      out.put("version", getInstalledVersion());
+                      call.resolve(out);
+                  } catch (Exception error) { call.reject("Не удалось определить версию Auralis", error); }
               }
 
               @PluginMethod public void check(PluginCall call) {
@@ -426,7 +434,7 @@ jobs:
                               }
                           }
                           if (apkUrl.isEmpty() || !apkUrl.startsWith(APK_PREFIX)) throw new Exception("APK новой версии ещё не опубликован");
-                          String current = BuildConfig.VERSION_NAME;
+                          String current = getInstalledVersion();
                           boolean newer = compareVersions(available, current) > 0;
                           JSObject out = new JSObject();
                           out.put("version", current);
