@@ -6209,8 +6209,17 @@ function setSidebarWidth(px) {
 (function initSavedAppearance() {
   document.documentElement.style.setProperty('--avatar-radius', '50%');
   let savedTheme = null;
+  let migrateToGreenDefault = false;
   try {
     savedTheme = localStorage.getItem('rc_theme');
+    // One-time migration: older installs could reopen with the retired pink/blue
+    // appearance after reinstall because the app's web storage survives uninstall.
+    // Set the official Emerald default once, then respect future user selections.
+    migrateToGreenDefault = localStorage.getItem('rc_green_default_migration_v340') !== '1';
+    if (migrateToGreenDefault) {
+      localStorage.setItem('rc_green_default_migration_v340', '1');
+      savedTheme = 'emerald';
+    }
   } catch {}
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
   const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
