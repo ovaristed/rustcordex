@@ -3696,7 +3696,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .modal-backdrop,.app-dialog-backdrop{backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
 @media(max-width:760px){body::before{background-attachment:scroll}}
 </style>  <link rel="stylesheet" href="/auralis-3.3.0-glass.css?v=3.3.3">
-<link rel="stylesheet" href="/call-fix.css?v=3.3.5">
+<link rel="stylesheet" href="/call-fix.css?v=3.3.6">
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -7567,6 +7567,22 @@ function endGroupCallWhenLeavingChat(nextChat) {
   }
 }
 
+function showChatHistoryError(box, retry, message) {
+  if (!box || !box.isConnected) return;
+  const panel = document.createElement('div');
+  panel.className = 'empty-chat chat-history-error';
+  panel.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:22px;text-align:center;';
+  const label = document.createElement('span');
+  label.textContent = message || 'Не удалось загрузить сообщения. Проверь соединение и попробуй ещё раз.';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'sm-btn';
+  button.textContent = 'Повторить';
+  button.addEventListener('click', retry, { once: true });
+  panel.append(label, button);
+  box.replaceChildren(panel);
+}
+
 async function openChat(username) {
   const requestedChat = { kind: 'dm', id: username };
   document.body.classList.add('mobile-chat-open');
@@ -7593,16 +7609,28 @@ async function openChat(username) {
     const res = await fetch('/api/dm?peer=' + encodeURIComponent(username), {
       headers: { Authorization: 'Bearer ' + token }
     });
-    if (res.ok) {
-      const list = mergeChatMessages('dm', username, await res.json());
-      if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
-      const latest = mergeChatMessages('dm', username, list);
-      box.innerHTML = '';
-      if (!latest.length) box.innerHTML = '<div class="empty-chat">Сообщений пока нет — напиши первым!</div>';
-      else latest.forEach(appendMsg);
-      writeChatCache('dm', username, latest);
+    if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+    if (!res.ok) {
+      const message = res.status === 401 ? 'Сессия истекла. Выйди и войди снова.' :
+        res.status === 403 ? 'Нет доступа к этому чату.' :
+        'Не удалось загрузить сообщения (ошибка ' + res.status + ').';
+      if (!cachedMessages.length) showChatHistoryError(box, () => openChat(username), message);
+      else showAppToast(message, true);
+      return;
     }
-  } catch {}
+    const list = mergeChatMessages('dm', username, await res.json());
+    if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+    const latest = mergeChatMessages('dm', username, list);
+    box.innerHTML = '';
+    if (!latest.length) box.innerHTML = '<div class="empty-chat">Сообщений пока нет — напиши первым!</div>';
+    else latest.forEach(appendMsg);
+    writeChatCache('dm', username, latest);
+  } catch (err) {
+    if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+    if (!cachedMessages.length) showChatHistoryError(box, () => openChat(username),
+      err && err.name === 'AbortError' ? 'Превышено время ожидания. Попробуй ещё раз.' : 'Нет соединения с сервером. Проверь интернет и повтори загрузку.');
+    else showAppToast('Не удалось обновить историю чата. Показаны сохранённые сообщения.', true);
+  }
 }
 
 async function openGroupChat(groupId) {
@@ -7640,10 +7668,17 @@ async function openGroupChat(groupId) {
       else latest.forEach(appendMsg);
       writeChatCache('group', groupId, latest);
     } else {
-      box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
+      if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+      const message = res.status === 401 ? 'Сессия истекла. Выйди и войди снова.' :
+        'Не удалось загрузить сообщения группы (ошибка ' + res.status + ').';
+      if (!cachedMessages.length) showChatHistoryError(box, () => openGroupChat(groupId), message);
+      else showAppToast(message, true);
     }
-  } catch {
-    box.innerHTML = '<div class="empty-chat">Группа создана — напиши друзьям первым!</div>';
+  } catch (err) {
+    if (!activeChat || activeChat.kind !== requestedChat.kind || activeChat.id !== requestedChat.id) return;
+    if (!cachedMessages.length) showChatHistoryError(box, () => openGroupChat(groupId),
+      'Нет соединения с сервером. Проверь интернет и повтори загрузку.');
+    else showAppToast('Не удалось обновить историю группы. Показаны сохранённые сообщения.', true);
   }
 }
 
