@@ -5931,10 +5931,10 @@ function readDesktopThemeSettings(key = desktopThemeKey()) {
     const legacy = {
       opacity:Number(localStorage.getItem('rc_desktop_glass_opacity') || 64),
       blur:Number(localStorage.getItem('rc_desktop_glass_blur') || 24),
-      wallpaper:localStorage.getItem('rc_desktop_glass_wallpaper') || 'theme',
-      effect:localStorage.getItem('rc_desktop_glass_effect') || defaults.effect,
-      accent:localStorage.getItem('rc_desktop_glass_accent') || defaults.accent,
-      panel:localStorage.getItem('rc_desktop_glass_panel') || defaults.panel
+      wallpaper:defaults.wallpaper,
+      effect:defaults.effect,
+      accent:defaults.accent,
+      panel:defaults.panel
     };
     return { ...defaults, ...legacy };
   }
@@ -5943,7 +5943,6 @@ function readDesktopThemeSettings(key = desktopThemeKey()) {
 function writeDesktopThemeSettings(settings) {
   const key = desktopThemeKey();
   localStorage.setItem('rc_theme_settings_' + key, JSON.stringify(settings));
-  ['opacity','blur','wallpaper','effect','accent','panel'].forEach(k => localStorage.setItem('rc_desktop_glass_' + k, String(settings[k])));
 }
 function getDesktopGlassOpacity() {
   const n = Number(readDesktopThemeSettings().opacity);
@@ -6257,6 +6256,7 @@ function adminStatus(message, isError = false) {
 
 async function adminRequest(path, options = {}) {
   const response = await fetch(path, {
+    cache: 'no-store',
     ...options,
     headers: { ...(options.headers || {}), Authorization: 'Bearer ' + token,
       ...(options.body ? { 'Content-Type': 'application/json' } : {}) }
