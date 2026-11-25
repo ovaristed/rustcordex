@@ -1,6 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<defs><linearGradient id="a" x1=".12" y1="0" x2=".86" y2="1"><stop stop-color="#8effbd"/><stop offset=".48" stop-color="#42d981"/><stop offset="1" stop-color="#16a957"/></linearGradient></defs>
+<defs>
+  <linearGradient id="emerald" x1="0.18" y1="0" x2="0.82" y2="1">
+    <stop offset="0" stop-color="#9affc5"/>
+    <stop offset="0.48" stop-color="#4be18a"/>
+    <stop offset="1" stop-color="#18a957"/>
+  </linearGradient>
+</defs>
 <rect width="512" height="512" fill="#06351f"/>
-<path d="M256 83c-12 0-23 7-29 18L91 409c-7 14 3 31 19 31h43c10 0 18-5 22-14l81-164 81 164c4 9 12 14 22 14h43c16 0 26-17 19-31L285 101c-6-11-17-18-29-18Zm0 91 38 80h-76l38-80Z" fill="url(#a)" fill-rule="evenodd"/>
-<path d="M171 320c50-43 111-66 183-65" fill="none" stroke="#d9ffe6" stroke-width="18" stroke-linecap="round"/>
+<path d="M256 76c-15 0-27 9-33 24L91 394c-8 18 5 38 25 38h39c13 0 22-7 28-19l73-153 73 153c6 12 15 19 28 19h39c20 0 33-20 25-38L289 100c-6-15-18-24-33-24Zm0 91 40 87h-80l40-87Z" fill="url(#emerald)" fill-rule="evenodd"/>
+<path d="M157 309c54-51 122-81 207-79" fill="none" stroke="#d9ffe8" stroke-width="19" stroke-linecap="round"/>
 </svg>
