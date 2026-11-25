@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="432" height="432" viewBox="0 0 432 432">
-<defs><linearGradient id="letter" x1=".15" y1="0" x2=".82" y2="1"><stop offset="0" stop-color="#c4ffda"/><stop offset=".42" stop-color="#58e991"/><stop offset="1" stop-color="#16ad5a"/></linearGradient></defs>
-<path d="M216 54c-12 0-23 7-29 18L51 382c-7 14 3 30 19 30h44c9 0 17-5 21-13l81-165 81 165c4 8 12 13 21 13h44c16 0 26-16 19-30L245 72c-6-11-17-18-29-18Zm0 91 39 81h-78l39-81Z" fill="url(#letter)" fill-rule="evenodd"/>
-<path d="M135 294c47-44 105-67 174-67" fill="none" stroke="#e3ffec" stroke-width="17" stroke-linecap="round" opacity=".92"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 432 432">
+<defs>
+  <linearGradient id="emerald" x1="0.18" y1="0" x2="0.82" y2="1">
+    <stop offset="0" stop-color="#9affc5"/>
+    <stop offset="0.48" stop-color="#4be18a"/>
+    <stop offset="1" stop-color="#18a957"/>
+  </linearGradient>
+</defs>
+<path d="M216 64c-13 0-23 8-28 21L77 331c-7 15 4 33 21 33h33c11 0 19-6 24-16l61-129 61 129c5 10 13 16 24 16h33c17 0 28-18 21-33L244 85c-5-13-15-21-28-21Zm0 77 34 74h-68l34-74Z" fill="url(#emerald)" fill-rule="evenodd"/>
+<path d="M132 260c46-43 104-68 176-66" fill="none" stroke="#d9ffe8" stroke-width="16" stroke-linecap="round"/>
 </svg>
