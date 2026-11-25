@@ -6243,19 +6243,24 @@ function setSidebarWidth(px) {
   let migrateToGreenDefault = false;
   try {
     savedTheme = localStorage.getItem('rc_theme');
-    // One-time migration: older installs could reopen with the retired pink/blue
-    // appearance after reinstall because the app's web storage survives uninstall.
-    // Set the official Emerald default once, then respect future user selections.
-    migrateToGreenDefault = localStorage.getItem('rc_green_default_migration_v340') !== '1';
+    // Versioned migration: reinstalling the desktop app can preserve WebView
+    // storage. Reset the retired blue/pink preset AND its accent/glass overrides
+    // once for existing installs, while preserving later user theme choices.
+    migrateToGreenDefault = localStorage.getItem('rc_green_default_migration_v342') !== '1';
     if (migrateToGreenDefault) {
-      localStorage.setItem('rc_green_default_migration_v340', '1');
+      localStorage.setItem('rc_green_default_migration_v342', '1');
       savedTheme = 'emerald';
+      localStorage.removeItem('rc_accent_color');
+      localStorage.removeItem('rc_desktop_theme_mode');
+      localStorage.removeItem('rc_desktop_base_theme');
+      localStorage.removeItem('rc_theme_settings_emerald');
+      localStorage.removeItem('rc_custom_wallpaper');
     }
   } catch {}
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
   const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
-  applyTheme(isMobileAppearance ? 'emerald' : (savedTheme && savedTheme !== 'discord' && savedTheme !== 'auralis' ? savedTheme : 'emerald'));
-  const savedAccent = localStorage.getItem('rc_accent_color');
+  applyTheme(isMobileAppearance ? 'emerald' : (migrateToGreenDefault ? 'emerald' : (savedTheme && savedTheme !== 'discord' && savedTheme !== 'auralis' ? savedTheme : 'emerald')));
+  const savedAccent = migrateToGreenDefault ? null : localStorage.getItem('rc_accent_color');
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
   applyDesktopGlassSettings(false);
