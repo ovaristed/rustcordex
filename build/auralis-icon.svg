@@ -1,17 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#06351f"/>
-      <stop offset=".52" stop-color="#08743d"/>
-      <stop offset="1" stop-color="#04301d"/>
-    </linearGradient>
-    <linearGradient id="letter" x1=".15" y1="0" x2=".82" y2="1">
-      <stop offset="0" stop-color="#b4ffd0"/>
-      <stop offset=".42" stop-color="#54e58a"/>
-      <stop offset="1" stop-color="#16ad5a"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" fill="url(#background)"/>
+  <rect width="512" height="512" fill="#06351f"/>
   <path d="M256 82c-12 0-23 7-29 18L91 410c-7 14 3 30 19 30h44c9 0 17-5 21-13l81-165 81 165c4 8 12 13 21 13h44c16 0 26-16 19-30L285 100c-6-11-17-18-29-18Zm0 91 39 81h-78l39-81Z" fill="url(#letter)" fill-rule="evenodd"/>
   <path d="M175 322c47-44 105-67 174-67" fill="none" stroke="#d9ffe6" stroke-width="17" stroke-linecap="round" opacity=".92"/>
 </svg>
