@@ -550,11 +550,11 @@ jobs:
           NODE
           echo "Installed Auralis in-app APK updater"
           
-      - name: Apply desktop Auralis icon to Android launcher
+      - name: Apply the Auralis letter-A icon to Android launcher
         run: |
           set -euo pipefail
           command -v convert >/dev/null || { sudo apt-get update && sudo apt-get install -y imagemagick; }
-          SOURCE="build/icon.png.jpg"
+          SOURCE="build/auralis-icon.svg"
           test -s "$SOURCE"
           RES="android/app/src/main/res"
           mkdir -p "$RES/drawable-nodpi" "$RES/mipmap-anydpi-v26" "$RES/values"
@@ -587,7 +587,7 @@ jobs:
           });
           fs.writeFileSync(file, xml);
           NODE
-          echo "Applied the existing desktop Auralis artwork to Android launcher icons"
+          echo "Applied the Auralis letter-A artwork to Android launcher icons"
           
       - name: Set Android app version from package.json
         run: |
