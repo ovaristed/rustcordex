@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'capacitor.config.json'
+      - 'android-version.json'
       - 'package.json'
       - 'public/**'
       - 'build/auralis-icon*.svg'
@@ -590,11 +591,11 @@ jobs:
           NODE
           echo "Applied full-bleed emerald Auralis launcher icon with transparent A foreground"
           
-      - name: Set Android app version from package.json
+      - name: Set Android app version from android-version.json
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const version = require('./package.json').version;
+          const version = require('./android-version.json').version;
           const match = version.match(/^(\d+)\.(\d+)\.(\d+)$/);
           if (!match) throw new Error('Invalid semantic version: ' + version);
           const versionCode = Number(match[1]) * 10000 + Number(match[2]) * 100 + Number(match[3]);
