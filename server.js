@@ -1036,7 +1036,7 @@ wss.on('connection', (ws) => {
           try { ws.send(JSON.stringify({ type: 'auth-error', error: 'Аккаунт заблокирован: ' + (currentUser.ban_reason || 'причина не указана') })); } catch {}
           return;
         }
-        if (currentUser.is_banned) await pool.query('UPDATE users SET is_banned = FALSE, ban_reason = '', ban_until = NULL WHERE id = $1', [currentUser.id]);
+        if (currentUser.is_banned) await pool.query('UPDATE users SET is_banned = FALSE, ban_reason = $1, ban_until = NULL WHERE id = $2', ['', currentUser.id]);
         if (ws.username && socketsByUser.has(ws.username)) {
           const oldSockets = socketsByUser.get(ws.username);
           oldSockets.delete(ws);
