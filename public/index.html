@@ -2649,6 +2649,104 @@ html[data-theme]:not([data-theme="glasscord"]) .main {
   -webkit-backdrop-filter: blur(18px) saturate(1.18);
   backdrop-filter: blur(18px) saturate(1.18);
 }
+
+/* Auralis visual refresh: layered glass, clearer hierarchy and tactile mobile controls. */
+:root { --auralis-glass: rgba(20,25,39,.78); --auralis-line: rgba(190,205,255,.13); }
+.sidebar, .main {
+  border-color: var(--auralis-line) !important;
+}
+.sidebar {
+  background: linear-gradient(160deg, rgba(28,34,53,.94), rgba(15,19,31,.94)) !important;
+  box-shadow: 12px 0 38px rgba(0,0,0,.14);
+}
+.main {
+  background: radial-gradient(ellipse at 80% 0%, rgba(var(--accent-rgb),.075), transparent 42%), var(--bg) !important;
+}
+.chat-header {
+  background: rgba(17,21,34,.72) !important;
+  border-bottom: 1px solid var(--auralis-line) !important;
+  backdrop-filter: blur(18px) saturate(1.25);
+}
+.list-item {
+  border: 1px solid transparent !important;
+  border-radius: 14px !important;
+  margin: 3px 5px !important;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease !important;
+}
+.list-item:hover { background: rgba(255,255,255,.055) !important; border-color: var(--auralis-line) !important; }
+.list-item.active, .list-item.selected {
+  background: linear-gradient(110deg, rgba(var(--accent-rgb),.19), rgba(var(--accent-rgb),.07)) !important;
+  border-color: rgba(var(--accent-rgb),.28) !important;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.composer {
+  background: rgba(18,22,34,.84) !important;
+  border: 1px solid var(--auralis-line) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18), inset 0 1px rgba(255,255,255,.035) !important;
+}
+.composer input, .composer textarea {
+  color: var(--text) !important;
+}
+.msg-bubble {
+  border-radius: 17px !important;
+  box-shadow: 0 5px 16px rgba(0,0,0,.10);
+}
+.top-tabs, .bottom-dock {
+  background: rgba(15,19,30,.92) !important;
+  border-top: 1px solid var(--auralis-line) !important;
+  backdrop-filter: blur(22px) saturate(1.35) !important;
+}
+button, .sm-btn, .round-btn { transition: transform .16s ease, filter .16s ease, background .16s ease; }
+button:active, .sm-btn:active, .round-btn:active { transform: scale(.965); }
+input:not([type="checkbox"]):not([type="range"]), select, textarea {
+  border-color: rgba(190,205,255,.16) !important;
+  border-radius: 12px !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: rgba(var(--accent-rgb),.72) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12) !important;
+}
+.modal-card, .app-dialog, .user-profile-card, .profile-popover {
+  border: 1px solid var(--auralis-line) !important;
+  background: linear-gradient(155deg, rgba(34,39,56,.98), rgba(20,24,37,.99)) !important;
+  box-shadow: 0 24px 80px rgba(0,0,0,.42) !important;
+}
+@media (max-width:760px) {
+  .sidebar { background: linear-gradient(180deg, rgba(24,30,47,.98), rgba(13,17,28,.99)) !important; }
+  .sidebar-top { padding-inline: 5px !important; }
+  .top-tabs {
+    gap: 7px !important;
+    padding: 9px 10px max(9px,env(safe-area-inset-bottom)) !important;
+  }
+  .top-tabs button, .top-tabs .tab-btn {
+    min-height: 47px !important;
+    border-radius: 14px !important;
+  }
+  .list-item { min-height: 58px !important; padding: 8px 10px !important; }
+  .chat-header {
+    min-height: 58px !important;
+    padding-inline: 13px !important;
+    box-shadow: 0 5px 18px rgba(0,0,0,.12);
+  }
+  .messages { padding: 12px 11px 16px !important; }
+  .composer {
+    margin: 7px 9px max(7px,env(safe-area-inset-bottom)) !important;
+    padding: 7px 9px !important;
+    border-radius: 18px !important;
+  }
+  .composer button { min-width: 38px; min-height: 38px; border-radius: 12px !important; }
+  .msg-bubble { max-width: min(88%, 520px) !important; }
+  .modal-card, .app-dialog, .user-profile-card, .profile-popover {
+    border-left: 0 !important; border-right: 0 !important;
+    box-shadow: 0 -18px 55px rgba(0,0,0,.35) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  button, .sm-btn, .round-btn, .list-item { transition: none !important; }
+}
+
 </style>
 <style id="auralis-unified-opacity-fix">
 /* One transparency scale for every theme: 5% = nearly solid, 85% = very transparent. */
@@ -3880,6 +3978,13 @@ async function switchToSavedAccount(targetUsername) {
   localStorage.setItem('rc_token', token);
   activeChat = null;
   // Refresh the visible app version on every client, including Android, at startup.
+  fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
+    if (meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '')) {
+      const label = document.getElementById('appVersion');
+      if (label) label.textContent = meta.version;
+    }
+  }).catch(() => {});
+  // Refresh the version label for web and Android clients on startup.
   fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
     if (meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '')) {
       const label = document.getElementById('appVersion');
