@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.4.1",
-  "description": "Auralis 3.4.1 — owner-only admin menu entry",
+  "version": "3.4.2",
+  "description": "Auralis 3.4.2 — redesigned owner dashboard",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",

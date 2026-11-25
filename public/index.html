@@ -4227,35 +4227,57 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 
 
     <div id="sPanelAdmin" class="s-section hidden">
-      <div class="field">
-        <div class="lbl">Панель владельца Auralis</div>
-        <div class="item-sub">Доступна только аккаунту @ovarist. Все действия проверяются сервером.</div>
-        <button type="button" class="sm-btn blue admin-refresh-btn" style="margin-top:10px;" onclick="loadAdminUsers()">↻ Обновить список</button>
+      <div class="admin-shell">
+        <header class="admin-topbar">
+          <div class="admin-brand">
+            <div class="admin-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19 12 4l8 15M7.2 13.2h9.6M9.4 9.1l5.2 0"/></svg></div>
+            <div><div class="admin-eyebrow">AURALIS CONTROL</div><div class="admin-heading">Панель владельца</div><div class="admin-subtitle">Управление сообществом и аккаунтами</div></div>
+          </div>
+          <button type="button" class="admin-refresh-btn admin-icon-btn" onclick="loadAdminUsers()" title="Обновить данные" aria-label="Обновить данные"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/></svg></button>
+        </header>
+        <div class="admin-access-note"><span class="admin-live-dot"></span> Вход выполнен как <strong>@ovarist</strong><span class="admin-secure-label">Защищённый доступ</span></div>
+        <nav class="admin-nav" aria-label="Разделы панели">
+          <button type="button" class="admin-nav-btn active" data-admin-view="overview" onclick="adminShowSection('overview')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg>Обзор</button>
+          <button type="button" class="admin-nav-btn" data-admin-view="users" onclick="adminShowSection('users')"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6m3-3h-6"/></svg>Пользователи</button>
+        </nav>
+        <section id="adminOverview" class="admin-view">
+          <div class="admin-welcome"><div><div class="admin-kicker">ОБЩАЯ СВОДКА</div><h3>Всё под контролем</h3><p>Основные показатели Auralis в одном месте.</p></div><div class="admin-welcome-icon"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></div></div>
+          <div class="admin-stat-grid">
+            <article class="admin-stat-card"><span class="admin-stat-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6m3-3h-6"/></svg></span><span class="admin-stat-label">Всего аккаунтов</span><strong id="adminStatTotal">—</strong><small>Зарегистрировано</small></article>
+            <article class="admin-stat-card"><span class="admin-stat-icon green"><svg viewBox="0 0 24 24"><path d="M20 7 10 17l-5-5"/></svg></span><span class="admin-stat-label">Активные</span><strong id="adminStatActive">—</strong><small>Без блокировки</small></article>
+            <article class="admin-stat-card"><span class="admin-stat-icon red"><svg viewBox="0 0 24 24"><path d="M12 3 22 20H2L12 3Z"/><path d="M12 9v4m0 3h.01"/></svg></span><span class="admin-stat-label">Заблокированы</span><strong id="adminStatBanned">—</strong><small>Ограниченные аккаунты</small></article>
+          </div>
+          <div class="admin-section-heading"><div><h4>Быстрый доступ</h4><p>Часто используемые инструменты владельца</p></div></div>
+          <button type="button" class="admin-action-card" onclick="adminShowSection('users')"><span class="admin-action-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6m3-3h-6"/></svg></span><span><strong>Управление пользователями</strong><small>Поиск аккаунтов, редактирование профиля и блокировки</small></span><svg class="admin-action-arrow" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+          <div class="admin-footnote"><span class="admin-live-dot"></span><span id="adminApiStatus">Данные обновятся после загрузки списка пользователей.</span></div>
+        </section>
+        <section id="adminUsersView" class="admin-view hidden">
+          <div class="admin-section-heading admin-users-heading"><div><div class="admin-kicker">УПРАВЛЕНИЕ</div><h4>Пользователи</h4><p>Найди аккаунт и управляй его профилем и доступом.</p></div><span class="admin-count-pill" id="adminUsersCount">0 аккаунтов</span></div>
+          <label class="admin-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg><input id="adminUserSearch" type="search" placeholder="Поиск по имени или логину…" oninput="adminFilterUsers(this.value)"></label>
+          <div class="admin-form-card">
+            <div class="admin-card-title">Выбранный аккаунт</div>
+            <select id="adminUserSelect" onchange="adminSelectUser(this.value)"><option value="">Загрузка пользователей…</option></select>
+            <div id="adminUserMeta" class="admin-user-meta"></div>
+          </div>
+          <div class="admin-form-card">
+            <div class="admin-card-title">Данные профиля</div>
+            <label class="admin-field-label" for="adminNicknameInput">Отображаемое имя</label>
+            <input id="adminNicknameInput" type="text" maxlength="32" placeholder="Имя пользователя">
+            <label class="admin-field-label" for="adminThoughtInput">Статус / мысли</label>
+            <input id="adminThoughtInput" type="text" maxlength="50" placeholder="Что у пользователя на уме?">
+            <button type="button" class="admin-primary-btn" onclick="adminSaveProfile()">Сохранить профиль</button>
+          </div>
+          <div class="admin-form-card admin-ban-card">
+            <div class="admin-card-title">Ограничение доступа</div>
+            <label class="admin-field-label" for="adminBanReason">Причина блокировки</label>
+            <textarea id="adminBanReason" maxlength="300" rows="3" placeholder="Укажи причину блокировки"></textarea>
+            <label class="admin-field-label" for="adminBanHours">Срок в часах <span>Пусто — бессрочно</span></label>
+            <input id="adminBanHours" type="number" min="1" max="87600" step="1" placeholder="Например, 24">
+            <div class="admin-ban-actions"><button type="button" class="admin-danger-btn" onclick="adminBanUser()">Заблокировать</button><button type="button" class="admin-secondary-btn" onclick="adminUnbanUser()">Снять блокировку</button></div>
+          </div>
+        </section>
+        <div id="adminStatus" class="admin-status" role="status" aria-live="polite">Проверка доступа владельца…</div>
       </div>
-      <div class="field">
-        <div class="lbl">Пользователь</div>
-        <select id="adminUserSelect" onchange="adminSelectUser(this.value)"><option value="">Загрузка пользователей…</option></select>
-        <div id="adminUserMeta" class="item-sub" style="margin-top:7px;"></div>
-      </div>
-      <div class="field">
-        <div class="lbl">Изменить имя пользователя</div>
-        <input id="adminNicknameInput" type="text" maxlength="32" placeholder="Отображаемое имя" />
-      </div>
-      <div class="field">
-        <div class="lbl">Изменить мысли пользователя</div>
-        <input id="adminThoughtInput" type="text" maxlength="50" placeholder="Что у пользователя на уме?" />
-      </div>
-      <button type="button" class="sm-btn green" style="width:100%;" onclick="adminSaveProfile()">Сохранить изменения профиля</button>
-      <div class="field" style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px;">
-        <div class="lbl" style="color:#ff7777;">Блокировка пользователя</div>
-        <label class="item-sub">Причина блокировки</label>
-        <textarea id="adminBanReason" maxlength="300" rows="3" placeholder="Укажи причину блокировки"></textarea>
-        <label class="item-sub" style="display:block;margin-top:10px;">Срок блокировки в часах (пусто — навсегда)</label>
-        <input id="adminBanHours" type="number" min="1" max="87600" step="1" placeholder="Например: 24" />
-        <button type="button" class="sm-btn red" style="width:100%;margin-top:10px;" onclick="adminBanUser()">Заблокировать пользователя</button>
-        <button type="button" class="sm-btn" style="width:100%;margin-top:8px;" onclick="adminUnbanUser()">Снять блокировку</button>
-      </div>
-      <div id="adminStatus" class="item-sub" role="status" aria-live="polite" style="margin-top:10px;"></div>
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
@@ -6454,21 +6476,73 @@ async function loadAdminUsers() {
   try {
     const data = await adminRequest('/api/admin/users');
     adminUsersCache = Array.isArray(data.users) ? data.users : [];
-    select.innerHTML = '<option value="">Выбери пользователя</option>' + adminUsersCache.map((u) =>
-      '<option value="' + Number(u.id) + '">' + esc(u.username) + (u.is_banned ? ' · заблокирован' : '') + '</option>'
-    ).join('');
-    if (adminSelectedUserId && adminUsersCache.some((u) => String(u.id) === String(adminSelectedUserId))) select.value = String(adminSelectedUserId);
-    else if (adminUsersCache.length) select.value = String(adminUsersCache[0].id);
-    adminSelectUser(select.value);
-    adminStatus('Пользователей: ' + adminUsersCache.length);
+    adminUpdateDashboard();
+    const search = document.getElementById('adminUserSearch');
+    if (search) adminFilterUsers(search.value);
+    else {
+      select.innerHTML = '<option value="">Выбери пользователя</option>' + adminUsersCache.map((u) =>
+        '<option value="' + Number(u.id) + '">' + esc(u.username) + (u.is_banned ? ' · заблокирован' : '') + '</option>'
+      ).join('');
+      if (adminSelectedUserId && adminUsersCache.some((u) => String(u.id) === String(adminSelectedUserId))) select.value = String(adminSelectedUserId);
+      else if (adminUsersCache.length) select.value = String(adminUsersCache[0].id);
+      adminSelectUser(select.value);
+    }
+    adminStatus('Данные обновлены · аккаунтов: ' + adminUsersCache.length);
   } catch (err) {
     adminUsersCache = [];
+    adminUpdateDashboard();
+    const apiStatus = document.getElementById('adminApiStatus');
+    if (apiStatus) apiStatus.textContent = 'Нет соединения с API · попробуй обновить данные';
     select.innerHTML = '<option value="">Не удалось загрузить пользователей</option>';
     adminStatus((err.message || 'Ошибка загрузки') + ' · нажми «Обновить» для повтора', true);
   } finally {
     adminUsersLoading = false;
     if (refreshButton) { refreshButton.disabled = false; refreshButton.textContent = '↻ Обновить список'; }
   }
+}
+
+function adminShowSection(section) {
+  if (!me || String(me.username).toLowerCase() !== 'ovarist') return;
+  const overview = document.getElementById('adminOverview');
+  const users = document.getElementById('adminUsersView');
+  if (overview) overview.classList.toggle('hidden', section !== 'overview');
+  if (users) users.classList.toggle('hidden', section !== 'users');
+  document.querySelectorAll('#sPanelAdmin [data-admin-view]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.adminView === section);
+  });
+  if (section === 'users' && !adminUsersCache.length) loadAdminUsers();
+}
+
+function adminUpdateDashboard() {
+  const total = adminUsersCache.length;
+  const banned = adminUsersCache.filter((user) => !!user.is_banned).length;
+  const values = {
+    adminStatTotal: total,
+    adminStatActive: total - banned,
+    adminStatBanned: banned,
+    adminUsersCount: total + (total === 1 ? ' аккаунт' : total > 1 && total < 5 ? ' аккаунта' : ' аккаунтов'),
+    adminApiStatus: 'Подключение к API успешно · данные актуальны'
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  });
+}
+
+function adminFilterUsers(query) {
+  const select = document.getElementById('adminUserSelect');
+  if (!select) return;
+  const needle = String(query || '').trim().toLowerCase();
+  const filtered = adminUsersCache.filter((user) =>
+    !needle || String(user.username || '').toLowerCase().includes(needle) ||
+    String(user.nickname || '').toLowerCase().includes(needle)
+  );
+  const current = adminSelectedUserId;
+  select.innerHTML = '<option value="">Выбери пользователя (' + filtered.length + ')</option>' +
+    filtered.map((user) => '<option value="' + Number(user.id) + '">' + esc(user.nickname || user.username) + ' · @' + esc(user.username) + (user.is_banned ? ' · заблокирован' : '') + '</option>').join('');
+  if (filtered.some((user) => String(user.id) === current)) select.value = current;
+  else if (filtered.length) { select.value = String(filtered[0].id); adminSelectUser(select.value); }
+  else { adminSelectedUserId = ''; adminSelectUser(''); }
 }
 
 function adminSelectUser(id) {
@@ -9532,6 +9606,71 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 .owner-admin-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .owner-admin-caption{font-size:12px;font-weight:650;color:var(--text-muted,var(--text));letter-spacing:.02em}
 #sTabAdmin{display:none!important}
+</style>
+<style id="auralis-admin-dashboard-340">
+#sPanelAdmin{padding:0!important;border:0!important;background:transparent!important}
+.admin-shell{display:flex;flex-direction:column;gap:14px;padding:2px 1px 14px;color:var(--text)}
+.admin-topbar,.admin-brand{display:flex;align-items:center}
+.admin-topbar{justify-content:space-between;gap:12px}
+.admin-brand{gap:12px;min-width:0}
+.admin-brand-mark,.admin-welcome-icon,.admin-stat-icon,.admin-action-icon{display:grid;place-items:center;flex:0 0 auto}
+.admin-brand-mark{width:42px;height:42px;border-radius:13px;background:rgba(var(--accent-rgb),.15);border:1px solid rgba(var(--accent-rgb),.32);color:var(--accent)}
+.admin-brand-mark svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.admin-eyebrow,.admin-kicker{font-size:9px;font-weight:800;letter-spacing:.14em;color:var(--accent);opacity:.9}
+.admin-heading{font-size:19px;font-weight:800;line-height:1.25}
+.admin-subtitle,.admin-welcome p,.admin-section-heading p{font-size:11px;color:var(--text-muted);margin:3px 0 0}
+.admin-icon-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:11px;background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
+.admin-icon-btn svg,.admin-nav-btn svg,.admin-stat-icon svg,.admin-action-icon svg,.admin-action-arrow,.admin-search svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.admin-access-note{display:flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid var(--border);border-radius:11px;background:rgba(var(--panel-rgb),.22);font-size:11px;color:var(--text-muted)}
+.admin-access-note strong{color:var(--text)}
+.admin-live-dot{width:7px;height:7px;border-radius:50%;background:#36d17b;box-shadow:0 0 0 3px rgba(54,209,123,.12);flex:0 0 auto}
+.admin-secure-label{margin-left:auto;font-size:9px;color:#36d17b}
+.admin-nav{display:flex;gap:6px;padding:4px;border:1px solid var(--border);border-radius:12px;background:rgba(var(--panel-rgb),.25)}
+.admin-nav-btn{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-height:36px;padding:7px 10px;border:0;border-radius:9px;background:transparent;color:var(--text-muted);font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.admin-nav-btn.active{background:rgba(var(--accent-rgb),.17);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(var(--accent-rgb),.2)}
+.admin-nav-btn svg{width:15px;height:15px}
+.admin-view{display:flex;flex-direction:column;gap:12px}
+.admin-welcome{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(120deg,rgba(var(--accent-rgb),.13),rgba(var(--panel-rgb),.22))}
+.admin-welcome h3{font-size:17px;margin:5px 0 0;font-weight:800}
+.admin-welcome-icon{width:42px;height:42px;border-radius:13px;background:rgba(var(--accent-rgb),.14);color:var(--accent)}
+.admin-welcome-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.admin-stat-card{min-width:0;padding:11px;border:1px solid var(--border);border-radius:12px;background:rgba(var(--panel-rgb),.28);display:flex;flex-direction:column;gap:5px}
+.admin-stat-icon{width:28px;height:28px;border-radius:9px;background:rgba(var(--accent-rgb),.14);color:var(--accent)}
+.admin-stat-icon.green{background:rgba(54,209,123,.12);color:#36d17b}
+.admin-stat-icon.red{background:rgba(255,100,110,.12);color:#ff727c}
+.admin-stat-icon svg{width:16px;height:16px}
+.admin-stat-label{font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-stat-card strong{font-size:23px;line-height:1.1;font-weight:800;font-variant-numeric:tabular-nums}
+.admin-stat-card small{font-size:9px;color:var(--text-muted)}
+.admin-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.admin-section-heading h4{font-size:13px;margin:0;font-weight:800}
+.admin-action-card{display:flex;align-items:center;gap:11px;width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:rgba(var(--panel-rgb),.25);color:var(--text);text-align:left;cursor:pointer}
+.admin-action-card:hover{border-color:rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.07)}
+.admin-action-icon{width:36px;height:36px;border-radius:11px;background:rgba(var(--accent-rgb),.14);color:var(--accent)}
+.admin-action-card span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.admin-action-card strong{font-size:11px}
+.admin-action-card small{font-size:10px;color:var(--text-muted);line-height:1.4}
+.admin-action-arrow{width:16px;height:16px;color:var(--text-muted)}
+.admin-footnote{display:flex;align-items:center;gap:8px;padding:9px 2px;font-size:10px;color:var(--text-muted)}
+.admin-count-pill{padding:5px 8px;border-radius:20px;background:rgba(var(--accent-rgb),.12);color:var(--accent);font-size:9px;font-weight:700;white-space:nowrap}
+.admin-search{display:flex;align-items:center;gap:9px;padding:0 11px;min-height:40px;border:1px solid var(--border);border-radius:11px;background:rgba(var(--panel-rgb),.28);color:var(--text-muted)}
+.admin-search svg{width:16px;height:16px;flex:0 0 auto}
+.admin-search input{width:100%;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;color:var(--text)!important;outline:none!important;font-size:11px}
+.admin-form-card{display:flex;flex-direction:column;gap:9px;padding:13px;border:1px solid var(--border);border-radius:13px;background:rgba(var(--panel-rgb),.24)}
+.admin-card-title{font-size:12px;font-weight:800;margin-bottom:2px}
+.admin-form-card input,.admin-form-card select,.admin-form-card textarea{width:100%;box-sizing:border-box;border:1px solid var(--border)!important;border-radius:9px!important;background:rgba(var(--panel-rgb),.35)!important;color:var(--text)!important;padding:10px 11px!important;font:inherit;font-size:11px}
+.admin-form-card select option{background:#24202a;color:#fff}
+.admin-field-label{font-size:10px;font-weight:700;color:var(--text-muted);margin-top:3px}
+.admin-field-label span{font-weight:400;opacity:.8}
+.admin-user-meta{font-size:10px;line-height:1.5;color:var(--text-muted);min-height:15px}
+.admin-primary-btn,.admin-danger-btn,.admin-secondary-btn{min-height:36px;padding:8px 12px;border-radius:9px;font:inherit;font-size:11px;font-weight:750;cursor:pointer}
+.admin-primary-btn{border:0;background:var(--accent);color:#fff;margin-top:3px}
+.admin-danger-btn{border:1px solid rgba(255,100,110,.3);background:rgba(255,100,110,.14);color:#ff858d;flex:1}
+.admin-secondary-btn{border:1px solid var(--border);background:rgba(var(--panel-rgb),.3);color:var(--text)}
+.admin-ban-actions{display:flex;gap:8px}
+.admin-status{padding:9px 11px;border-radius:9px;background:rgba(var(--panel-rgb),.25);border:1px solid var(--border);font-size:10px;color:var(--text-muted);line-height:1.45}
+@media(max-width:520px){.admin-stat-grid{gap:6px}.admin-stat-card{padding:8px}.admin-stat-label{font-size:9px}.admin-stat-card strong{font-size:20px}.admin-secure-label{display:none}.admin-heading{font-size:17px}}
 </style>
 </body>
 </html>
