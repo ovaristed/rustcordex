@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.4.0",
-  "description": "Auralis 3.4.0 — restore Emerald as the default appearance",
+  "version": "3.4.1",
+  "description": "Auralis 3.4.1 — owner-only admin menu entry",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
