@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.3.7",
-  "description": "Auralis 3.3.7 — isolated theme wallpaper layers and consistent Sakura preset",
+  "version": "3.3.8",
+  "description": "Auralis 3.3.8 — call screen-share avatar and mute icon fixes",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
