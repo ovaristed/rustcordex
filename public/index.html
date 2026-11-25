@@ -9586,6 +9586,25 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 }
 </style>
 
+<style id="auralis-reply-composer-layout-fix">
+  /* Reply preview occupies its own row; the composer controls stay on the next row. */
+  #composer { flex-wrap:wrap !important; }
+  #composer > #replyComposerPreview {
+    order:0 !important;
+    flex:0 0 100% !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+    margin:0 0 2px !important;
+  }
+  #composer > #stickerPickerBtn,
+  #composer > #attachFileBtn,
+  #composer > #recVoiceBtn { order:1; }
+  #composer > #msgInput { order:2; }
+  #composer > .send-btn { order:3; }
+</style>
+
 <style id="auralis-3-3-9-message-replies">
   #composer { position:relative; }
   .reply-composer-preview { order:-1; flex:0 0 100%; min-width:0; display:flex; align-items:center; gap:10px; padding:9px 12px; margin:0 0 5px; border:1px solid rgba(var(--accent-rgb),.38); border-left:3px solid var(--accent); border-radius:13px; background:rgba(var(--accent-rgb),.12); color:var(--text); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
