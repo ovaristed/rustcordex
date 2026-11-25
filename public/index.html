@@ -5557,8 +5557,12 @@ function setStickerPickerMode(mode) {
   document.querySelectorAll('.sticker-mode-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === stickerPickerMode));
   if (stickerPickerMode === 'stickers') renderStickerPicker();
   else {
+    // Do not autofocus the search field on mobile: Android opens the soft
+    // keyboard immediately and the WebView can resize/dismiss the picker.
+    // Keep the GIF panel visible; the user can tap the field when ready.
     const input = document.getElementById('gifSearchInput');
-    if (input) { input.focus(); if (!document.getElementById('gifResultsGrid').children.length) searchGifs(input.value.trim() || 'trending'); }
+    const results = document.getElementById('gifResultsGrid');
+    if (input && results && !results.children.length) searchGifs(input.value.trim() || 'trending');
   }
 }
 
