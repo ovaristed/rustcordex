@@ -3549,7 +3549,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">2.5.26</span></span>
+      <span>Auralis · версия <span id="appVersion">2.5.27</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -3645,7 +3645,7 @@ async function handleDesktopUpdateAction() {
       setDesktopUpdateUi('Установлена последняя версия (' + (result.version || 'актуальная') + ').', 'Проверить ещё раз', 'check', false);
     }
   } catch (error) {
-    setDesktopUpdateUi('Не удалось выполнить обновление: ' + String(error && error.message || error).slice(0, 130), 'Повторить', action === 'download' ? 'download' : 'check', false);
+    setDesktopUpdateUi('Не удалось выполнить обновление: ' + String(error && error.message || error).slice(0, 130), 'Повторить', action === 'download' ? 'download' : action === 'install' ? 'install' : 'check', false);
   } finally { desktopUpdateBusy = false; }
 }
 function initDesktopUpdater() {
