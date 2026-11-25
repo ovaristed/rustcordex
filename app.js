@@ -3171,3 +3171,16 @@ async function toggleScreen() {
 }
 
 checkSession();
+// Cursor-follow glow для Liquid Glass
+(function initCursorGlow() {
+  const targets = document.querySelectorAll('.sidebar, .main');
+  document.addEventListener('mousemove', (e) => {
+    targets.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      el.style.setProperty('--mx', x + '%');
+      el.style.setProperty('--my', y + '%');
+    });
+  });
+})();
