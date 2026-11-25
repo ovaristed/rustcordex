@@ -7988,7 +7988,7 @@ function appendMsg(m) {
     '<div class="msg-bubble">' + quotedHtml +
       (purePhotoGif ? '' : (
         '<div class="msg-head">' +
-          '<span class="msg-author">' + esc(authorLabel) + '</span>' +
+          (isMine ? '' : '<span class="msg-author">' + esc(authorLabel) + '</span>') +
           '<span class="msg-time">' + hh + ':' + mm + (m.edited_at ? ' · изм.' : '') + '</span>' +
         '</div>'
       )) +
