@@ -2760,8 +2760,8 @@ input:focus, select:focus, textarea:focus {
     --green:#9cdeb0; --red:#ffb4ab; --glow-2:rgba(65,150,91,.12);
     color-scheme:dark;
     background:
-      radial-gradient(ellipse at 12% 8%,rgba(93,166,111,.13),transparent 34%),
-      radial-gradient(ellipse at 90% 22%,rgba(37,112,68,.18),transparent 38%),
+      linear-gradient(rgba(5,24,14,.76),rgba(5,24,14,.84)),
+      url('/backgrounds/green.jpg') center center / cover fixed,
       linear-gradient(145deg,#071b12 0%,#0b2418 48%,#07180f 100%);
   }
   body.android-md3 #bgCanvas { opacity:.12; }
@@ -2774,6 +2774,10 @@ input:focus, select:focus, textarea:focus {
   body.android-md3 .panel-body,
   body.android-md3 .composer { background:#102f20; border-color:rgba(194,239,205,.12); }
   body.android-md3 .chat-header { min-height:64px; }
+  body.android-md3 .list-item { background:#123724 !important; border:1px solid rgba(194,239,205,.09) !important; border-radius:18px !important; min-height:64px; }
+  body.android-md3 .list-item.active { background:#28583a !important; border-color:rgba(166,223,178,.42) !important; }
+  body.android-md3 .user-bar { background:#173b29 !important; border:1px solid rgba(194,239,205,.12) !important; border-radius:20px !important; }
+  body.android-md3 .sec-lbl { color:#a8d6b2 !important; }
   body.android-md3 .messages { background:transparent; padding:16px 14px; }
   body.android-md3 .msg-bubble { background:#153b29; border:1px solid rgba(194,239,205,.10); border-radius:18px; color:#e3f5e7; }
   body.android-md3 .msg.mine .msg-bubble { background:#285b3b; border-color:rgba(174,235,187,.22); }
