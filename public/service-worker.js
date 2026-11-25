@@ -1,4 +1,4 @@
-const CACHE_NAME = 'auralis-shell-v2.5.24-mobile-ui-app-icon';
+const CACHE_NAME = 'auralis-shell-v2.5.25-desktop-icon-mobile-adaptation';
 const SHELL = ['/download/', '/auralis-icon.svg', '/manifest.webmanifest'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
