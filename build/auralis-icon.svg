@@ -1,12 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<defs>
-  <linearGradient id="emerald" x1="0.18" y1="0" x2="0.82" y2="1">
-    <stop offset="0" stop-color="#9affc5"/>
-    <stop offset="0.48" stop-color="#4be18a"/>
-    <stop offset="1" stop-color="#18a957"/>
-  </linearGradient>
-</defs>
-<rect width="512" height="512" fill="#06351f"/>
-<path d="M256 76c-15 0-27 9-33 24L91 394c-8 18 5 38 25 38h39c13 0 22-7 28-19l73-153 73 153c6 12 15 19 28 19h39c20 0 33-20 25-38L289 100c-6-15-18-24-33-24Zm0 91 40 87h-80l40-87Z" fill="url(#emerald)" fill-rule="evenodd"/>
-<path d="M157 309c54-51 122-81 207-79" fill="none" stroke="#d9ffe8" stroke-width="19" stroke-linecap="round"/>
+  <defs><linearGradient id="auralisEmerald" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#83f5b3"/><stop offset=".52" stop-color="#39cf79"/><stop offset="1" stop-color="#169b50"/></linearGradient></defs>
+  <rect width="512" height="512" fill="#062d1b"/>
+  <path d="M257 121 C245 121 235 128 229 141 L154 308 C147 324 156 337 173 337 L194 337 C205 337 213 331 218 320 L255 238 L291 320 C296 331 304 337 316 337 L337 337 C354 337 363 324 356 308 L284 141 C278 128 269 121 257 121Z M256 170 L282 226 L230 226Z" fill="url(#auralisEmerald)" fill-rule="evenodd"/>
+  <path d="M239 267 C276 235 322 213 365 218 C382 220 397 228 410 239 C385 231 362 231 339 237 C302 246 271 264 247 286Z" fill="#062d1b"/>
 </svg>
