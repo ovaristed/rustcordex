@@ -1,6 +1,6 @@
 {
   "name": "auralis-desktop",
-  "version": "3.4.5",
+  "version": "3.4.6",
   "description": "Auralis 3.4.2 — redesigned owner dashboard",
   "main": "electron-main.js",
   "scripts": {

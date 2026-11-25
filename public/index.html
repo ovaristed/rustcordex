@@ -6128,9 +6128,34 @@ async function readAuralisWallpaper() {
   const db=await openAuralisWallpaperDb();
   return new Promise((resolve,reject)=>{const tx=db.transaction('images','readonly');const req=tx.objectStore('images').get('custom-wallpaper');req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||new Error('Ошибка чтения'));});
 }
+async function deleteAuralisWallpaperRecord() {
+  try {
+    const db = await openAuralisWallpaperDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('images', 'readwrite');
+      tx.objectStore('images').delete('custom-wallpaper');
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error || new Error('Wallpaper cleanup failed'));
+      tx.onabort = () => reject(tx.error || new Error('Wallpaper cleanup aborted'));
+    });
+    if (window.auralisCustomWallpaperUrl) {
+      URL.revokeObjectURL(window.auralisCustomWallpaperUrl);
+      window.auralisCustomWallpaperUrl = '';
+    }
+    document.documentElement.style.setProperty('--custom-wallpaper', 'none');
+  } catch (err) { console.warn('[Auralis] old wallpaper cleanup failed', err); }
+}
 async function restoreCustomWallpaper() {
-  try{const blob=await readAuralisWallpaper();if(!blob)return;setCustomWallpaperLayer(blob);if(readDesktopThemeSettings().wallpaper==='custom')document.documentElement.style.setProperty('--custom-wallpaper','url("'+window.auralisCustomWallpaperUrl+'")');}
-  catch(err){console.warn('[Auralis] wallpaper restore failed',err);}
+  try {
+    const settings = readDesktopThemeSettings();
+    if (settings.wallpaper !== 'custom') {
+      document.documentElement.style.setProperty('--custom-wallpaper', 'none');
+      return;
+    }
+    const blob = await readAuralisWallpaper();
+    if (!blob) return;
+    setCustomWallpaperLayer(blob);
+  } catch(err) { console.warn('[Auralis] wallpaper restore failed',err); }
 }
 function setCustomWallpaperLayer(blob) {
   if(window.auralisCustomWallpaperUrl)URL.revokeObjectURL(window.auralisCustomWallpaperUrl);
@@ -6246,9 +6271,10 @@ function setSidebarWidth(px) {
     // Versioned migration: reinstalling the desktop app can preserve WebView
     // storage. Reset the retired blue/pink preset AND its accent/glass overrides
     // once for existing installs, while preserving later user theme choices.
-    migrateToGreenDefault = localStorage.getItem('rc_green_default_migration_v342') !== '1';
+    migrateToGreenDefault = localStorage.getItem('rc_green_default_migration_v346') !== '1';
     if (migrateToGreenDefault) {
-      localStorage.setItem('rc_green_default_migration_v342', '1');
+      localStorage.setItem('rc_green_default_migration_v346', '1');
+      deleteAuralisWallpaperRecord();
       savedTheme = 'emerald';
       localStorage.removeItem('rc_accent_color');
       localStorage.removeItem('rc_desktop_theme_mode');

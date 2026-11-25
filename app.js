@@ -1130,7 +1130,7 @@ const THEMES = {
   },
   dark: {
     bg: '#07090f', panelRgb: '18, 22, 33', accent: '#0a84ff',
-    glow2: 'rgba(10, 132, 255, 0.22)', wallpaper: "url('/backgrounds/blue.jpg')",
+    glow2: 'rgba(10, 132, 255, 0.22)', wallpaper: 'none',
     overlay: 'rgba(7, 9, 15, 0.52)', effect: 'none'
   },
   crimson: {
