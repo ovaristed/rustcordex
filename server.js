@@ -406,8 +406,9 @@ app.get('/api/admin/users', authMiddleware, adminOnly, async (_req, res) => {
       `SELECT id, username, nickname, profile_description, created_at, is_banned, ban_reason, ban_until
        FROM users ORDER BY created_at DESC NULLS LAST, id DESC`
     );
-    res.setHeader('Cache-Control', 'no-store');
-    return res.json({ users: result.rows });
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('X-Auralis-API-Version', '3.2.0');
+    return res.json({ users: result.rows, apiVersion: '3.2.0' });
   } catch (err) {
     console.error('Admin users error:', err);
     return res.status(500).json({ error: 'Не удалось загрузить пользователей' });

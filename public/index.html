@@ -3640,7 +3640,33 @@ body.android-md3 .sm-btn.green {
 }
 @media(max-width:760px) { #desktopGlassStudio { display:none !important; } }
 </style>
-</head>
+<style id="auralis-320-appearance-fixes">
+:root{--custom-wallpaper:none;--auralis-glass-blur:3px}
+body{isolation:isolate}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background-image:var(--custom-wallpaper);background-position:center;background-size:cover;background-repeat:no-repeat;opacity:.78}
+#glassSavedThemeCards{display:flex;flex-direction:column;gap:7px;max-height:220px;overflow:auto}
+.glass-saved-theme-card{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:rgba(var(--panel-rgb),.34);color:var(--text);text-align:left;cursor:pointer}
+.glass-saved-theme-card:hover{border-color:var(--accent);background:rgba(var(--accent-rgb),.12)}
+.glass-saved-theme-dot{width:13px;height:13px;flex:0 0 13px;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.08)}
+.glass-saved-theme-copy{display:flex;min-width:0;flex:1;flex-direction:column;gap:2px}
+.glass-saved-theme-copy strong{font-size:12px;font-weight:650}
+.glass-saved-theme-copy small,.glass-saved-empty{font-size:10px;color:var(--muted)}
+.glass-saved-theme-arrow{font-size:20px;color:var(--muted)}
+.glass-color-settings{gap:12px}
+.glass-color-control{min-width:0;padding:10px;border:1px solid var(--border);border-radius:13px;background:rgba(var(--panel-rgb),.25)}
+.glass-color-control>label{display:block;margin-bottom:8px;font-size:11px;color:var(--muted)}
+.glass-color-row{display:flex;align-items:center;gap:8px}
+.glass-color-preview{width:28px;height:28px;flex:0 0 28px;border:1px solid rgba(255,255,255,.3);border-radius:8px;background:var(--accent)}
+.glass-color-row input{width:100%;min-width:0;height:32px;padding:0 8px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,.2);color:var(--text);font:600 12px ui-monospace,monospace;text-transform:uppercase}
+.glass-color-palette{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.glass-color-palette button{width:20px;height:20px;padding:0;border:2px solid rgba(255,255,255,.26);border-radius:50%;background:var(--swatch);cursor:pointer}
+.glass-color-palette button:hover{transform:scale(1.12);border-color:#fff}
+.glass-color-row input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.glass-choice-grid button,.glass-effect-grid button{background:rgba(var(--panel-rgb),var(--panel-alpha))!important}
+.sidebar,.main,.card,.modal-card,.incoming-card,.app-dialog,.chat-header,.profile-popover,.user-profile-card,.voice-ctx-menu,.group-ctx-menu,.member-pick-row,.glass-studio-panel,.auralis-glass-studio,.settings-panel,.call-ctrls,.modal-content,.theme-card,.glass-saved-theme-card{background:rgba(var(--panel-rgb),var(--panel-alpha))!important;-webkit-backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important;backdrop-filter:blur(var(--auralis-glass-blur)) saturate(1.08)!important}
+.modal-backdrop,.app-dialog-backdrop{backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
+@media(max-width:760px){body::before{background-attachment:scroll}}
+</style></head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
 <canvas id="bgCanvas"></canvas>
@@ -4011,10 +4037,10 @@ body.android-md3 .sm-btn.green {
       <div class="field desktop-theme-field auralis-glass-studio hidden" id="desktopGlassStudio">
         <div class="glass-studio-title"><div><div class="lbl">Конструктор своей темы</div><div class="item-sub">Все изменения сохраняются отдельно от стандартных тем</div></div><span class="glass-studio-mark">✦</span></div>
         <div class="glass-control-head"><span>Прозрачность</span><strong id="glassOpacityValue">64%</strong></div>
-        <input id="glassOpacitySlider" class="glass-range" type="range" min="10" max="85" step="1" value="64" oninput="updateDesktopGlassSettings()" />
+        <input id="glassOpacitySlider" class="glass-range" type="range" min="0" max="100" step="1" value="64" oninput="updateDesktopGlassSettings()" />
         <div class="glass-range-hints"><span>Матовая</span><span>Стеклянная</span></div>
-        <div class="glass-control-head"><span>Сила размытия</span><strong id="glassBlurValue">24 px</strong></div>
-        <input id="glassBlurSlider" class="glass-range" type="range" min="8" max="36" step="1" value="24" oninput="updateDesktopGlassSettings()" />
+        <div class="glass-control-head"><span>Сила размытия</span><strong id="glassBlurValue">3 px</strong></div>
+        <input id="glassBlurSlider" class="glass-range" type="range" min="0" max="12" step="1" value="3" oninput="updateDesktopGlassSettings()" />
         <div class="glass-choice-section"><div class="lbl">Фон темы</div><div class="glass-choice-grid" id="glassWallpaperChoices">
           <button type="button" data-wallpaper="theme" onclick="chooseGlassWallpaper('theme')"><span class="glass-choice-preview wallpaper-theme"></span>Auralis</button>
           <button type="button" data-wallpaper="green" onclick="chooseGlassWallpaper('green')"><span class="glass-choice-preview wallpaper-green"></span>Зелёный</button>
@@ -4024,18 +4050,17 @@ body.android-md3 .sm-btn.green {
         </div><input id="glassWallpaperFile" type="file" accept="image/*" onchange="onDesktopWallpaperFile(event)" hidden /></div>
         <div class="glass-choice-section"><div class="lbl">Эффекты</div><div class="glass-effect-grid" id="glassEffectChoices">
           <button type="button" data-effect="none" onclick="chooseGlassEffect('none')">Без эффекта</button>
-          <button type="button" data-effect="leaves" onclick="chooseGlassEffect('leaves')">🍃 Листья</button>
+          <button type="button" data-effect="leaves" onclick="chooseGlassEffect('leaves')">Листья</button>
           <button type="button" data-effect="embers" onclick="chooseGlassEffect('embers')">✧ Искры</button>
-          <button type="button" data-effect="sakura" onclick="chooseGlassEffect('sakura')">🌸 Сакура</button>
-          <button type="button" data-effect="aurora" onclick="chooseGlassEffect('aurora')">🌌 Сияние</button>
-          <button type="button" data-effect="rain" onclick="chooseGlassEffect('rain')">☔ Дождь</button>
+          <button type="button" data-effect="sakura" onclick="chooseGlassEffect('sakura')">Сакура</button>
+          <button type="button" data-effect="aurora" onclick="chooseGlassEffect('aurora')">Сияние</button>
+          <button type="button" data-effect="rain" onclick="chooseGlassEffect('rain')">Дождь</button>
         </div></div>
-        <div class="glass-settings-grid">
-          <label>Цвет акцента<input id="glassAccentColor" type="color" value="#30d158" oninput="updateDesktopGlassSettings()" /></label>
-          <label>Цвет панелей<input id="glassPanelColor" type="color" value="#0e1e16" oninput="updateDesktopGlassSettings()" /></label>
+        <div class="glass-settings-grid glass-color-settings">
+          <div class="glass-color-control"><label for="glassAccentColor">Цвет акцента</label><div class="glass-color-row"><span class="glass-color-preview" id="glassAccentPreview"></span><input id="glassAccentColor" type="text" value="#30d158" maxlength="7" spellcheck="false" aria-label="HEX цвет акцента" oninput="updateDesktopGlassSettings()" /></div><div class="glass-color-palette"><button type="button" style="--swatch:#30d158" aria-label="Зелёный" onclick="chooseGlassColor('accent','#30d158')"></button><button type="button" style="--swatch:#ff78ad" aria-label="Розовый" onclick="chooseGlassColor('accent','#ff78ad')"></button><button type="button" style="--swatch:#35c9f2" aria-label="Голубой" onclick="chooseGlassColor('accent','#35c9f2')"></button><button type="button" style="--swatch:#a78bfa" aria-label="Лавандовый" onclick="chooseGlassColor('accent','#a78bfa')"></button><button type="button" style="--swatch:#ff9f43" aria-label="Янтарный" onclick="chooseGlassColor('accent','#ff9f43')"></button><button type="button" style="--swatch:#ffffff" aria-label="Белый" onclick="chooseGlassColor('accent','#ffffff')"></button></div></div>
+          <div class="glass-color-control"><label for="glassPanelColor">Цвет панелей</label><div class="glass-color-row"><span class="glass-color-preview" id="glassPanelPreview"></span><input id="glassPanelColor" type="text" value="#0e1e16" maxlength="7" spellcheck="false" aria-label="HEX цвет панелей" oninput="updateDesktopGlassSettings()" /></div><div class="glass-color-palette"><button type="button" style="--swatch:#0e1e16" aria-label="Тёмно-зелёный" onclick="chooseGlassColor('panel','#0e1e16')"></button><button type="button" style="--swatch:#111827" aria-label="Графитовый" onclick="chooseGlassColor('panel','#111827')"></button><button type="button" style="--swatch:#241226" aria-label="Фиолетовый" onclick="chooseGlassColor('panel','#241226')"></button><button type="button" style="--swatch:#162a40" aria-label="Синий" onclick="chooseGlassColor('panel','#162a40')"></button><button type="button" style="--swatch:#3b1d2b" aria-label="Бордовый" onclick="chooseGlassColor('panel','#3b1d2b')"></button><button type="button" style="--swatch:#343434" aria-label="Серый" onclick="chooseGlassColor('panel','#343434')"></button></div></div>
         </div>
-        <label class="glass-saved-label">Сохранённые темы<select id="glassSavedThemes"><option value="">Выбери свою тему</option></select></label>
-        <button type="button" class="sm-btn blue" style="width:100%;margin-top:7px;" onclick="applySavedDesktopTheme()">Применить сохранённую тему</button>
+        <div class="glass-saved-label"><span>Сохранённые темы</span><div id="glassSavedThemeCards" class="glass-saved-theme-list" aria-live="polite"></div><select id="glassSavedThemes" hidden><option value="">Выбери свою тему</option></select></div>
         <div class="glass-save-row"><input id="glassThemeName" type="text" maxlength="32" placeholder="Название темы" /><button type="button" class="sm-btn green" onclick="saveDesktopCustomTheme()">Сохранить тему</button></div>
         <div id="glassCustomThemeStatus" class="item-sub">Настройки применяются сразу и сохраняются на этом устройстве.</div>
       </div>
@@ -4195,7 +4220,7 @@ body.android-md3 .sm-btn.green {
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">3.1.0</span></span>
+      <span>Auralis · версия <span id="appVersion">3.2.0</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -5922,7 +5947,7 @@ function desktopThemeKey() {
 function readDesktopThemeSettings(key = desktopThemeKey()) {
   const theme = THEMES[activeThemeName] || THEMES.emerald;
   const panel = '#' + String(theme.panelRgb || '14, 30, 22').split(',').map(v => Math.max(0,Math.min(255,Number(v)||0)).toString(16).padStart(2,'0')).join('');
-  const defaults = { opacity:64, blur:24, wallpaper:'theme', effect:theme.effect || 'none', accent:theme.accent || '#30d158', panel };
+  const defaults = { opacity:64, blur:3, wallpaper:'theme', effect:theme.effect || 'none', accent:theme.accent || '#30d158', panel };
   try {
     const saved = JSON.parse(localStorage.getItem('rc_theme_settings_' + key) || 'null');
     if (saved && typeof saved === 'object') return { ...defaults, ...saved };
@@ -5930,7 +5955,7 @@ function readDesktopThemeSettings(key = desktopThemeKey()) {
   if (key === 'emerald') {
     const legacy = {
       opacity:Number(localStorage.getItem('rc_desktop_glass_opacity') || 64),
-      blur:Number(localStorage.getItem('rc_desktop_glass_blur') || 24),
+      blur:Number(localStorage.getItem('rc_desktop_glass_blur') || 3),
       wallpaper:defaults.wallpaper,
       effect:defaults.effect,
       accent:defaults.accent,
@@ -5946,7 +5971,7 @@ function writeDesktopThemeSettings(settings) {
 }
 function getDesktopGlassOpacity() {
   const n = Number(readDesktopThemeSettings().opacity);
-  return Math.max(10, Math.min(85, Number.isFinite(n) ? n : 64));
+  return Math.max(0, Math.min(100, Number.isFinite(n) ? n : 64));
 }
 function syncGlassChoiceButtons() {
   const settings = readDesktopThemeSettings();
@@ -5954,10 +5979,9 @@ function syncGlassChoiceButtons() {
   document.querySelectorAll('#glassEffectChoices [data-effect]').forEach(el => el.classList.toggle('active', el.dataset.effect === settings.effect));
 }
 function applyDesktopGlassSettings(persist = true) {
-  if (!(window.matchMedia && window.matchMedia('(min-width: 761px)').matches)) return;
   const settings = readDesktopThemeSettings();
-  const opacity = Math.max(10,Math.min(85,Number(settings.opacity)||64));
-  const blur = Math.max(8,Math.min(36,Number(settings.blur)||24));
+  const opacity = Math.max(0,Math.min(100,Number.isFinite(Number(settings.opacity))?Number(settings.opacity):64));
+  const blur = Math.max(0,Math.min(12,Number.isFinite(Number(settings.blur))?Number(settings.blur):3));
   const accent = /^#[0-9a-f]{6}$/i.test(settings.accent) ? settings.accent : (THEMES[activeThemeName] || THEMES.emerald).accent;
   const panel = /^#[0-9a-f]{6}$/i.test(settings.panel) ? settings.panel : '#0e1e16';
   const wallpaper = settings.wallpaper || 'theme';
@@ -5966,6 +5990,8 @@ function applyDesktopGlassSettings(persist = true) {
   if(slider)slider.value=String(opacity); if(blurSlider)blurSlider.value=String(blur);
   const accentInput=document.getElementById('glassAccentColor'),panelInput=document.getElementById('glassPanelColor');
   if(accentInput)accentInput.value=accent;if(panelInput)panelInput.value=panel;
+  const accentPreview=document.getElementById('glassAccentPreview'),panelPreview=document.getElementById('glassPanelPreview');
+  if(accentPreview)accentPreview.style.background=accent;if(panelPreview)panelPreview.style.background=panel;
   const ol=document.getElementById('glassOpacityValue'),bl=document.getElementById('glassBlurValue');
   if(ol)ol.textContent=opacity+'%';if(bl)bl.textContent=blur+' px';
   const root=document.documentElement,alpha=1-opacity/100;
@@ -5973,13 +5999,13 @@ function applyDesktopGlassSettings(persist = true) {
   root.style.setProperty('--panel-rgb',hexToRgb(panel));
   root.style.setProperty('--panel-alpha',String(alpha));
   root.style.setProperty('--glass','rgba('+hexToRgb(panel)+','+alpha+')');
-  root.style.setProperty('--glass-solid','rgba('+hexToRgb(panel)+','+Math.min(.96,alpha+.12)+')');
+  root.style.setProperty('--glass-solid','rgba('+hexToRgb(panel)+','+alpha+')');
   ['--sidebar-opacity','--nav-opacity','--dock-opacity','--popup-opacity','--groups-opacity','--header-opacity','--composer-opacity','--messages-opacity','--call-stage-opacity'].forEach(v=>root.style.setProperty(v,String(alpha)));
   applyAccentColor(accent,false);
-  const wallpapers={theme:(THEMES[activeThemeName]||THEMES.emerald).wallpaper||'none',green:"url('/backgrounds/green.jpg')",purple:"url('/backgrounds/purple.jpg')",aurora:"url('/backgrounds/aurora.svg')"};
-  const custom=localStorage.getItem('rc_desktop_custom_wallpaper');
-  root.style.setProperty('--theme-wallpaper',wallpaper==='custom'?(custom?'url("'+custom+'")':wallpapers.theme):(wallpapers[wallpaper]||wallpapers.theme));
+  const wallpapers={theme:'none',green:"url('/backgrounds/green.jpg')",purple:"url('/backgrounds/purple.jpg')",aurora:"url('/backgrounds/aurora.svg')"};
+  root.style.setProperty('--custom-wallpaper',wallpaper==='custom'?(window.auralisCustomWallpaperUrl?'url("'+window.auralisCustomWallpaperUrl+'")':'none'):(wallpapers[wallpaper]||'none'));
   root.style.setProperty('--theme-overlay',(THEMES[activeThemeName]||THEMES.emerald).overlay||'rgba(5,13,9,.22)');
+  if(wallpaper==='custom'&&!window.auralisCustomWallpaperUrl)restoreCustomWallpaper();
   if(persist)writeDesktopThemeSettings({opacity,blur,wallpaper,effect,accent,panel});
   setBgEffect(effect);
   syncGlassChoiceButtons();
@@ -5988,32 +6014,110 @@ function updateDesktopGlassSettings() {
   if(!(window.matchMedia&&window.matchMedia('(min-width: 761px)').matches))return;
   const old=readDesktopThemeSettings();
   const get=(id,fallback)=>document.getElementById(id)?.value??fallback;
+  const rawAccent=get('glassAccentColor',old.accent),rawPanel=get('glassPanelColor',old.panel);
+  const nextAccent=/^#[0-9a-f]{6}$/i.test(String(rawAccent))?String(rawAccent):old.accent;
+  const nextPanel=/^#[0-9a-f]{6}$/i.test(String(rawPanel))?String(rawPanel):old.panel;
   writeDesktopThemeSettings({
     ...old,
-    opacity:Math.max(10,Math.min(85,Number(get('glassOpacitySlider',old.opacity))||old.opacity)),
-    blur:Math.max(8,Math.min(36,Number(get('glassBlurSlider',old.blur))||old.blur)),
-    accent:get('glassAccentColor',old.accent),
-    panel:get('glassPanelColor',old.panel)
+    opacity:Math.max(0,Math.min(100,Number.isFinite(Number(get('glassOpacitySlider',old.opacity)))?Number(get('glassOpacitySlider',old.opacity)):old.opacity)),
+    blur:Math.max(0,Math.min(12,Number.isFinite(Number(get('glassBlurSlider',old.blur)))?Number(get('glassBlurSlider',old.blur)):old.blur)),
+    accent:nextAccent,
+    panel:nextPanel
   });
   applyDesktopGlassSettings(false);
+  if(!/^#[0-9a-f]{6}$/i.test(String(rawAccent))){const el=document.getElementById('glassAccentColor');if(el)el.value=rawAccent;}
+  if(!/^#[0-9a-f]{6}$/i.test(String(rawPanel))){const el=document.getElementById('glassPanelColor');if(el)el.value=rawPanel;}
 }
 function chooseGlassWallpaper(value){const v=readDesktopThemeSettings();v.wallpaper=value;writeDesktopThemeSettings(v);applyDesktopGlassSettings(false);}
 function chooseGlassEffect(value){const v=readDesktopThemeSettings();v.effect=value;writeDesktopThemeSettings(v);applyDesktopGlassSettings(false);}
-function onDesktopWallpaperFile(event) {
-  const file=event&&event.target&&event.target.files&&event.target.files[0];if(!file||!/^image\//i.test(file.type))return;
-  if(file.size>3*1024*1024){const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Изображение слишком большое. Максимум 3 МБ.';event.target.value='';return;}
-  const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('rc_desktop_custom_wallpaper',String(reader.result));chooseGlassWallpaper('custom');const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Свои обои установлены.';}catch{const status=document.getElementById('glassCustomThemeStatus');if(status)status.textContent='Не удалось сохранить изображение.';}};reader.readAsDataURL(file);
+function chooseGlassColor(type,color){
+  if(!/^#[0-9a-f]{6}$/i.test(String(color||'')))return;
+  const settings=readDesktopThemeSettings();if(type==='accent')settings.accent=color.toLowerCase();else if(type==='panel')settings.panel=color.toLowerCase();else return;
+  writeDesktopThemeSettings(settings);applyDesktopGlassSettings(false);
+}
+const AURALIS_WALLPAPER_MAX_BYTES = 15 * 1024 * 1024;
+let auralisWallpaperDbPromise = null;
+window.auralisCustomWallpaperUrl = window.auralisCustomWallpaperUrl || '';
+function openAuralisWallpaperDb() {
+  if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB недоступен'));
+  if (auralisWallpaperDbPromise) return auralisWallpaperDbPromise;
+  auralisWallpaperDbPromise = new Promise((resolve,reject)=>{
+    const request=indexedDB.open('auralis-wallpapers',1);
+    request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains('images'))db.createObjectStore('images');};
+    request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error||new Error('Не удалось открыть хранилище'));
+  });
+  return auralisWallpaperDbPromise;
+}
+async function storeAuralisWallpaper(blob) {
+  const db=await openAuralisWallpaperDb();
+  await new Promise((resolve,reject)=>{const tx=db.transaction('images','readwrite');tx.objectStore('images').put(blob,'custom-wallpaper');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('Ошибка записи'));tx.onabort=()=>reject(tx.error||new Error('Запись отменена'));});
+}
+async function readAuralisWallpaper() {
+  const db=await openAuralisWallpaperDb();
+  return new Promise((resolve,reject)=>{const tx=db.transaction('images','readonly');const req=tx.objectStore('images').get('custom-wallpaper');req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||new Error('Ошибка чтения'));});
+}
+async function restoreCustomWallpaper() {
+  try{const blob=await readAuralisWallpaper();if(!blob)return;setCustomWallpaperLayer(blob);if(readDesktopThemeSettings().wallpaper==='custom')document.documentElement.style.setProperty('--custom-wallpaper','url("'+window.auralisCustomWallpaperUrl+'")');}
+  catch(err){console.warn('[Auralis] wallpaper restore failed',err);}
+}
+function setCustomWallpaperLayer(blob) {
+  if(window.auralisCustomWallpaperUrl)URL.revokeObjectURL(window.auralisCustomWallpaperUrl);
+  window.auralisCustomWallpaperUrl=URL.createObjectURL(blob);
+  document.documentElement.style.setProperty('--custom-wallpaper','url("'+window.auralisCustomWallpaperUrl+'")');
+}
+async function compressWallpaperFile(file) {
+  if(!window.createImageBitmap)return file;
+  let bitmap;
+  try{bitmap=await createImageBitmap(file);}catch{return file;}
+  try{
+    const maxSide=3840,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+    const ctx=canvas.getContext('2d',{alpha:false});ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+    const toBlob=(quality)=>new Promise(resolve=>canvas.toBlob(resolve,'image/webp',quality));
+    let blob=null;
+    for(const quality of [0.9,0.82,0.74,0.66,0.58]){blob=await toBlob(quality);if(blob&&blob.size<=12*1024*1024)break;}
+    return blob&&blob.size<file.size?blob:file;
+  }finally{bitmap.close&&bitmap.close();}
+}
+async function onDesktopWallpaperFile(event) {
+  const input=event&&event.target,file=input&&input.files&&input.files[0];
+  if(!file)return;
+  const status=document.getElementById('glassCustomThemeStatus');
+  const fail=(message)=>{if(status)status.textContent=message;if(input)input.value='';};
+  if(!/^image\//i.test(file.type)){fail('Выбери файл изображения.');return;}
+  if(file.size>AURALIS_WALLPAPER_MAX_BYTES){fail('Файл больше 15 МБ. Выбери изображение до 15 МБ.');return;}
+  if(status)status.textContent='Подготавливаем обои…';
+  try{
+    const blob=await compressWallpaperFile(file);
+    await storeAuralisWallpaper(blob);
+    setCustomWallpaperLayer(blob);
+    const settings=readDesktopThemeSettings();settings.wallpaper='custom';writeDesktopThemeSettings(settings);
+    applyDesktopGlassSettings(false);
+    if(status)status.textContent='Обои установлены'+(blob.size<file.size?' · изображение автоматически сжато':'')+'.';
+  }catch(err){console.error('[Auralis] wallpaper upload failed',err);fail('Не удалось сохранить обои. Проверь свободное место в хранилище браузера.');}
+  if(input)input.value='';
+}
+function desktopCustomThemesKey() {
+  const owner=(typeof me!=='undefined'&&me&&me.username)?String(me.username).toLowerCase():'guest';
+  return 'rc_desktop_custom_themes_'+owner;
+}
+function readDesktopCustomThemes() {
+  let saved=[];
+  try{saved=JSON.parse(localStorage.getItem(desktopCustomThemesKey())||'null')||[];}catch{}
+  if(!saved.length){try{const legacy=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');if(Array.isArray(legacy)&&legacy.length){saved=legacy;localStorage.setItem(desktopCustomThemesKey(),JSON.stringify(saved));}}catch{}}
+  return Array.isArray(saved)?saved:[];
 }
 function refreshDesktopCustomThemeList(selectedName='') {
-  const select=document.getElementById('glassSavedThemes');if(!select)return;let saved=[];
-  try{saved=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');}catch{}
-  select.innerHTML='<option value="">Выбери свою тему</option>'+saved.map(t=>'<option value="'+esc(t.name)+'">'+esc(t.name)+'</option>').join('');
-  if(selectedName)select.value=selectedName;
+  const select=document.getElementById('glassSavedThemes'),list=document.getElementById('glassSavedThemeCards'),saved=readDesktopCustomThemes();
+  if(select){select.innerHTML='<option value="">Выбери свою тему</option>'+saved.map(t=>'<option value="'+esc(t.name)+'">'+esc(t.name)+'</option>').join('');if(selectedName)select.value=selectedName;}
+  if(list){
+    list.innerHTML=saved.length?saved.slice().reverse().map(t=>'<button type="button" class="glass-saved-theme-card" data-theme-name="'+esc(t.name)+'"><span class="glass-saved-theme-dot" style="background:'+(/^#[0-9a-f]{6}$/i.test(t.accent)?t.accent:'#30d158')+'"></span><span class="glass-saved-theme-copy"><strong>'+esc(t.name)+'</strong><small>'+esc(t.baseTheme||'Пользовательская тема')+'</small></span><span class="glass-saved-theme-arrow">›</span></button>').join(''):'<div class="glass-saved-empty">Пока нет сохранённых тем. Сохрани текущий стиль — он появится здесь.</div>';
+    list.querySelectorAll('[data-theme-name]').forEach(button=>button.addEventListener('click',()=>applySavedDesktopTheme(button.dataset.themeName)));
+  }
 }
-function applySavedDesktopTheme() {
-  const select=document.getElementById('glassSavedThemes');if(!select||!select.value)return;let saved=[];
-  try{saved=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');}catch{}
-  const theme=saved.find(t=>t.name===select.value);if(!theme)return;
+function applySavedDesktopTheme(name='') {
+  const select=document.getElementById('glassSavedThemes'),selectedName=name||select?.value;if(!selectedName)return;
+  const theme=readDesktopCustomThemes().find(t=>t.name===selectedName);if(!theme)return;
   localStorage.setItem('rc_desktop_theme_mode','custom');
   localStorage.setItem('rc_desktop_base_theme',theme.baseTheme||activeThemeName);
   activeThemeName=THEMES[theme.baseTheme]?theme.baseTheme:activeThemeName;
@@ -6027,7 +6131,7 @@ function saveDesktopCustomTheme() {
   if(!name){if(status)status.textContent='Введи название темы.';return;}
   const settings=readDesktopThemeSettings();
   const theme={name,baseTheme:activeThemeName,...settings};
-  try{const saved=JSON.parse(localStorage.getItem('rc_desktop_custom_themes')||'[]');const next=[...saved.filter(t=>t.name!==name),theme].slice(-20);localStorage.setItem('rc_desktop_custom_themes',JSON.stringify(next));refreshDesktopCustomThemeList(name);if(status)status.textContent='«'+name+'» сохранена отдельно. Можно выбрать её в списке.';}
+  try{const saved=readDesktopCustomThemes();const next=[...saved.filter(t=>t.name!==name),theme].slice(-20);localStorage.setItem(desktopCustomThemesKey(),JSON.stringify(next));refreshDesktopCustomThemeList(name);if(status)status.textContent='«'+name+'» добавлена в список ваших тем.';}
   catch{if(status)status.textContent='Не удалось сохранить тему: недостаточно места.';}
 }
 
@@ -6075,6 +6179,7 @@ function setSidebarWidth(px) {
   initMenuOpacity();
   applyDesktopGlassSettings(false);
   refreshDesktopCustomThemeList();
+  restoreCustomWallpaper();
 
   const savedW = localStorage.getItem('rc_sidebar_w');
   if (savedW) setSidebarWidth(savedW);
@@ -6255,21 +6360,37 @@ function adminStatus(message, isError = false) {
 }
 
 async function adminRequest(path, options = {}) {
-  const response = await fetch(path, {
-    cache: 'no-store',
-    ...options,
-    headers: { ...(options.headers || {}), Authorization: 'Bearer ' + token,
+  const requestUrl = new URL(path, window.location.origin);
+  requestUrl.searchParams.set('_refresh', String(Date.now()));
+  const response = await fetch(requestUrl.toString(), {
+    cache: 'no-store', credentials: 'same-origin', ...options,
+    headers: { Accept: 'application/json', ...(options.headers || {}), Authorization: 'Bearer ' + token,
       ...(options.body ? { 'Content-Type': 'application/json' } : {}) }
   });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Ошибка запроса');
+  const raw = await response.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch {}
+  if (!response.ok) {
+    const message = data.error || (response.status === 404
+      ? 'Маршрут списка пользователей не найден на сервере (404). Проверь, что сервер обновлён до Auralis 3.2.0.'
+      : 'Ошибка запроса (' + response.status + ')');
+    throw new Error(message);
+  }
   return data;
 }
 
+let adminUsersLoading = false;
 async function loadAdminUsers() {
-  if (!me || String(me.username).toLowerCase() !== 'ovarist') return;
+  if (!me || String(me.username).toLowerCase() !== 'ovarist') {
+    adminStatus('Нет доступа к списку: войди в аккаунт владельца @ovarist.', true);
+    return;
+  }
+  if (adminUsersLoading) return;
   const select = document.getElementById('adminUserSelect');
-  if (!select) return;
+  if (!select) { adminStatus('Не найден элемент списка пользователей.', true); return; }
+  adminUsersLoading = true;
+  const refreshButton = document.querySelector('.admin-refresh-btn');
+  if (refreshButton) { refreshButton.disabled = true; refreshButton.textContent = 'Загружаем…'; }
   adminStatus('Загружаем список пользователей…');
   try {
     const data = await adminRequest('/api/admin/users');
@@ -6285,6 +6406,9 @@ async function loadAdminUsers() {
     adminUsersCache = [];
     select.innerHTML = '<option value="">Не удалось загрузить пользователей</option>';
     adminStatus((err.message || 'Ошибка загрузки') + ' · нажми «Обновить» для повтора', true);
+  } finally {
+    adminUsersLoading = false;
+    if (refreshButton) { refreshButton.disabled = false; refreshButton.textContent = '↻ Обновить список'; }
   }
 }
 
@@ -6360,6 +6484,7 @@ function switchSettingsTab(tab) {
 
 async function openSettings() {
   closeProfilePopover();
+  refreshDesktopCustomThemeList();
   const adminTab=document.getElementById('sTabAdmin');
   if(adminTab)adminTab.classList.toggle('hidden',!me||String(me.username).toLowerCase()!=='ovarist');
   document.getElementById('settingsModal').classList.remove('hidden');
