@@ -3450,7 +3450,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">2.5.8</span></span>
+      <span>Auralis · версия <span id="appVersion">2.5.23</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -3879,6 +3879,13 @@ async function switchToSavedAccount(targetUsername) {
   token = acc.token;
   localStorage.setItem('rc_token', token);
   activeChat = null;
+  // Refresh the visible app version on every client, including Android, at startup.
+  fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
+    if (meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '')) {
+      const label = document.getElementById('appVersion');
+      if (label) label.textContent = meta.version;
+    }
+  }).catch(() => {});
   if (!window.rustcordDesktop) await // Keep the web client version synchronized with release metadata.
 fetch('/version.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(meta => {
   if (meta && /^\\d+\\.\\d+\\.\\d+$/.test(meta.version || '')) {
