@@ -6284,7 +6284,7 @@ async function loadAdminUsers() {
     const data = await adminRequest('/api/admin/users');
     adminUsersCache = Array.isArray(data.users) ? data.users : [];
     select.innerHTML = '<option value="">Выбери пользователя</option>' + adminUsersCache.map((u) =>
-      '<option value="' + Number(u.id) + '">' + escapeHtml(u.username) + (u.is_banned ? ' · заблокирован' : '') + '</option>'
+      '<option value="' + Number(u.id) + '">' + esc(u.username) + (u.is_banned ? ' · заблокирован' : '') + '</option>'
     ).join('');
     if (adminSelectedUserId && adminUsersCache.some((u) => String(u.id) === String(adminSelectedUserId))) select.value = String(adminSelectedUserId);
     else if (adminUsersCache.length) select.value = String(adminUsersCache[0].id);
@@ -6315,8 +6315,6 @@ function adminSelectUser(id) {
     : 'Аккаунт активен · логин @' + user.username;
   const own = String(user.username).toLowerCase() === 'ovarist';
   document.querySelectorAll('#sPanelAdmin button.sm-btn.red').forEach((b) => { b.disabled = own; });
-  const save = document.querySelector('#sPanelAdmin button.sm-btn.green');
-  if (save) save.disabled = own;
 }
 
 async function adminSaveProfile() {
