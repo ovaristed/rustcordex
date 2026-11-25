@@ -6,6 +6,8 @@
 <link rel="manifest" href="/manifest.webmanifest" />
 <meta name="theme-color" content="#00190e" />
 <link rel="icon" href="/auralis-icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/auralis-icon.svg" />
+<meta property="og:image" content="https://rustcord.hostless.app/auralis-icon.svg" />
 <title>Auralis</title>
 <style>
 * { box-sizing: border-box; scrollbar-width:none; -ms-overflow-style:none; }
@@ -3591,7 +3593,7 @@ body.android-md3 .sm-btn.green {
 
 <div id="authWrap" class="auth-wrap">
   <div class="card">
-    <div class="auth-brand"><span class="auth-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-6.5A2.5 2.5 0 0 1 4 11z"/><path d="M8 8h8M8 11.5h5"/></svg></span><span class="auth-brand-name">Auralis</span></div>
+    <div class="auth-brand"><span class="auth-brand-mark" aria-hidden="true"><img src="/auralis-icon.svg" alt=""></span><span class="auth-brand-name">Auralis</span></div>
     <div class="head">
       <h2 id="authTitle">С возвращением!</h2>
       <p>Войди в Auralis, чтобы писать друзьям и звонить</p>
@@ -8818,3 +8820,8 @@ checkSession();
 
 </body>
 </html>
+
+<style id="auralis-site-brand-icon">
+#authWrap .auth-brand-mark{width:48px;height:48px;padding:0;overflow:hidden;border-radius:15px;background:#06351f!important;box-shadow:0 8px 24px rgba(22,169,87,.28)!important}
+#authWrap .auth-brand-mark img{display:block;width:100%;height:100%;object-fit:cover}
+</style>
