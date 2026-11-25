@@ -610,22 +610,31 @@ jobs:
           console.log('Android version:', version, 'versionCode:', versionCode);
           NODE
 
-      - name: Prepare persistent Android debug signing key
+      - name: Restore the original Android signing key before build
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: auralis-android-debug-keystore-v1
+
+      - name: Ensure the original Android signing key is present
         run: |
           set -euo pipefail
           mkdir -p ~/.android
           if [ ! -s ~/.android/debug.keystore ]; then
-            keytool -genkeypair -v \
-              -keystore ~/.android/debug.keystore \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -dname "CN=Android Debug,O=Android,C=US" \
-              -keyalg RSA -keysize 2048 -validity 10000
+            echo "::error::The original Auralis signing key cache is missing. Refusing to generate a new key because that would break in-place updates."
+            exit 1
           fi
+          CERT=$(keytool -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey | awk -F': ' '/SHA256:/{gsub(/:/,"",$2); print tolower($2); exit}')
+          EXPECTED="2f5986f7a76464f966ab213844608ee6e9189d9d15f4867e63727252daee21ac"
+          if [ "$CERT" != "$EXPECTED" ]; then
+            echo "::error::Cached signing key does not match the certificate used by Auralis 2.5.33. Refusing to publish an incompatible APK."
+            echo "Found certificate: $CERT"
+            exit 1
+          fi
+          echo "Original Auralis signing certificate confirmed: $CERT"
 
-      - name: Reuse Android debug signing key for in-app upgrades
-        uses: actions/cache@v4
+      - name: Persist original Android signing key
+        uses: actions/cache/save@v4
         with:
           path: ~/.android/debug.keystore
           key: auralis-android-debug-keystore-v1
@@ -645,7 +654,8 @@ jobs:
           test -x "$BUILD_TOOLS/apksigner"
           test -x "$BUILD_TOOLS/aapt"
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs "$APK"
-          "$BUILD_TOOLS/aapt" dump badging "$APK" | grep -E "^package: name='com\\.ovarist\\.auralis' versionCode='[0-9]+' versionName='2\\.5\\.34'"
+          VERSION=$(node -p "require('./package.json').version")
+          "$BUILD_TOOLS/aapt" dump badging "$APK" | grep -F "package: name='com.ovarist.auralis'" | grep -F "versionName='$VERSION'"
           echo "APK integrity, package id, version and signer verified"
 
       - name: Give APK versioned and stable download filenames
