@@ -4467,6 +4467,7 @@ let wsReconnectTimer = null;
 
 // activeChat = { kind: 'dm' | 'group', id: string }
 let activeChat = null;
+let activeReplyMessage = null;
 let friends = [];
 let incomingReqs = [];
 let chatsMeta = [];
@@ -7001,15 +7002,17 @@ async function ensureSocketReady() {
 
 async function sendOutboundMessageText(encodedText) {
   if (!activeChat) return;
+  const reply = activeReplyMessage && activeReplyMessage.chatKind === activeChat.kind && String(activeReplyMessage.chatId) === String(activeChat.id) ? activeReplyMessage : null;
   const ok = await ensureSocketReady();
   if (!ok || !ws || ws.readyState !== WebSocket.OPEN || !wsAuthenticated) { showToast('Не удалось подключиться к чату. Проверь соединение и повтори отправку.', 'error'); return false; }
   if (activeChat.kind === 'group') {
-    ws.send(JSON.stringify({ type: 'group-dm', groupId: activeChat.id, text: encodedText }));
+    ws.send(JSON.stringify({ type: 'group-dm', groupId: activeChat.id, text: encodedText, ...(reply ? { replyToId: reply.id } : {}) }));
     const g = getGroupById(activeChat.id);
     if (g) { g.lastMessage = encodedText; saveCachedGroups(); renderLists(); }
   } else {
-    ws.send(JSON.stringify({ type: 'dm', to: activeChat.id, text: encodedText }));
+    ws.send(JSON.stringify({ type: 'dm', to: activeChat.id, text: encodedText, ...(reply ? { replyToId: reply.id } : {}) }));
   }
+  if (reply) clearReplyState();
   return true;
 }
 
@@ -7588,6 +7591,7 @@ async function openChat(username) {
   document.body.classList.add('mobile-chat-open');
   // Переключение чата не должно завершать текущий звонок.
   activeChat = requestedChat;
+  clearReplyState();
   renderLists();
   updateActiveHeaderTitle();
   document.getElementById('emojiBar').classList.remove('hidden');
@@ -7641,6 +7645,7 @@ async function openGroupChat(groupId) {
     upsertGroup({ id: groupId, members: [me && me.username].filter(Boolean) });
   }
   activeChat = { kind: 'group', id: groupId };
+  clearReplyState();
   renderLists();
   updateActiveHeaderTitle();
   document.getElementById('emojiBar').classList.remove('hidden');
@@ -7733,6 +7738,40 @@ function triggerFileDownload(fileKey) {
   }, 180);
 }
 
+function replyPreviewText(text) {
+  const value = String(text || '');
+  if (value.startsWith('__VOICE__:')) return 'Голосовое сообщение';
+  if (value.startsWith('__FILE__:')) {
+    try { const f = JSON.parse(value.slice('__FILE__:'.length)); return f.mime && f.mime.startsWith('image/') ? 'Фотография' : 'Вложение'; }
+    catch { return 'Вложение'; }
+  }
+  if (value.startsWith('__CALL__:')) return 'Запись о звонке';
+  return value || 'Сообщение';
+}
+function clearReplyState() {
+  activeReplyMessage = null;
+  const preview = document.getElementById('replyComposerPreview');
+  if (preview) preview.remove();
+}
+function startReplyToMessage(m) {
+  if (!m || m.id == null || !activeChat) return;
+  activeReplyMessage = { id: Number(m.id), sender: String(m.sender || ''), text: String(m.text || ''), chatKind: activeChat.kind, chatId: String(activeChat.id) };
+  let preview = document.getElementById('replyComposerPreview');
+  if (!preview) {
+    preview = document.createElement('div');
+    preview.id = 'replyComposerPreview';
+    preview.className = 'reply-composer-preview';
+    const composer = document.getElementById('composer');
+    if (composer) composer.insertBefore(preview, composer.firstChild);
+  }
+  preview.innerHTML = '<div class="reply-preview-mark"></div><div class="reply-preview-copy"><strong>Ответ для ' +
+    esc(displayNameOf(activeReplyMessage.sender)) + '</strong><span>' +
+    esc(replyPreviewText(activeReplyMessage.text).slice(0, 180)) +
+    '</span></div><button type="button" class="reply-preview-close" title="Отменить ответ" aria-label="Отменить ответ">×</button>';
+  preview.querySelector('button').addEventListener('click', clearReplyState);
+  const input = document.getElementById('msgInput');
+  if (input) input.focus();
+}
 function appendMsg(m) {
   if (m && m.sender && m.sender !== (me && me.username) && isUserBlocked(m.sender)) return;
   const box = document.getElementById('messages');
@@ -7836,9 +7875,15 @@ function appendMsg(m) {
   el.className = 'msg ' + (isMine ? 'mine' : 'other') + (bigSticker ? ' sticker-only' : '') + (purePhotoGif ? ' media-only' : '');
   const authorLabel = isMine ? 'Вы' : displayNameOf(m.sender);
 
+  const quotedHtml = m.reply_to_id && m.reply_sender ? (
+    '<button type="button" class="msg-reply-quote" data-reply-target="' + esc(String(m.reply_to_id)) + '" aria-label="Перейти к исходному сообщению">' +
+      '<span class="msg-reply-quote-author">' + esc(displayNameOf(m.reply_sender)) + '</span>' +
+      '<span class="msg-reply-quote-text">' + esc(replyPreviewText(m.reply_text).slice(0, 220)) + '</span>' +
+    '</button>'
+  ) : '';
   el.innerHTML = (
     '<div class="avatar profile-open-target" data-profile-user="' + esc(m.sender || '') + '">' + renderAvatarHtml(m.sender) + '</div>' +
-    '<div class="msg-bubble">' +
+    '<div class="msg-bubble">' + quotedHtml +
       (purePhotoGif ? '' : (
         '<div class="msg-head">' +
           '<span class="msg-author">' + esc(authorLabel) + '</span>' +
@@ -7850,6 +7895,16 @@ function appendMsg(m) {
   );
   box.appendChild(el);
 
+  const replyQuote = el.querySelector('.msg-reply-quote');
+  if (replyQuote) replyQuote.addEventListener('click', () => {
+    const targetKey = (m.groupId ? 'grp_' : 'dm_') + replyQuote.dataset.replyTarget;
+    const target = document.querySelector('.msg[data-mkey="' + targetKey + '"]');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.classList.add('msg-reply-highlight');
+      setTimeout(() => target.classList.remove('msg-reply-highlight'), 1100);
+    }
+  });
   if (m.sender) el.querySelectorAll('[data-profile-user]').forEach((target) => target.addEventListener('click', (ev) => { ev.stopPropagation(); openUserProfile(target.dataset.profileUser); }));
   if (!isMine && m.sender) {
     el.querySelectorAll('[data-profile-user]').forEach((target) => target.addEventListener('contextmenu', (ev) => openVoiceContextMenu(ev, m.sender)));
@@ -7890,6 +7945,17 @@ function appendMsg(m) {
       act.appendChild(db);
       bub.appendChild(act);
     }
+  }
+  const bubble = el.querySelector('.msg-bubble');
+  if (bubble && m.id != null) {
+    let actions = bubble.querySelector('.msg-actions');
+    if (!actions) { actions = document.createElement('div'); actions.className = 'msg-actions'; bubble.appendChild(actions); }
+    const replyBtn = document.createElement('button');
+    replyBtn.type = 'button'; replyBtn.className = 'msg-act-btn msg-reply-btn';
+    replyBtn.title = 'Ответить'; replyBtn.setAttribute('aria-label', 'Ответить');
+    replyBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 7 7v3"/></svg>';
+    replyBtn.addEventListener('click', () => startReplyToMessage(m));
+    actions.insertBefore(replyBtn, actions.firstChild);
   }
   if (stickToBottom) box.scrollTop = box.scrollHeight;
 }
@@ -9416,6 +9482,24 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   color:#fff !important;
   stroke:#fff !important;
 }
+</style>
+
+<style id="auralis-3-3-9-message-replies">
+  #composer { position:relative; }
+  .reply-composer-preview { order:-1; flex:0 0 100%; min-width:0; display:flex; align-items:center; gap:10px; padding:9px 12px; margin:0 0 5px; border:1px solid rgba(var(--accent-rgb),.38); border-left:3px solid var(--accent); border-radius:13px; background:rgba(var(--accent-rgb),.12); color:var(--text); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+  .reply-preview-mark { width:3px; align-self:stretch; border-radius:4px; background:var(--accent); opacity:.85; }
+  .reply-preview-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:2px; }
+  .reply-preview-copy strong { color:var(--accent); font-size:12px; font-weight:750; }
+  .reply-preview-copy span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--muted); }
+  .reply-preview-close { width:28px; height:28px; border:0; border-radius:9px; background:rgba(255,255,255,.08); color:var(--text); font-size:20px; cursor:pointer; }
+  .msg-reply-quote { display:flex; flex-direction:column; gap:2px; width:100%; min-width:0; padding:6px 9px; border:0; border-left:3px solid var(--accent); border-radius:8px; background:rgba(var(--accent-rgb),.13); color:var(--text); text-align:left; cursor:pointer; }
+  .msg-reply-quote-author { color:var(--accent); font-size:11px; font-weight:750; }
+  .msg-reply-quote-text { color:var(--muted); font-size:12px; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .msg-reply-quote:hover { background:rgba(var(--accent-rgb),.2); }
+  .msg-reply-highlight .msg-bubble { outline:2px solid var(--accent); outline-offset:3px; }
+  .msg-reply-btn svg { fill:none !important; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  @media(hover:none) { .msg-actions { opacity:.9; } }
+  @media(max-width:760px) { .reply-composer-preview { margin:0 0 3px; padding:7px 9px; } }
 </style>
 
 </body>

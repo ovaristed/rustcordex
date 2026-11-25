@@ -98,6 +98,8 @@ async function initDb() {
   `);
   await pool.query(`ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP;`);
   await pool.query(`ALTER TABLE group_messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP;`);
+  await pool.query(`ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER;`);
+  await pool.query(`ALTER TABLE group_messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER;`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_group_messages_group ON group_messages(group_id, id);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_dm_pair ON direct_messages(sender, recipient, id);`);
 }
@@ -698,11 +700,14 @@ app.get('/api/dm', authMiddleware, async (req, res) => {
     const meName = req.user.username;
     const peer = String(req.query.peer || '').trim();
     const r = await pool.query(
-      `SELECT id, sender, recipient, text, created_at, edited_at FROM (
-         SELECT id, sender, recipient, text, created_at, edited_at FROM direct_messages
+      `SELECT t.id, t.sender, t.recipient, t.text, t.created_at, t.edited_at, t.reply_to_id,
+              rp.sender AS reply_sender, rp.text AS reply_text
+       FROM (
+         SELECT id, sender, recipient, text, created_at, edited_at, reply_to_id FROM direct_messages
          WHERE (sender = $1 AND recipient = $2) OR (sender = $2 AND recipient = $1)
          ORDER BY id DESC LIMIT 100
-       ) t ORDER BY id ASC`,
+       ) t LEFT JOIN direct_messages rp ON rp.id = t.reply_to_id
+       ORDER BY t.id ASC`,
       [meName, peer]
     );
     res.json(r.rows);
@@ -841,9 +846,12 @@ app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
       return res.status(403).json({ error: 'Нет доступа' });
     }
     const r = await pool.query(
-      `SELECT id, group_id AS "groupId", sender, text, created_at, edited_at FROM (
+      `SELECT t.id, t.group_id AS "groupId", t.sender, t.text, t.created_at, t.edited_at, t.reply_to_id,
+              rp.sender AS reply_sender, rp.text AS reply_text
+       FROM (
          SELECT * FROM group_messages WHERE group_id = $1 ORDER BY id DESC LIMIT 100
-       ) t ORDER BY id ASC`,
+       ) t LEFT JOIN group_messages rp ON rp.id = t.reply_to_id AND rp.group_id = t.group_id
+       ORDER BY t.id ASC`,
       [groupId]
     );
     res.json(r.rows);
@@ -1058,15 +1066,31 @@ wss.on('connection', (ws) => {
     if (data.type === 'dm') {
       const to = String(data.to || '').trim();
       const rawText = String(data.text || '').trim();
-      if (!to || !isValidMessagePayload(rawText)) return;
+      const replyToId = data.replyToId == null ? null : Number(data.replyToId);
+      if (!to || !isValidMessagePayload(rawText) || (replyToId !== null && (!Number.isInteger(replyToId) || replyToId < 1))) return;
       try {
         if (!(await canContact(ws.username, to))) return;
+        if (replyToId !== null) {
+          const target = await pool.query(
+            `SELECT id FROM direct_messages WHERE id = $1
+             AND ((sender = $2 AND recipient = $3) OR (sender = $3 AND recipient = $2))`,
+            [replyToId, ws.username, to]
+          );
+          if (!target.rows.length) return;
+        }
         const saved = await pool.query(
-          `INSERT INTO direct_messages (sender, recipient, text) VALUES ($1, $2, $3)
-           RETURNING id, sender, recipient, text, created_at`,
-          [ws.username, to, rawText]
+          `INSERT INTO direct_messages (sender, recipient, text, reply_to_id) VALUES ($1, $2, $3, $4)
+           RETURNING id, sender, recipient, text, created_at, reply_to_id`,
+          [ws.username, to, rawText, replyToId]
         );
-        const msgObj = saved.rows[0];
+        const quoted = await pool.query(
+          `SELECT dm.id, dm.sender, dm.recipient, dm.text, dm.created_at, dm.reply_to_id,
+                  rp.sender AS reply_sender, rp.text AS reply_text
+           FROM direct_messages dm LEFT JOIN direct_messages rp ON rp.id = dm.reply_to_id
+           WHERE dm.id = $1`,
+          [saved.rows[0].id]
+        );
+        const msgObj = quoted.rows[0] || saved.rows[0];
         sendToUser(ws.username, { type: 'dm', message: msgObj });
         sendToUser(to, { type: 'dm', message: msgObj });
       } catch (err) {
@@ -1078,16 +1102,29 @@ wss.on('connection', (ws) => {
     if (data.type === 'group-dm') {
       const groupId = String(data.groupId || '').trim();
       const rawText = String(data.text || '').trim();
-      if (!groupId || !isValidMessagePayload(rawText)) return;
+      const replyToId = data.replyToId == null ? null : Number(data.replyToId);
+      if (!groupId || !isValidMessagePayload(rawText) || (replyToId !== null && (!Number.isInteger(replyToId) || replyToId < 1))) return;
       try {
         if (!(await isGroupMember(groupId, ws.username))) return;
+        if (replyToId !== null) {
+          const target = await pool.query('SELECT id FROM group_messages WHERE id = $1 AND group_id = $2', [replyToId, groupId]);
+          if (!target.rows.length) return;
+        }
         const saved = await pool.query(
-          `INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3)
-           RETURNING id, group_id AS "groupId", sender, text, created_at`,
-          [groupId, ws.username, rawText]
+          `INSERT INTO group_messages (group_id, sender, text, reply_to_id) VALUES ($1, $2, $3, $4)
+           RETURNING id, group_id AS "groupId", sender, text, created_at, reply_to_id`,
+          [groupId, ws.username, rawText, replyToId]
+        );
+        const quoted = await pool.query(
+          `SELECT gm.id, gm.group_id AS "groupId", gm.sender, gm.text, gm.created_at, gm.reply_to_id,
+                  rp.sender AS reply_sender, rp.text AS reply_text
+           FROM group_messages gm LEFT JOIN group_messages rp
+             ON rp.id = gm.reply_to_id AND rp.group_id = gm.group_id
+           WHERE gm.id = $1`,
+          [saved.rows[0].id]
         );
         const members = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
-        const payload = { type: 'group-dm', groupId, message: saved.rows[0] };
+        const payload = { type: 'group-dm', groupId, message: quoted.rows[0] || saved.rows[0] };
         for (const m of members.rows) sendToUser(m.username, payload);
       } catch (err) {
         console.error('Group DM error:', err);

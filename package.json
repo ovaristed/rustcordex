@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.3.8",
-  "description": "Auralis 3.3.8 — call screen-share avatar and mute icon fixes",
+  "version": "3.3.9",
+  "description": "Auralis 3.3.9 — reply to messages in direct and group chats",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
