@@ -349,6 +349,31 @@ jobs:
           console.log('Declared microphone, audio routing, camera and screen capture permissions');
           NODE
 
+      - name: Apply Auralis launcher icon
+        run: |
+          set -euo pipefail
+          command -v convert >/dev/null || { sudo apt-get update && sudo apt-get install -y imagemagick; }
+          RES="android/app/src/main/res"
+          mkdir -p "$RES/drawable-nodpi" "$RES/mipmap-anydpi-v26" "$RES/values"
+          for spec in "mdpi 48" "hdpi 72" "xhdpi 96" "xxhdpi 144" "xxxhdpi 192"; do
+            set -- $spec
+            mkdir -p "$RES/mipmap-$1"
+            convert -background none build/auralis-icon.svg -resize "$2x$2" "$RES/mipmap-$1/ic_launcher.png"
+            cp "$RES/mipmap-$1/ic_launcher.png" "$RES/mipmap-$1/ic_launcher_round.png"
+          done
+          convert -background none build/auralis-icon.svg -resize 324x324 -gravity center -background none -extent 432x432 "$RES/drawable-nodpi/auralis_launcher_foreground.png"
+          cat > "$RES/values/auralis_icon_colors.xml" <<'XML'
+          <resources><color name="auralis_launcher_background">#111326</color></resources>
+          XML
+          cat > "$RES/mipmap-anydpi-v26/ic_launcher.xml" <<'XML'
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/auralis_launcher_background"/>
+              <foreground android:drawable="@drawable/auralis_launcher_foreground"/>
+          </adaptive-icon>
+          XML
+          cp "$RES/mipmap-anydpi-v26/ic_launcher.xml" "$RES/mipmap-anydpi-v26/ic_launcher_round.xml"
+          echo "Installed Auralis launcher icons for all Android densities"
+
       - name: Set Android app version from package.json
         run: |
           node <<'NODE'
