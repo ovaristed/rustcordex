@@ -6045,7 +6045,7 @@ function setSidebarWidth(px) {
   } catch {}
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
   const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
-  applyTheme(isMobileAppearance ? 'emerald' : (savedTheme || 'emerald'));
+  applyTheme(isMobileAppearance ? 'emerald' : (savedTheme && savedTheme !== 'discord' ? savedTheme : 'emerald'));
   const savedAccent = localStorage.getItem('rc_accent_color');
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
