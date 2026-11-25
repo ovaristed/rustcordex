@@ -139,6 +139,7 @@
   .desktop-update-status{font-size:10px;line-height:1.35;text-align:center;color:var(--muted);max-width:210px}
   .desktop-update-button{min-height:32px;padding:0 12px;font-size:11px}
   @media(max-width:760px){.desktop-update-panel{display:none!important}}
+  .desktop-update-panel.android-update-panel{display:flex!important;width:100%;max-width:360px;margin:12px auto 0;padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--panel);}
 
     .mobile-accent-field{display:none}
   .accent-picker{display:flex;align-items:center;gap:14px;margin-top:10px}
@@ -3548,7 +3549,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
     </div>
 
     <a href="https://rustcord.hostless.app/download/" target="_blank" rel="noopener noreferrer" class="app-version-link" onclick="return openExternalSite(event, this.href)" aria-label="Открыть страницу загрузки Auralis во внешнем браузере">
-      <span>Auralis · версия <span id="appVersion">2.5.25</span></span>
+      <span>Auralis · версия <span id="appVersion">2.5.26</span></span>
       <span class="app-version-hint">Нажми, чтобы проверить обновления и скачать</span>
     </a>
     <div id="desktopUpdatePanel" class="desktop-update-panel" hidden>
@@ -3561,6 +3562,8 @@ html[data-theme="glasscord"] .pop-profile-strip {
 <script>
 let desktopUpdateAction = 'check';
 let desktopUpdateBusy = false;
+let androidUpdateTimer = null;
+let androidUpdateDownloadUrl = '';
 function setDesktopUpdateUi(status, buttonText, action, disabled = false) {
   const statusEl = document.getElementById('desktopUpdateStatus');
   const button = document.getElementById('desktopUpdateButton');
@@ -3568,18 +3571,71 @@ function setDesktopUpdateUi(status, buttonText, action, disabled = false) {
   if (button) { button.textContent = buttonText || 'Проверить обновления'; button.disabled = !!disabled; }
   if (action) desktopUpdateAction = action;
 }
+function getAndroidUpdater() {
+  return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AuralisUpdater
+    ? window.Capacitor.Plugins.AuralisUpdater : null;
+}
+async function pollAndroidUpdateProgress(plugin) {
+  if (androidUpdateTimer) clearInterval(androidUpdateTimer);
+  androidUpdateTimer = setInterval(async () => {
+    try {
+      const state = await plugin.getDownloadProgress();
+      if (state && state.downloaded) {
+        clearInterval(androidUpdateTimer); androidUpdateTimer = null;
+        setDesktopUpdateUi('Обновление загружено. Нажми, чтобы установить новую версию.', 'Установить обновление', 'install', false);
+      } else if (state && state.failed) {
+        clearInterval(androidUpdateTimer); androidUpdateTimer = null;
+        setDesktopUpdateUi('Не удалось загрузить APK: ' + (state.reason || 'ошибка загрузки'), 'Повторить загрузку', 'download', false);
+      } else {
+        const percent = state && Number.isFinite(state.percent) ? state.percent : 0;
+        setDesktopUpdateUi('Загружаем обновление: ' + percent + '%', 'Загрузка…', 'download', true);
+      }
+    } catch (error) {
+      clearInterval(androidUpdateTimer); androidUpdateTimer = null;
+      setDesktopUpdateUi('Ошибка загрузки: ' + String(error && error.message || error).slice(0, 110), 'Повторить', 'check', false);
+    }
+  }, 1100);
+}
 async function handleDesktopUpdateAction() {
+  const android = getAndroidUpdater();
   const bridge = window.rustcordDesktop;
-  if (!bridge || desktopUpdateBusy) return;
+  if ((!android && !bridge) || desktopUpdateBusy) return;
   desktopUpdateBusy = true;
   const action = desktopUpdateAction;
-  setDesktopUpdateUi(action === 'download' ? 'Загружаем обновление…' : action === 'install' ? 'Перезапускаем Auralis…' : 'Проверяем наличие новой версии…', action === 'download' ? 'Загрузка…' : action === 'install' ? 'Установка…' : 'Проверка…', action, true);
+  setDesktopUpdateUi(action === 'download' ? 'Загружаем обновление…' : action === 'install' ? 'Открываем установщик Android…' : 'Проверяем наличие новой версии…', action === 'download' ? 'Загрузка…' : action === 'install' ? 'Установка…' : 'Проверка…', action, true);
   try {
-    if (action === 'install') { bridge.installUpdate(); return; }
-    if (action === 'download') {
-      await bridge.downloadUpdate();
+    if (android) {
+      if (action === 'install') {
+        await android.install();
+        setDesktopUpdateUi('Открылся системный установщик. Подтверди обновление Auralis.', 'Проверить ещё раз', 'check', false);
+        return;
+      }
+      if (action === 'download') {
+        if (!androidUpdateDownloadUrl) {
+          const checked = await android.check();
+          androidUpdateDownloadUrl = checked.downloadUrl || '';
+        }
+        if (!androidUpdateDownloadUrl) throw new Error('Ссылка на APK не найдена');
+        await android.download({ url: androidUpdateDownloadUrl, version: window.androidAvailableVersion || 'latest' });
+        await pollAndroidUpdateProgress(android);
+        return;
+      }
+      const result = await android.check();
+      if (result.version) {
+        const label = document.getElementById('appVersion');
+        if (label) label.textContent = result.version;
+      }
+      if (result.updateAvailable) {
+        androidUpdateDownloadUrl = result.downloadUrl || '';
+        window.androidAvailableVersion = result.availableVersion || 'latest';
+        setDesktopUpdateUi('Доступна версия ' + result.availableVersion + '. Нажми, чтобы скачать APK.', 'Скачать обновление', 'download', false);
+      } else {
+        setDesktopUpdateUi('Установлена последняя версия (' + (result.version || 'актуальная') + ').', 'Проверить ещё раз', 'check', false);
+      }
       return;
     }
+    if (action === 'install') { bridge.installUpdate(); return; }
+    if (action === 'download') { await bridge.downloadUpdate(); return; }
     const result = await bridge.checkForUpdates();
     if (!result || result.supported === false) {
       setDesktopUpdateUi(result && result.reason || 'Автообновление доступно только в Windows.', 'Проверить обновления', 'check', false);
@@ -3589,13 +3645,26 @@ async function handleDesktopUpdateAction() {
       setDesktopUpdateUi('Установлена последняя версия (' + (result.version || 'актуальная') + ').', 'Проверить ещё раз', 'check', false);
     }
   } catch (error) {
-    setDesktopUpdateUi('Не удалось проверить обновление: ' + String(error && error.message || error).slice(0, 130), 'Повторить', 'check', false);
+    setDesktopUpdateUi('Не удалось выполнить обновление: ' + String(error && error.message || error).slice(0, 130), 'Повторить', action === 'download' ? 'download' : 'check', false);
   } finally { desktopUpdateBusy = false; }
 }
 function initDesktopUpdater() {
+  const android = getAndroidUpdater();
   const bridge = window.rustcordDesktop;
   const panel = document.getElementById('desktopUpdatePanel');
-  if (!bridge || !panel) return;
+  if (!panel) return;
+  if (android) {
+    panel.hidden = false;
+    panel.classList.add('android-update-panel');
+    setDesktopUpdateUi('Проверяем обновления Auralis…', 'Проверка…', 'check', true);
+    android.getVersion().then(version => {
+      const label = document.getElementById('appVersion');
+      if (label && version) label.textContent = version;
+    }).catch(() => {});
+    handleAndroidUpdateCheckOnStart();
+    return;
+  }
+  if (!bridge) return;
   panel.hidden = false;
   bridge.getVersion().then((version) => {
     const label = document.getElementById('appVersion');
@@ -3611,6 +3680,26 @@ function initDesktopUpdater() {
       if (event.state === 'downloaded') setDesktopUpdateUi('Обновление загружено. Можно установить.', 'Перезапустить и установить', 'install', false);
       if (event.state === 'error') setDesktopUpdateUi('Ошибка обновления: ' + String(event.message || '').slice(0, 130), 'Повторить', 'check', false);
     });
+  }
+}
+async function handleAndroidUpdateCheckOnStart() {
+  try {
+    const plugin = getAndroidUpdater();
+    if (!plugin) return;
+    const result = await plugin.check();
+    if (result.version) {
+      const label = document.getElementById('appVersion');
+      if (label) label.textContent = result.version;
+    }
+    if (result.updateAvailable) {
+      androidUpdateDownloadUrl = result.downloadUrl || '';
+      window.androidAvailableVersion = result.availableVersion || 'latest';
+      setDesktopUpdateUi('Доступна версия ' + result.availableVersion + '.', 'Скачать обновление', 'download', false);
+    } else {
+      setDesktopUpdateUi('Установлена последняя версия (' + (result.version || '') + ').', 'Проверить ещё раз', 'check', false);
+    }
+  } catch (error) {
+    setDesktopUpdateUi('Не удалось проверить обновления: ' + String(error && error.message || error).slice(0, 110), 'Повторить', 'check', false);
   }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDesktopUpdater);
