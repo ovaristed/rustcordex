@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.4.8",
-  "description": "Auralis 3.4.8 — desktop UI fixes",
+  "version": "3.4.9",
+  "description": "Auralis 3.4.9 — desktop UI fixes",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
