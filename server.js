@@ -876,6 +876,38 @@ app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
   }
 });
 
+// Удаление участника группы с обязательной системной записью в истории.
+app.post('/api/groups/:id/members/:username/remove', authMiddleware, async (req, res) => {
+  try {
+    const groupId = String(req.params.id);
+    const actor = req.user.username;
+    const targetParam = decodeURIComponent(String(req.params.username || '')).trim();
+    const groupRow = await pool.query('SELECT owner FROM groups WHERE id = $1', [groupId]);
+    if (!groupRow.rows.length) return res.status(404).json({ error: 'Группа не найдена' });
+    if (groupRow.rows[0].owner !== actor) return res.status(403).json({ error: 'Удалять участников может только создатель группы' });
+    const targetRow = await pool.query('SELECT username FROM group_members WHERE group_id = $1 AND LOWER(username) = LOWER($2)', [groupId, targetParam]);
+    if (!targetRow.rows.length) return res.status(404).json({ error: 'Участник не найден в группе' });
+    const target = targetRow.rows[0].username;
+    if (target === actor) return res.status(400).json({ error: 'Создателя нельзя удалить из группы' });
+    await pool.query('DELETE FROM group_members WHERE group_id = $1 AND username = $2', [groupId, target]);
+    const auditText = 'Участник @' + actor + ' удалил из группы @' + target;
+    const saved = await pool.query(
+      'INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3) RETURNING id, group_id AS "groupId", sender, text, created_at',
+      [groupId, actor, auditText]
+    );
+    const remaining = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
+    const members = remaining.rows.map(r => r.username);
+    for (const username of members) sendToUser(username, { type: 'group-dm', groupId, message: saved.rows[0] });
+    sendToUser(target, { type: 'group-removed', groupId, actor, target });
+    const group = await loadGroup(groupId);
+    for (const username of members) sendToUser(username, { type: 'group-update', group });
+    res.json({ ok: true, group, removed: target });
+  } catch (err) {
+    console.error('Group member remove error:', err);
+    res.status(500).json({ error: 'Не удалось удалить участника' });
+  }
+});
+
 // Удаление группы — только создатель
 app.delete('/api/groups/:id', authMiddleware, async (req, res) => {
   try {
