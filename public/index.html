@@ -3839,6 +3839,90 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 }
 </style>
 
+
+<style id="auralis-android-fixes-2536">
+/* Android 2.5.36 — hide admin tools and correct mobile safe-area/scroll alignment */
+@media (max-width:760px) {
+  body.android-md3 .owner-admin-entry,
+  body.android-md3 #ownerAdminEntry,
+  body.android-md3 #sTabAdmin,
+  body.android-md3 #sPanelAdmin,
+  body.android-md3 .admin-shell,
+  body.android-md3 #adminOverview {
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  /* Keep profile/navigation content below Android's status and notification area. */
+  body.android-md3 .sidebar {
+    padding-top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
+  }
+  body.android-md3 .sidebar-top {
+    padding-top:6px !important;
+    min-height:0 !important;
+  }
+  body.android-md3 .top-tabs {
+    margin-top:6px !important;
+  }
+  body.android-md3 .chat-header {
+    padding-top:calc(env(safe-area-inset-top, 0px) + 8px) !important;
+  }
+
+  /* Settings: keep the title and tabs fixed; scroll only the selected section. */
+  body.android-md3 #settingsModal .modal-card {
+    display:flex !important;
+    flex-direction:column !important;
+    min-height:0 !important;
+    max-height:calc(100dvh - env(safe-area-inset-top, 0px) - 8px) !important;
+    overflow:hidden !important;
+    padding-top:calc(16px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom:max(16px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.android-md3 #settingsModal .modal-head,
+  body.android-md3 #settingsModal .settings-tabs {
+    position:relative !important;
+    top:auto !important;
+    flex:0 0 auto !important;
+    z-index:3 !important;
+  }
+  body.android-md3 #settingsModal .s-section {
+    flex:1 1 auto !important;
+    min-height:0 !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain !important;
+    padding:4px 2px 18px !important;
+  }
+
+  /* The composer uses the full chat width and stays visually centered. */
+  body.android-md3 #composer,
+  body.android-md3 .composer {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+    left:0 !important;
+    right:0 !important;
+    transform:none !important;
+    box-sizing:border-box !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
+    justify-content:center !important;
+    align-items:center !important;
+  }
+  body.android-md3 #composer > * {
+    min-width:0;
+  }
+  body.android-md3 #composer input,
+  body.android-md3 #composer textarea {
+    flex:1 1 0 !important;
+    width:0 !important;
+    max-width:100% !important;
+  }
+}
+</style>
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
