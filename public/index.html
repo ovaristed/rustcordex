@@ -4704,21 +4704,17 @@ async function handleDesktopUpdateAction() {
   } finally { desktopUpdateBusy = false; }
 }
 function initDesktopUpdater() {
+  const isAndroidPhone = !!(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' && window.Capacitor.getPlatform() === 'android');
   const android = getAndroidUpdater();
   const bridge = window.rustcordDesktop;
   const panel = document.getElementById('desktopUpdatePanel');
-  if (!panel) return;
-  if (android) {
-    panel.hidden = false;
-    panel.classList.add('android-update-panel');
-    setDesktopUpdateUi('Проверяем обновления Auralis…', 'Проверка…', 'check', true);
-    android.getVersion().then(version => {
-      const label = document.getElementById('appVersion');
-      if (label && version) label.textContent = version;
-    }).catch(() => {});
-    handleAndroidUpdateCheckOnStart();
+  const versionLink = document.querySelector('.app-version-link');
+  if (isAndroidPhone) {
+    if (versionLink) versionLink.hidden = true;
+    if (panel) panel.hidden = true;
     return;
   }
+  if (!panel) return;
   if (!bridge) return;
   panel.hidden = false;
   bridge.getVersion().then((version) => {
