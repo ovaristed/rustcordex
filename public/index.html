@@ -10634,3 +10634,14 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 #profilePopover .pop-presence-row-bottom .pop-ghost-toggle .auralis-status-icon{width:21px;height:21px;flex-basis:21px}
 #profilePopover .pop-presence-row-bottom .pop-ghost-switch{display:none}
 </style>
+
+
+<style id="auralis-final-android-sidebar-actions-2539">
+/* Final override: the Android account dock must keep Settings and Logout visible. */
+@media(max-width:760px){
+ body.android-md3 #app .bottom-dock .user-bar{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:5px!important;min-width:0!important;overflow:visible!important}
+ body.android-md3 #app .bottom-dock .user-bar .user-trigger{display:flex!important;flex:1 1 0!important;min-width:0!important}
+ body.android-md3 #app .bottom-dock .user-bar .item-actions{display:flex!important;visibility:visible!important;opacity:1!important;position:static!important;flex:0 0 auto!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important;width:auto!important;height:auto!important;overflow:visible!important;pointer-events:auto!important}
+ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;flex:0 0 38px!important;width:38px!important;min-width:38px!important;height:38px!important;pointer-events:auto!important}
+}
+</style>
