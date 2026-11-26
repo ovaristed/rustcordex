@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.5.1",
-  "description": "Auralis 3.5.0 — desktop UI fixes",
+  "version": "3.5.2",
+  "description": "Auralis 3.5.2 — chat and avatar editor",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
