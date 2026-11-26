@@ -1422,8 +1422,8 @@
   }
   .msg-sticker-big img {
     display:block;
-    width:clamp(160px, 19vw, 220px);
-    height:auto;
+    width:clamp(104px, 12vw, 128px);
+    height:clamp(104px, 12vw, 128px);
     object-fit:contain;
     user-select:none;
     -webkit-user-drag:none;
@@ -4124,6 +4124,63 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
     -webkit-text-fill-color:var(--text) !important;
     border-color:color-mix(in srgb, var(--text) 22%, var(--accent) 30%) !important;
   }
+</style>
+
+
+<style id="auralis-fixed-composer-and-uniform-stickers-357">
+/* Composer: fixed, non-resizable height and theme-safe opaque surface. */
+#composer #msgInput,
+#composer #msgInput:focus {
+  box-sizing:border-box!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  resize:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  white-space:pre-wrap!important;
+  overflow-wrap:anywhere!important;
+  background:rgba(var(--panel-rgb),.94)!important;
+  background-color:rgba(var(--panel-rgb),.94)!important;
+  color:var(--text)!important;
+  -webkit-text-fill-color:var(--text)!important;
+  caret-color:var(--accent)!important;
+  border:1px solid rgba(var(--accent-rgb),.30)!important;
+  border-radius:13px!important;
+  padding:12px 13px!important;
+  line-height:22px!important;
+  outline:none!important;
+}
+#composer #msgInput:focus {
+  background:rgba(var(--panel-rgb),.98)!important;
+  background-color:rgba(var(--panel-rgb),.98)!important;
+  border-color:rgba(var(--accent-rgb),.72)!important;
+  box-shadow:0 0 0 2px rgba(var(--accent-rgb),.14)!important;
+}
+#composer #msgInput::placeholder {
+  color:var(--muted)!important;
+  -webkit-text-fill-color:var(--muted)!important;
+  opacity:1!important;
+}
+/* All chat stickers share one restrained display box; artwork keeps its aspect ratio. */
+.msg-sticker-big {font-size:42px!important;line-height:1.1!important}
+.msg-sticker-big img {
+  display:block!important;
+  width:clamp(104px,12vw,128px)!important;
+  height:clamp(104px,12vw,128px)!important;
+  max-width:128px!important;
+  max-height:128px!important;
+  object-fit:contain!important;
+}
+@media(max-width:760px){
+  #composer #msgInput,#composer #msgInput:focus {
+    height:48px!important;min-height:48px!important;max-height:48px!important;
+    padding:12px 10px!important;font-size:16px!important;
+  }
+  .msg-sticker-big img {
+    width:112px!important;height:112px!important;max-width:112px!important;max-height:112px!important;
+  }
+}
 </style>
 
 </head>
