@@ -8977,6 +8977,9 @@ function connectWS() {
       applyMessageDelete(data.scope, data.id);
     } else if (data.type === 'message-edited') {
       applyMessageEdit(data.scope, data.message);
+    } else if (data.type === 'group-removed') {
+      removeGroupLocal(String(data.groupId || ''));
+      showToast('Тебя удалил из группы @' + String(data.actor || 'создатель'));
     } else if (data.type === 'group-deleted') {
       removeGroupLocal(String(data.groupId || ''));
     } else if (data.type === 'friend-update' || data.type === 'group-update') {
