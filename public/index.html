@@ -8493,18 +8493,15 @@ function appendMsg(m) {
   const rawText = String(m.text || '');
   const systemInfo = parseSystemActionMessage(rawText);
   if (systemInfo) {
+    // Only group membership changes belong in the group chat timeline.
+    if (!['member-added', 'member-removed'].includes(systemInfo.action)) return;
     if (m.created_at) window.auralisAddChatDateDivider(box, m.created_at);
     const actor = displayNameOf(systemInfo.actor || m.sender || 'Система');
     const targets = Array.isArray(systemInfo.targets) ? systemInfo.targets.map(displayNameOf) : [];
     const target = systemInfo.target ? displayNameOf(systemInfo.target) : '';
-    const actionText = {
-      'member-removed': 'удалил из группы',
-      'member-added': 'добавил в группу',
-      'friend-added': 'отправил запрос в друзья',
-      'friend-removed': 'удалил из друзей',
-      'blocked': 'заблокировал',
-      'unblocked': 'разблокировал'
-    }[systemInfo.action] || String(systemInfo.description || 'выполнил действие');
+    const actionText = systemInfo.action === 'member-added'
+      ? 'добавил в группу'
+      : 'удалил из группы';
     const row = document.createElement('div');
     row.className = 'call-log-row system-action-row';
     if (msgKey) { row.dataset.mkey = msgKey; row.dataset.mid = String(m.id); }
