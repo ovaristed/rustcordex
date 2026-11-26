@@ -884,7 +884,7 @@ app.post('/api/groups/:id/audit', authMiddleware, async (req, res) => {
     const target = String(req.body.username || '').trim();
     const action = String(req.body.action || '');
     const phrases = {
-      'friend-added': 'добавил в друзья',
+      'friend-added': 'отправил запрос в друзья',
       'friend-removed': 'удалил из друзей',
       'blocked': 'заблокировал',
       'unblocked': 'разблокировал'
