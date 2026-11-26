@@ -773,7 +773,11 @@
     transition: box-shadow 0.14s ease, border-color 0.14s ease, border-radius 0.16s ease;
   }
   .avatar.group-av {
-    background: linear-gradient(135deg, #5865f2, #30d158);
+    background: color-mix(in srgb, #fff 88%, var(--accent) 12%);
+    color: color-mix(in srgb, var(--accent) 70%, var(--bg));
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+    display: grid;
+    place-items: center;
     font-size: 12px;
   }
   .avatar img,
