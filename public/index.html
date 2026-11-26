@@ -6261,6 +6261,8 @@ function applyTheme(name) {
   else { localStorage.setItem('rc_desktop_theme_mode','preset'); localStorage.setItem('rc_desktop_base_theme',valid); }
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
+  if(typeof window.auralisSyncThemeAppIcon==='function')window.auralisSyncThemeAppIcon();
+  else window.__auralisPendingThemeIconSync=true;
   const t = THEMES[valid];
   // Built-in appearance presets have their own fixed glass settings.
   // The custom theme workspace remains independent and keeps its own values.
@@ -10463,6 +10465,28 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 @keyframes auralisStatusBreath{50%{filter:drop-shadow(0 0 10px rgba(37,255,137,.5))}}
 @keyframes auralisGhostFloat{50%{transform:translateY(-2px)}}
 </style>
+<style id="auralis-cosmic-glass-theme">
+/* Opt-in Cosmic Glass preset. All selectors are scoped so existing themes remain unchanged. */
+html[data-theme="cosmic"]{--bg:#080612;--accent:#a77bff;--accent-rgb:167,123,255;--icon-color:rgba(194,164,255,.96);--icon-muted:rgba(167,123,255,.62);--glow-2:rgba(91,73,190,.34);--green:#47f0a1;--text:#f6f1ff;--muted:rgba(224,214,255,.66);--border:rgba(190,164,255,.20)}
+html[data-theme="cosmic"] body{background:radial-gradient(ellipse at 12% 8%,rgba(116,75,210,.26),transparent 38%),radial-gradient(ellipse at 88% 18%,rgba(57,92,210,.20),transparent 36%),radial-gradient(ellipse at 50% 100%,rgba(90,45,150,.18),transparent 48%),#080612!important}
+html[data-theme="cosmic"] .sidebar,html[data-theme="cosmic"] .main,html[data-theme="cosmic"] .card,html[data-theme="cosmic"] .modal-card,html[data-theme="cosmic"] .incoming-card,html[data-theme="cosmic"] .profile-popover,html[data-theme="cosmic"] .user-profile-card,html[data-theme="cosmic"] .voice-ctx-menu,html[data-theme="cosmic"] .group-ctx-menu,html[data-theme="cosmic"] .app-dialog{background:linear-gradient(145deg,rgba(35,27,57,.84),rgba(17,14,31,.88) 58%,rgba(13,12,27,.92))!important;border-color:rgba(190,164,255,.19)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 16px 48px rgba(0,0,0,.28),0 0 28px rgba(112,78,205,.07);backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%)}
+html[data-theme="cosmic"] .chat-header,html[data-theme="cosmic"] .top-tabs,html[data-theme="cosmic"] .bottom-dock,html[data-theme="cosmic"] .composer,html[data-theme="cosmic"] .panel-body{background-color:rgba(20,16,35,.66)!important;border-color:rgba(190,164,255,.14)!important}
+html[data-theme="cosmic"] .primary-btn,html[data-theme="cosmic"] .send-btn,html[data-theme="cosmic"] .sm-btn.blue{background:linear-gradient(135deg,#9d72f4,#596ee8)!important;border:1px solid rgba(220,205,255,.28)!important;box-shadow:0 5px 18px rgba(111,80,208,.27),inset 0 1px 0 rgba(255,255,255,.22)}
+html[data-theme="cosmic"] .tab-btn.active,html[data-theme="cosmic"] .auralis-rail-btn.active,html[data-theme="cosmic"] .list-item.active{background:linear-gradient(120deg,rgba(143,105,230,.24),rgba(83,102,213,.13))!important;border-color:rgba(183,155,255,.24)!important;box-shadow:inset 0 0 18px rgba(126,93,215,.08),0 0 18px rgba(126,93,215,.08)}
+html[data-theme="cosmic"] input:not([type="checkbox"]):not([type="range"]),html[data-theme="cosmic"] textarea,html[data-theme="cosmic"] select{background:rgba(12,10,24,.62)!important;border-color:rgba(181,155,245,.22)!important;color:var(--text)!important}
+html[data-theme="cosmic"] .avatar,html[data-theme="cosmic"] .user-profile-avatar,html[data-theme="cosmic"] .pop-av{box-shadow:0 0 0 1px rgba(190,164,255,.20),0 0 18px rgba(133,99,226,.12)}
+html[data-theme="cosmic"] .auralis-status-icon{width:28px;height:28px;flex-basis:28px;filter:drop-shadow(0 3px 8px var(--status-glow,rgba(120,90,210,.28)))}
+html[data-theme="cosmic"] .auralis-status-icon.status-online{--status-glow:rgba(37,255,137,.62)}
+html[data-theme="cosmic"] .auralis-status-icon.status-offline{--status-glow:rgba(183,190,224,.38)}
+html[data-theme="cosmic"] .auralis-status-icon.status-idle{--status-glow:rgba(112,126,255,.62)}
+html[data-theme="cosmic"] .auralis-status-icon.status-dnd{--status-glow:rgba(255,69,58,.62)}
+html[data-theme="cosmic"] .auralis-status-icon.status-invisible{--status-glow:rgba(180,187,204,.34)}
+html[data-theme="cosmic"] .auralis-status-icon.status-ghost{--status-glow:rgba(180,95,255,.66)}
+html[data-theme="cosmic"] .auralis-status-menu{background:linear-gradient(145deg,rgba(35,27,57,.97),rgba(17,14,31,.98))!important;border-color:rgba(190,164,255,.25)!important;box-shadow:0 18px 48px rgba(0,0,0,.5),0 0 24px rgba(126,93,215,.13)}
+html[data-theme="cosmic"] .auralis-status-menu button:hover,html[data-theme="cosmic"] .auralis-status-menu button.active{background:rgba(151,117,237,.18)!important}
+html[data-theme="cosmic"] .theme-swatch[data-theme="cosmic"]{border-color:#b99aff;box-shadow:0 0 0 2px rgba(167,123,255,.2),0 0 20px rgba(167,123,255,.22)}
+@media(prefers-reduced-motion:no-preference){html[data-theme="cosmic"] .primary-btn:hover,html[data-theme="cosmic"] .send-btn:hover,html[data-theme="cosmic"] .sm-btn.blue:hover{filter:brightness(1.1);box-shadow:0 7px 22px rgba(111,80,208,.38)}}
+</style>
 <script id="auralis-android-sidebar-account-status-runtime-2538">
 (function(){
  const STATUSES={
@@ -10474,6 +10498,10 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   ghost:{label:'Призрак',color:'#bd72ff'}
  };
  function renderAuralisStatusIcon(key){
+  if(document.documentElement.dataset.theme!=='cosmic'){
+   const fallbackColors={online:'#30d158',offline:'#aeb4c8',idle:'#8792ff',dnd:'#ff453a',invisible:'#aeb4c8',ghost:'#bd72ff'};
+   return '<svg class="auralis-status-icon status-'+key+'" viewBox="0 0 48 48" role="img" aria-hidden="true"><circle cx="24" cy="24" r="11" fill="'+(fallbackColors[key]||'#aeb4c8')+'"/></svg>';
+  }
   const common='class="auralis-status-icon status-'+key+'" viewBox="0 0 48 48" role="img" aria-hidden="true"';
   const defs=(id,a,b)=>'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs>';
   const icons={
@@ -10487,6 +10515,10 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   return '<svg '+common+'>'+icons[key]+'</svg>';
  }
  window.renderAuralisStatusIcon=renderAuralisStatusIcon;
+ window.auralisSyncThemeAppIcon=function(){
+  const active=document.documentElement.dataset.theme==='cosmic';
+  document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]').forEach(link=>{link.href=active?'/auralis-cosmic-icon.svg':'/auralis-icon.svg'});
+ };
  function init(){
   const isAndroid=document.body.classList.contains('android-md3');
   const rail=isAndroid?document.getElementById('auralisMobileRail'):null;
