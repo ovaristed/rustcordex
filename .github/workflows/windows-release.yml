@@ -34,8 +34,23 @@ jobs:
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           "version=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install dependencies (retry transient Electron download failures)
+        shell: pwsh
+        run: |
+          $maxAttempts = 4
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "Dependency installation attempt $attempt of $maxAttempts"
+            npm install --no-audit --no-fund --fetch-retries=5 --fetch-retry-mintimeout=20000 --fetch-retry-maxtimeout=120000
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "Dependencies installed successfully."
+              exit 0
+            }
+            if ($attempt -lt $maxAttempts) {
+              Write-Warning "npm install failed (exit $LASTEXITCODE). Waiting 30 seconds before retry."
+              Start-Sleep -Seconds 30
+            }
+          }
+          throw "npm install failed after $maxAttempts attempts."
 
       - name: Build Windows installer and portable app
         run: npx electron-builder --win nsis portable --publish never
