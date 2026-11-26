@@ -4003,6 +4003,22 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 .pop-ghost-toggle.enabled .pop-ghost-switch{background:var(--accent)}
 .pop-ghost-toggle.enabled .pop-ghost-switch:after{transform:translateX(12px)}
 </style>
+<style id="auralis-chat-call-button-polish">
+.chat-header .header-actions{display:flex;align-items:center;gap:9px}
+.chat-header .chat-header-call{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 15px;border:1px solid color-mix(in srgb,var(--accent) 48%,transparent);border-radius:13px;background:color-mix(in srgb,var(--accent) 13%,transparent);color:var(--accent);font:700 12px/1 inherit;letter-spacing:.01em;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 3px 12px rgba(0,0,0,.10);transition:background .16s ease,border-color .16s ease,transform .16s ease,box-shadow .16s ease}
+.chat-header .chat-header-call svg{width:17px;height:17px;stroke:currentColor;filter:drop-shadow(0 1px 3px color-mix(in srgb,var(--accent) 35%,transparent))}
+.chat-header .chat-header-call:hover{background:color-mix(in srgb,var(--accent) 22%,transparent);border-color:var(--accent);box-shadow:0 4px 15px color-mix(in srgb,var(--accent) 16%,transparent)}
+.chat-header .chat-header-call:active{transform:scale(.97)}
+@media(max-width:520px){.chat-header .chat-header-call{width:40px;min-width:40px;padding:0;border-radius:12px}.chat-header .chat-header-call span{display:none}}
+</style>
+<style id="auralis-mic-gain-slider-polish">
+#micGainSlider{width:100%;height:28px;background:transparent!important;border:0!important;box-shadow:none!important;padding:0;appearance:none;-webkit-appearance:none;accent-color:var(--accent)}
+#micGainSlider::-webkit-slider-runnable-track{height:4px;border:0;border-radius:999px;background:linear-gradient(90deg,var(--accent) 0%,rgba(var(--accent-rgb),.38) 100%)}
+#micGainSlider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:17px;height:17px;margin-top:-6.5px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);box-shadow:0 1px 5px rgba(0,0,0,.28)}
+#micGainSlider::-moz-range-track{height:4px;border:0;border-radius:999px;background:rgba(var(--accent-rgb),.38)}
+#micGainSlider::-moz-range-progress{height:4px;border-radius:999px;background:var(--accent)}
+#micGainSlider::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);box-shadow:0 1px 5px rgba(0,0,0,.28)}
+</style>
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -4124,7 +4140,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
       </div>
       <div class="header-actions">
         <button id="inviteGroupBtn" type="button" class="sm-btn hidden" onclick="openGroupModal('invite')">+ Добавить друзей</button>
-        <button id="startCallBtn" type="button" class="call-pill hidden" onclick="startCallWithActiveChat()">
+        <button id="startCallBtn" type="button" class="call-pill chat-header-call hidden" onclick="startCallWithActiveChat()" aria-label="Позвонить">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span>Позвонить</span>
         </button>
@@ -10435,16 +10451,8 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
  body.android-md3 #auralisMobileRail .auralis-rail-account-btn svg{width:20px;height:20px}
  body.android-md3 #auralisMobileRail .auralis-rail-account-btn.auralis-logout{color:#ff6961}
  body.android-md3 #auralisMobileRail .auralis-rail-account-btn.auralis-status{color:var(--green)}
- body.android-md3 #auralisMobileRail .auralis-status-menu{
-  position:absolute;left:calc(100% + 8px);bottom:74px;z-index:60;width:190px;padding:7px;
-  border:1px solid var(--android-outline);border-radius:14px;background:var(--android-surface-2);
-  box-shadow:0 12px 32px rgba(0,0,0,.38);display:flex;flex-direction:column;gap:3px
- }
- body.android-md3 #auralisMobileRail .auralis-status-menu button{
-  width:100%;min-height:40px;padding:8px 10px;border:0;border-radius:9px;background:transparent;
-  color:var(--android-on-surface);text-align:left;font:600 12px inherit
- }
- body.android-md3 #auralisMobileRail .auralis-status-menu button.active{background:var(--android-surface-3)}
+
+
  body.android-md3 #app .bottom-dock .user-bar .item-actions{display:none!important}
  body.android-md3 #app #meLoginSub{font-size:10.5px!important}
 }
@@ -10456,14 +10464,6 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 .auralis-status-icon.status-ghost{--status-glow:rgba(180,95,255,.5)}
 .user-profile-presence{display:grid!important;place-items:center;overflow:visible;background:transparent!important;border:0!important;box-shadow:none!important}
 .user-profile-presence .auralis-status-icon{width:34px;height:34px;flex-basis:34px}
-.auralis-status-menu{position:absolute;z-index:120;width:224px;padding:8px;border:1px solid var(--border);border-radius:16px;background:var(--glass-solid);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:0 16px 42px rgba(0,0,0,.42);display:flex;flex-direction:column;gap:4px}
-.auralis-status-menu.hidden{display:none!important}
-.auralis-status-menu button{display:flex;align-items:center;gap:11px;width:100%;min-height:48px;padding:7px 11px;border:0;border-radius:11px;background:transparent;color:var(--text);text-align:left;font:600 12px inherit;cursor:pointer}
-.auralis-status-menu button:hover,.auralis-status-menu button.active{background:var(--glass-hover)}
-.auralis-status-menu button .auralis-status-icon{width:30px;height:30px;flex-basis:30px}
-.auralis-desktop-status-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:4px 9px;border:1px solid var(--border);border-radius:11px;background:var(--glass-2);color:var(--text);font-size:11px;cursor:pointer}
-.auralis-desktop-status-btn .auralis-status-icon{width:22px;height:22px;flex-basis:22px}
-@media(min-width:761px){.bottom-dock{position:relative}.bottom-dock>.auralis-status-menu{left:12px;bottom:calc(100% + 8px)}}
 @media(max-width:760px){body.android-md3 #auralisMobileRail .auralis-status-menu{width:232px}body.android-md3 #auralisMobileRail .auralis-status-menu button{display:flex;align-items:center;gap:10px;min-height:48px;padding:7px 10px;font:600 12px inherit}body.android-md3 #auralisMobileRail .auralis-status-menu .auralis-status-icon{width:30px;height:30px;flex-basis:30px}}
 @media(prefers-reduced-motion:no-preference){.auralis-status-icon.status-online{animation:auralisStatusBreath 3.2s ease-in-out infinite}.auralis-status-icon.status-ghost{animation:auralisGhostFloat 4s ease-in-out infinite}}
 @keyframes auralisStatusBreath{50%{filter:drop-shadow(0 0 10px rgba(37,255,137,.5))}}
