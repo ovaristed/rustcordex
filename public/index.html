@@ -10518,7 +10518,10 @@ html[data-theme="cosmic"] .theme-swatch[data-theme="cosmic"]{border-color:#b99af
  window.auralisSyncThemeAppIcon=function(){
   const active=document.documentElement.dataset.theme==='cosmic';
   document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]').forEach(link=>{link.href=active?'/auralis-cosmic-icon.svg':'/auralis-icon.svg'});
+  const manifest=document.querySelector('link[rel="manifest"]');
+  if(manifest)manifest.href=active?'/auralis-cosmic.webmanifest':'/manifest.webmanifest';
  };
+ if(window.__auralisPendingThemeIconSync){window.auralisSyncThemeAppIcon();window.__auralisPendingThemeIconSync=false;}
  function init(){
   const isAndroid=document.body.classList.contains('android-md3');
   const rail=isAndroid?document.getElementById('auralisMobileRail'):null;
