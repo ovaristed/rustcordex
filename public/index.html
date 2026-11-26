@@ -3992,6 +3992,17 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   }
 }
 </style>
+<style id="auralis-profile-ghost-toggle">
+.pop-presence-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:rgba(var(--accent-rgb),.045)}
+.pop-presence-label{font-size:12px;font-weight:700;color:var(--muted)}
+.pop-ghost-toggle{display:flex;align-items:center;gap:8px;min-height:36px;padding:5px 9px;border:1px solid var(--border);border-radius:11px;background:transparent;color:var(--text);font:600 11px inherit;cursor:pointer;transition:.18s ease}
+.pop-ghost-toggle .auralis-status-icon{width:23px;height:23px;flex-basis:23px}
+.pop-ghost-switch{width:29px;height:17px;border-radius:99px;background:rgba(140,145,160,.28);position:relative;transition:.18s ease}
+.pop-ghost-switch:after{content:"";position:absolute;width:11px;height:11px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.18s ease}
+.pop-ghost-toggle.enabled{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.pop-ghost-toggle.enabled .pop-ghost-switch{background:var(--accent)}
+.pop-ghost-toggle.enabled .pop-ghost-switch:after{transform:translateX(12px)}
+</style>
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -4228,6 +4239,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
       </button>
     </div>
 
+    <div class="pop-presence-row"><span class="pop-presence-label">Статус</span><button id="popGhostToggle" type="button" class="pop-ghost-toggle" aria-pressed="false" onclick="toggleGhostFromProfile()"><span id="popGhostIcon"></span><span id="popGhostText">Призрак выключен</span><span class="pop-ghost-switch" aria-hidden="true"></span></button></div>
     <div class="pop-profile-strip">
       <button id="popSticker" type="button" class="pop-sticker" title="Выбрать стикер профиля" onclick="toggleProfileStickerPicker('popover')">＋</button>
       <div id="popDescription" class="pop-description">Здесь будет описание</div>
@@ -10460,8 +10472,8 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 <script id="auralis-android-sidebar-account-status-runtime-2538">
 (function(){
  const LABELS={online:{label:'В сети',color:'#30d158'},offline:{label:'Не в сети',color:'#aeb4c8'},ghost:{label:'Призрак',color:'#bd72ff'}};
- function ghostEnabled(){return localStorage.getItem('auralis_presence_status')==='ghost'}
- function currentStatus(){return ghostEnabled()?'ghost':(navigator.onLine?'online':'offline')}
+ const ghostEnabled=()=>localStorage.getItem('auralis_presence_status')==='ghost';
+ const currentStatus=()=>ghostEnabled()?'ghost':(navigator.onLine?'online':'offline');
  function renderAuralisStatusIcon(key){
   const common='class="auralis-status-icon status-'+key+'" viewBox="0 0 48 48" role="img" aria-hidden="true"';
   const defs=(id,a,b)=>'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs>';
@@ -10474,68 +10486,32 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
  }
  window.renderAuralisStatusIcon=renderAuralisStatusIcon;
  window.auralisIsGhostMode=ghostEnabled;
- window.auralisSyncThemeAppIcon=function(){
-  const active=document.documentElement.dataset.theme==='cosmic';
-  document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]').forEach(link=>{link.href=active?'/auralis-cosmic-icon.svg':'/auralis-icon.svg'});
-  const manifest=document.querySelector('link[rel="manifest"]');
-  if(manifest)manifest.href=active?'/auralis-cosmic.webmanifest':'/manifest.webmanifest';
- };
- if(window.__auralisPendingThemeIconSync){window.auralisSyncThemeAppIcon();window.__auralisPendingThemeIconSync=false;}
- function init(){
-  const isAndroid=document.body.classList.contains('android-md3');
-  const rail=isAndroid?document.getElementById('auralisMobileRail'):null;
-  const dock=document.querySelector('.bottom-dock');
-  const userBar=document.querySelector('.bottom-dock .user-bar');
-  if(isAndroid&&(!rail||rail.dataset.accountStatusReady==='1'))return;
-  if(isAndroid)rail.dataset.accountStatusReady='1';
-  const menu=document.createElement('div');menu.className='auralis-status-menu hidden';
-  const ghostOption=document.createElement('button');ghostOption.type='button';
-  ghostOption.addEventListener('click',()=>setGhost(!ghostEnabled()));menu.appendChild(ghostOption);
-  let statusBtn;
-  if(isAndroid){
-   const oldActions=document.querySelector('.bottom-dock .user-bar .item-actions');if(oldActions)oldActions.remove();
-   const spacer=rail.querySelector('.auralis-rail-spacer');
-   const footer=document.createElement('div');footer.className='auralis-rail-divider';rail.insertBefore(footer,spacer);
-   statusBtn=document.createElement('button');statusBtn.type='button';statusBtn.className='auralis-rail-btn auralis-rail-account-btn auralis-status';
-   statusBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Статус</span>';
-   const settings=document.createElement('button');settings.type='button';settings.className='auralis-rail-btn auralis-rail-account-btn';
-   settings.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2h-4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1-2.8-2.8.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3v-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1 2.8-2.8.1.1a1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3h4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1 2.8 2.8-.1.1a1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1h.2v4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Настройки</span>';
-   settings.addEventListener('click',()=>{if(typeof window.openSettings==='function')window.openSettings()});
-   const logout=document.createElement('button');logout.type='button';logout.className='auralis-rail-btn auralis-rail-account-btn auralis-logout';
-   logout.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg><span>Выйти</span>';
-   logout.addEventListener('click',()=>{if(typeof window.logout==='function')window.logout()});
-   rail.append(statusBtn,settings,logout,menu);
-  }else if(userBar&&dock){
-   statusBtn=document.createElement('button');statusBtn.type='button';statusBtn.className='auralis-desktop-status-btn';
-   const trigger=userBar.querySelector('.user-trigger');if(trigger)trigger.insertAdjacentElement('afterend',statusBtn);else userBar.appendChild(statusBtn);
-   dock.appendChild(menu);
-  }else return;
-  statusBtn.addEventListener('click',()=>menu.classList.toggle('hidden'));
-  function syncStatus(){
-   const status=currentStatus(),item=LABELS[status];
-   const sub=document.getElementById('meLoginSub');if(sub){sub.textContent=item.label;sub.style.color=item.color}
-   statusBtn.style.color=item.color;
-   statusBtn.innerHTML=isAndroid?renderAuralisStatusIcon(status)+'<span>Статус</span>':renderAuralisStatusIcon(status)+'<span>'+item.label+'</span>';
-   statusBtn.title=item.label;
-   ghostOption.innerHTML=renderAuralisStatusIcon('ghost')+'<span>'+(ghostEnabled()?'Отключить призрака':'Призрак')+'</span>';
-   ghostOption.classList.toggle('active',ghostEnabled());
-   document.body.dataset.auralisPresence=status;
-   window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:item.label}}));
-  }
-  function setGhost(enabled){
-   if(enabled)localStorage.setItem('auralis_presence_status','ghost');else localStorage.removeItem('auralis_presence_status');
-   menu.classList.add('hidden');syncStatus();
-  }
-  window.auralisGetPresenceStatus=currentStatus;
-  window.auralisSetPresenceStatus=(next)=>setGhost(next==='ghost');
-  window.auralisSetGhostMode=setGhost;
-  window.addEventListener('online',syncStatus);
-  window.addEventListener('offline',syncStatus);
-  syncStatus();
-  const sub=document.getElementById('meLoginSub');
-  if(sub)new MutationObserver(()=>{const item=LABELS[currentStatus()];if(sub.textContent!==item.label){sub.textContent=item.label;sub.style.color=item.color}}).observe(sub,{childList:true,characterData:true,subtree:true});
+ function syncStatus(){
+  const status=currentStatus(),item=LABELS[status],sub=document.getElementById('meLoginSub');
+  if(sub){sub.textContent=item.label;sub.style.color=item.color}
+  const toggle=document.getElementById('popGhostToggle'),icon=document.getElementById('popGhostIcon'),label=document.getElementById('popGhostText');
+  if(icon)icon.innerHTML=renderAuralisStatusIcon('ghost');
+  if(toggle){toggle.classList.toggle('enabled',ghostEnabled());toggle.setAttribute('aria-pressed',String(ghostEnabled()));}
+  if(label)label.textContent=ghostEnabled()?'Призрак включён':'Призрак выключен';
+  document.body.dataset.auralisPresence=status;
+  window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:item.label}}));
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+ window.auralisGetPresenceStatus=currentStatus;
+ window.auralisSetGhostMode=function(enabled){if(enabled)localStorage.setItem('auralis_presence_status','ghost');else localStorage.removeItem('auralis_presence_status');syncStatus();};
+ window.auralisSetPresenceStatus=(next)=>window.auralisSetGhostMode(next==='ghost');
+ window.toggleGhostFromProfile=()=>window.auralisSetGhostMode(!ghostEnabled());
+ window.addEventListener('online',syncStatus);window.addEventListener('offline',syncStatus);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncStatus,{once:true});else syncStatus();
+ const sub=document.getElementById('meLoginSub');
+ if(sub)new MutationObserver(()=>{const item=LABELS[currentStatus()];if(sub.textContent!==item.label){sub.textContent=item.label;sub.style.color=item.color}}).observe(sub,{childList:true,characterData:true,subtree:true});
+})();
+</script>
+<script id="auralis-ghost-notification-guard-2538">
+(function(){
+ const blocked=()=>!!(window.auralisIsGhostMode&&window.auralisIsGhostMode());
+ const wrap=(name)=>{const original=window[name];if(typeof original!=='function'||original.__auralisGhostGuard)return;const guarded=function(){if(blocked())return;return original.apply(this,arguments)};guarded.__auralisGhostGuard=true;window[name]=guarded;};
+ function install(){wrap('notifyDesktop');wrap('playNotificationSound');}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
 </script>
 <script id="auralis-ghost-notification-guard-2538">
