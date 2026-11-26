@@ -10267,6 +10267,78 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 }
 </style>
 
+
+<style id="auralis-graphite-neutral-theme-351">
+:root{
+  --bg:#202226!important;
+  --panel-rgb:35,37,42!important;
+  --panel-alpha:1!important;
+  --glass:rgba(35,37,42,.96)!important;
+  --glass-solid:rgba(35,37,42,.99)!important;
+  --glass-2:rgba(255,255,255,.045)!important;
+  --glass-hover:rgba(255,255,255,.085)!important;
+  --input-bg:rgba(255,255,255,.055)!important;
+  --input-focus-bg:rgba(255,255,255,.085)!important;
+  --border:rgba(255,255,255,.12)!important;
+  --text:#f2f3f5!important;
+  --muted:rgba(225,228,233,.62)!important;
+  --glow-2:rgba(0,0,0,0)!important;
+  --auralis-glass-blur:18px;
+  color-scheme:dark;
+}
+html,body{
+  background:#202226!important;
+  background-image:none!important;
+  color:var(--text)!important;
+}
+body{
+  background:#202226!important;
+  background-image:none!important;
+}
+.app,.sidebar,.main,.chat-header,.messages,.composer,
+.panel-body,.settings-panel,.modal-card,.modal-content,
+.profile-popover,.user-profile-card,.incoming-card,
+.call-stage,.call-ctrls,.glass-studio-panel,.auralis-glass-studio{
+  background-color:rgba(35,37,42,.97)!important;
+  background-image:none!important;
+}
+.sidebar,.main,.chat-header,.composer,.modal-card,
+.settings-panel,.incoming-card,.profile-popover,
+.user-profile-card,.glass-studio-panel,.auralis-glass-studio{
+  border-color:rgba(255,255,255,.12)!important;
+}
+/* Accent remains on controls and outlines, not on large surfaces or selected-row fills. */
+.list-item.active,.settings-tabs .s-tab.active,
+.theme-swatch.active,.member-pick-row.selected,
+.tab-btn.active,.top-tabs .active,.nav-item.active,
+.friend-row.active,.channel-item.active{
+  background:rgba(255,255,255,.075)!important;
+  border-color:var(--accent)!important;
+  color:var(--text)!important;
+  box-shadow:none!important;
+}
+.sidebar,.main,.chat-header,.messages,.composer,
+.panel-body,.settings-panel,.modal-card,.modal-content,
+.profile-popover,.user-profile-card,.incoming-card,
+.call-stage,.call-ctrls{
+  color:var(--text);
+}
+body::before,body::after{
+  background-image:none!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+@media(max-width:760px){
+  body.android-md3 #app>.main,
+  body.android-md3 #app>.main>.chat-header,
+  body.android-md3 #app>.main>.messages,
+  body.android-md3 #app>.main>.composer{
+    background:#23252a!important;
+    background-image:none!important;
+  }
+}
+</style>
+
 </body>
 </html>
 
