@@ -52,6 +52,46 @@ jobs:
           }
           throw "npm install failed after $maxAttempts attempts."
 
+      - name: Prepare Windows installer artwork
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          $source = [System.Drawing.Image]::FromFile((Join-Path $PWD "build/icon.png.jpg"))
+          try {
+            $iconBitmap = New-Object System.Drawing.Bitmap(256, 256)
+            $graphics = [System.Drawing.Graphics]::FromImage($iconBitmap)
+            try {
+              $graphics.Clear([System.Drawing.Color]::FromArgb(7, 43, 25))
+              $graphics.DrawImage($source, 0, 0, 256, 256)
+              $hIcon = $iconBitmap.GetHicon()
+              try {
+                $icon = [System.Drawing.Icon]::FromHandle($hIcon)
+                $stream = [System.IO.File]::Create((Join-Path $PWD "build/icon.ico"))
+                try { $icon.Save($stream) } finally { $stream.Dispose() }
+              } finally {
+                Add-Type @'
+          using System;
+          using System.Runtime.InteropServices;
+          public static class NativeIcon {
+            [DllImport("user32.dll", SetLastError=true)] public static extern bool DestroyIcon(IntPtr hIcon);
+          }
+          '@
+                [NativeIcon]::DestroyIcon($hIcon) | Out-Null
+              }
+            } finally { $graphics.Dispose(); $iconBitmap.Dispose() }
+            function Save-InstallerBitmap([int]$width, [int]$height, [string]$path, $image) {
+              $bmp = New-Object System.Drawing.Bitmap($width, $height)
+              $g = [System.Drawing.Graphics]::FromImage($bmp)
+              try {
+                $g.Clear([System.Drawing.Color]::FromArgb(7, 43, 25))
+                $g.DrawImage($image, 0, 0, $width, $height)
+                $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Bmp)
+              } finally { $g.Dispose(); $bmp.Dispose() }
+            }
+            Save-InstallerBitmap 164 314 (Join-Path $PWD "build/installer-sidebar.bmp") $source
+            Save-InstallerBitmap 150 57 (Join-Path $PWD "build/installer-header.bmp") $source
+          } finally { $source.Dispose() }
+
       - name: Build Windows installer and portable app
         run: npx electron-builder --win nsis portable --publish never
 

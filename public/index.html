@@ -5472,6 +5472,16 @@ function parseCallLogMessage(text) {
   }
 }
 
+function parseSystemActionMessage(text) {
+  const raw = String(text || '');
+  if (!raw.startsWith('__SYSTEM__:')) return null;
+  try {
+    return JSON.parse(raw.slice('__SYSTEM__:'.length));
+  } catch {
+    return null;
+  }
+}
+
 function emitCallLog(ctx, initiatorUsername, durationSec, completed) {
   if (!me || !ctx || !ws || ws.readyState !== WebSocket.OPEN) return;
   const payload = {
@@ -8099,6 +8109,12 @@ document.addEventListener('click', closeGroupContextMenu);
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeGroupContextMenu(); });
 
 function removeGroupLocal(groupId) {
+  if (inCall && callContext && callContext.kind === 'group' && String(callContext.id) === String(groupId)) {
+    endCall(false, false);
+  }
+  if (pendingCaller && pendingCaller.callContext && pendingCaller.callContext.kind === 'group' && String(pendingCaller.callContext.id) === String(groupId)) {
+    hideIncomingCallModal();
+  }
   groupsMeta = groupsMeta.filter((g) => g.id !== groupId);
   saveCachedGroups();
   if (activeChat && activeChat.kind === 'group' && activeChat.id === groupId) {
@@ -8468,6 +8484,31 @@ function appendMsg(m) {
   if (empty) empty.remove();
 
   const rawText = String(m.text || '');
+  const systemInfo = parseSystemActionMessage(rawText);
+  if (systemInfo) {
+    if (m.created_at) window.auralisAddChatDateDivider(box, m.created_at);
+    const actor = displayNameOf(systemInfo.actor || m.sender || 'Система');
+    const target = systemInfo.target ? displayNameOf(systemInfo.target) : '';
+    const actionText = {
+      'member-removed': 'удалил из группы',
+      'friend-added': 'отправил запрос в друзья',
+      'friend-removed': 'удалил из друзей',
+      'blocked': 'заблокировал',
+      'unblocked': 'разблокировал'
+    }[systemInfo.action] || String(systemInfo.description || 'выполнил действие');
+    const row = document.createElement('div');
+    row.className = 'call-log-row system-action-row';
+    if (msgKey) { row.dataset.mkey = msgKey; row.dataset.mid = String(m.id); }
+    row.innerHTML =
+      '<span class="system-log-icon" aria-hidden="true">ⓘ</span>' +
+      '<span><span class="call-log-author">' + esc(actor) + '</span> ' + esc(actionText) +
+      (target ? ' <span class="call-log-author">@' + esc(target) + '</span>' : '') +
+      '.</span>' +
+      (m.created_at ? '<span class="call-log-date">' + esc(formatCallDateTime(m.created_at)) + '</span>' : '');
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+    return;
+  }
   const callInfo = parseCallLogMessage(rawText);
   if (callInfo) {
     if(m.created_at)window.auralisAddChatDateDivider(box,m.created_at);
@@ -8978,7 +9019,14 @@ function connectWS() {
     } else if (data.type === 'message-edited') {
       applyMessageEdit(data.scope, data.message);
     } else if (data.type === 'group-removed') {
-      removeGroupLocal(String(data.groupId || ''));
+      const removedGroupId = String(data.groupId || '');
+      if (inCall && callContext && callContext.kind === 'group' && String(callContext.id) === removedGroupId) {
+        endCall(false, false);
+      }
+      if (pendingCaller && pendingCaller.callContext && pendingCaller.callContext.kind === 'group' && String(pendingCaller.callContext.id) === removedGroupId) {
+        hideIncomingCallModal();
+      }
+      removeGroupLocal(removedGroupId);
       showToast('Тебя удалил из группы @' + String(data.actor || 'создатель'));
     } else if (data.type === 'group-deleted') {
       removeGroupLocal(String(data.groupId || ''));
@@ -10603,6 +10651,36 @@ html[data-theme="aurora"] #zoomRoot .bottom-dock {z-index:7!important}
 })();
 </script>
 
+<style id="auralis-system-action-and-screen-share-fix">
+  .system-action-row { justify-content:center; text-align:center; flex-wrap:wrap; }
+  .system-log-icon { display:inline-flex; align-items:center; justify-content:center; flex:0 0 18px; width:18px; height:18px; border-radius:50%; color:var(--accent); background:rgba(var(--accent-rgb),.14); font-size:12px; font-weight:800; }
+  /* Screen sharing stays inside the participant's call tile instead of expanding across the call stage. */
+  #callGrid .tile.screen-mode {
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    aspect-ratio:16 / 9;
+    padding:0 !important;
+    justify-content:center !important;
+    background:#05070b !important;
+    overflow:hidden !important;
+  }
+  #callGrid .tile.screen-mode video {
+    position:absolute !important;
+    inset:0 !important;
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:100% !important;
+    max-height:none !important;
+    object-fit:contain !important;
+    object-position:center !important;
+    border-radius:inherit !important;
+  }
+  #callGrid .tile.screen-mode .tile-tag,
+  #callGrid .tile.screen-mode .fs-btn { z-index:4; }
+</style>
 </body>
 
 <style id="auralis-3600-ui-fixes">

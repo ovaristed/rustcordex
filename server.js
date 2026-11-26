@@ -895,7 +895,7 @@ app.post('/api/groups/:id/audit', authMiddleware, async (req, res) => {
     if (!(await isGroupMember(groupId, actor)) || !(await isGroupMember(groupId, target))) {
       return res.status(403).json({ error: 'Оба пользователя должны состоять в группе' });
     }
-    const text = '@' + actor + ' ' + phrases[action] + ' @' + target;
+    const text = '__SYSTEM__:' + JSON.stringify({ actor, target, action, at: new Date().toISOString() });
     const saved = await pool.query(
       'INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3) RETURNING id, group_id AS "groupId", sender, text, created_at',
       [groupId, actor, text]
@@ -923,7 +923,7 @@ app.post('/api/groups/:id/members/:username/remove', authMiddleware, async (req,
     const target = targetRow.rows[0].username;
     if (target === actor) return res.status(400).json({ error: 'Создателя нельзя удалить из группы' });
     await pool.query('DELETE FROM group_members WHERE group_id = $1 AND username = $2', [groupId, target]);
-    const auditText = 'Участник @' + actor + ' удалил из группы @' + target;
+    const auditText = '__SYSTEM__:' + JSON.stringify({ actor, target, action: 'member-removed', at: new Date().toISOString() });
     const saved = await pool.query(
       'INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3) RETURNING id, group_id AS "groupId", sender, text, created_at',
       [groupId, actor, auditText]
@@ -1328,14 +1328,26 @@ wss.on('connection', (ws) => {
 
     if (data.type === 'call-invite' || data.type === 'call-accept' || data.type === 'call-reject' || data.type === 'call-end') {
       if (data.to && data.callId) {
-        try { if (!(await canContact(ws.username, String(data.to)))) return; } catch { return; }
-        sendToUser(String(data.to), { type: data.type, from: ws.username, callContext: data.callContext || null, callId: String(data.callId) });
+        const target = String(data.to);
+        const ctx = data.callContext || null;
+        try {
+          if (!(await canContact(ws.username, target))) return;
+          if (ctx && ctx.kind === 'group') {
+            if (!(await isGroupMember(String(ctx.id), ws.username)) || !(await isGroupMember(String(ctx.id), target))) return;
+          }
+        } catch { return; }
+        sendToUser(target, { type: data.type, from: ws.username, callContext: ctx, callId: String(data.callId) });
       }
       return;
     }
 
     if (data.type === 'call-state' && data.to && data.callId && data.callContext) {
-      try { if (!(await canContact(ws.username, String(data.to)))) return; } catch { return; }
+      try {
+        if (!(await canContact(ws.username, String(data.to)))) return;
+        if (data.callContext.kind === 'group' &&
+            (!(await isGroupMember(String(data.callContext.id), ws.username)) ||
+             !(await isGroupMember(String(data.callContext.id), String(data.to))))) return;
+      } catch { return; }
       sendToUser(String(data.to), {
         type: 'call-state',
         from: ws.username,
@@ -1347,7 +1359,12 @@ wss.on('connection', (ws) => {
     }
 
     if (data.type === 'signal' && data.to) {
-      try { if (!(await canContact(ws.username, String(data.to)))) return; } catch { return; }
+      try {
+        if (!(await canContact(ws.username, String(data.to)))) return;
+        if (data.callContext && data.callContext.kind === 'group' &&
+            (!(await isGroupMember(String(data.callContext.id), ws.username)) ||
+             !(await isGroupMember(String(data.callContext.id), String(data.to))))) return;
+      } catch { return; }
       sendToUser(String(data.to), {
         type: 'signal',
         from: ws.username,
