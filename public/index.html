@@ -10143,6 +10143,28 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 #userProfilePresence .auralis-status-icon{width:34px;height:34px;flex-basis:34px}
 #userProfilePresence.is-ghost{filter:drop-shadow(0 0 9px rgba(189,114,255,.38))}
 </style>
+
+<style id="auralis-android-restore-full-sidebar-25310">
+/* Restore the complete sidebar on Android; do not replace it with the icon rail. */
+@media(max-width:760px){
+  body.android-md3 #auralisMobileRail{display:none!important}
+  body.android-md3 #app>.sidebar{
+    left:0!important;right:0!important;top:0!important;bottom:0!important;
+    width:100%!important;height:100%!important;
+    display:flex!important;
+  }
+  body.android-md3 #app>.main{
+    left:0!important;right:0!important;top:0!important;bottom:0!important;
+    width:100%!important;height:100%!important;
+  }
+  body.android-md3 #app .top-tabs{display:flex!important}
+  body.android-md3 #app .sidebar-top{padding-top:4px!important}
+  body.android-md3:not(.mobile-chat-open) #app>.sidebar{display:flex!important}
+  body.android-md3:not(.mobile-chat-open) #app>.main{display:none!important}
+  body.android-md3.mobile-chat-open #app>.sidebar{display:none!important}
+  body.android-md3.mobile-chat-open #app>.main{display:flex!important}
+}
+</style>
 </body>
 </html>
 
