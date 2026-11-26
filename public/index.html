@@ -7646,7 +7646,7 @@ function renderLists() {
       return (
         '<div class="list-item ' + (isAct ? 'active' : '') + '" data-open-group="' + esc(g.id) + '">' +
           '<div class="item-left">' +
-            '<div class="avatar group-av">' + esc(getGroupInitials(g)) + '</div>' +
+            '<div class="avatar group-av" aria-label="Групповой чат"><svg class="groups-nav-icon" viewBox="0 0 24 24" width="25" height="25" aria-hidden="true"><circle cx="9" cy="8" r="3.2" fill="currentColor"/><circle cx="17" cy="9" r="2.5" fill="currentColor" opacity=".72"/><path d="M2.8 19c.35-3.25 2.55-5.1 6.2-5.1s5.85 1.85 6.2 5.1" fill="currentColor"/><path d="M15 14.3c3.55-.15 5.55 1.45 6.15 4.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>' +
             '<div style="min-width:0">' +
               '<div class="item-name">' + esc(getGroupTitle(g)) + '</div>' +
               '<div class="item-sub">' + esc(membersLabel + ' • ' + subText) + '</div>' +
@@ -10267,11 +10267,14 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
  }
  window.getChatDateLabel=getChatDateLabel;window.bindAutoGrowInput=bindAutoGrowInput;window.renderDmStatusBadge=renderDmStatusBadge;
  function addDateDivider(box,stamp){
-  const label=getChatDateLabel(stamp);if(!label)return;
-  const dividers=box.querySelectorAll('.chat-date-divider');const last=dividers.length?dividers[dividers.length-1]:null;
-  if(last&&last.dataset.dateLabel===label)return;
+  const label=getChatDateLabel(stamp);if(!label||!box)return;
+  if(Array.from(box.querySelectorAll('.chat-date-divider')).some(node=>node.dataset.dateLabel===label))return;
   const divider=document.createElement('div');divider.className='chat-date-divider';divider.dataset.dateLabel=label;
-  const span=document.createElement('span');span.textContent=label;divider.appendChild(span);box.appendChild(divider);
+  const span=document.createElement('span');span.textContent=label;divider.appendChild(span);
+  const lastMessage=Array.from(box.children).reverse().find(node=>node.classList&&node.classList.contains('msg'));
+  if(lastMessage&&lastMessage.dataset.dateLabel===label)return;
+  divider.dataset.dateLabel=label;
+  box.appendChild(divider);
  }
  window.auralisAddChatDateDivider=addDateDivider;
  let cropResolve=null,cropImage=null,zoom=1,rotation=0,panX=0,panY=0,drag=null;
@@ -11029,6 +11032,7 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 .dm-avatar-box{position:relative;width:40px;height:40px;flex-shrink:0}
 .dm-avatar-box>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .dm-status-dot{position:absolute;right:-4px;top:-7px;bottom:auto;width:13px;height:13px;border-radius:50%;border:2px solid var(--glass-solid,var(--bg));display:flex;align-items:center;justify-content:center;font-size:8px;z-index:4;box-shadow:0 1px 5px rgba(0,0,0,.28)}
+.avatar:has(>.dm-status-dot){overflow:visible!important;position:relative!important}
 .dm-status-dot.status-online{background:#22c55e}.dm-status-dot.status-offline{background:#6b7280}
 .dm-status-dot.status-ghost{background:#475569;color:#e2e8f0;box-shadow:0 0 8px rgba(148,163,184,.45)}
 .crop-modal[hidden]{display:none!important}.crop-modal{position:fixed;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(9px)}
