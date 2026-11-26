@@ -4039,6 +4039,23 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
 #msgInput::placeholder{color:transparent!important;opacity:0!important}
 }
 </style>
+<style id="auralis-desktop-repair-347">
+@media (min-width:761px){
+ .user-trigger #meAv{position:relative!important;overflow:visible!important}
+ #mePresenceToggle{position:absolute!important;right:-3px!important;bottom:-3px!important;z-index:9!important;width:19px!important;height:19px!important;min-width:19px!important;padding:0!important;display:grid!important;place-items:center!important;border:2px solid var(--bg)!important;border-radius:50%!important;background:var(--glass-solid)!important;color:var(--text)!important;box-shadow:0 1px 5px rgba(0,0,0,.35)!important;cursor:pointer!important}
+ #mePresenceToggle .auralis-status-icon{display:block!important;width:15px!important;height:15px!important}
+ .sidebar>.bottom-dock{padding:5px 8px 6px!important;min-height:0!important}
+ .sidebar .bottom-dock .user-bar{min-height:0!important;padding:4px 6px!important;margin:0!important}
+ .sidebar .bottom-dock .user-trigger{min-height:0!important;padding:2px 3px!important}
+ #callStage:not(.hidden) .call-grid{display:grid!important;grid-template-columns:repeat(var(--call-participant-count,1),minmax(0,1fr))!important;grid-auto-flow:row!important;grid-auto-rows:132px!important;align-items:stretch!important;gap:7px!important;width:100%!important;min-width:0!important;overflow-x:hidden!important;overflow-y:auto!important;container-type:inline-size!important;padding:2px!important}
+ #callStage:not(.hidden) .call-grid>.tile{width:auto!important;min-width:0!important;max-width:none!important;height:132px!important;min-height:0!important;max-height:132px!important;box-sizing:border-box!important;padding:5px!important;gap:4px!important;overflow:hidden!important;border-radius:12px!important}
+ #callStage:not(.hidden) .call-grid>.tile .big-av{width:clamp(22px,calc(100cqi / var(--call-participant-count,1) * .52),58px)!important;height:clamp(22px,calc(100cqi / var(--call-participant-count,1) * .52),58px)!important;min-width:0!important;max-width:100%!important;flex:0 0 auto!important;overflow:hidden!important;border-radius:50%!important}
+ #callStage:not(.hidden) .call-grid>.tile .big-av img{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:cover!important;border-radius:50%!important}
+ #callStage:not(.hidden) .call-grid>.tile .tile-tag{max-width:100%!important;font-size:clamp(8px,1.1cqi,12px)!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+ #callStage:not(.hidden) .call-grid>.tile video{width:100%!important;max-width:100%!important;max-height:70%!important;min-height:0!important;object-fit:contain!important}
+ #msgInput::placeholder{color:transparent!important;opacity:0!important}
+}
+</style>
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -10192,6 +10209,7 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 }
 </style>
 <script id="auralis-desktop-call-layout-347">(function(){function syncParticipantCount(){var grid=document.getElementById("callGrid");if(!grid)return;var count=Math.max(1,grid.querySelectorAll(":scope > .tile").length);grid.style.setProperty("--call-participant-count",String(count));}function install(){var grid=document.getElementById("callGrid");if(!grid)return;syncParticipantCount();new MutationObserver(syncParticipantCount).observe(grid,{childList:true});window.addEventListener("resize",syncParticipantCount,{passive:true});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",install,{once:true});else install();})();</script>
+<script id="auralis-desktop-call-layout-repair-347">(function(){function update(){var grid=document.getElementById('callGrid');if(!grid)return;var count=Math.max(1,grid.querySelectorAll(':scope > .tile').length);grid.style.setProperty('--call-participant-count',String(count));}function start(){var grid=document.getElementById('callGrid');if(!grid)return;update();new MutationObserver(update).observe(grid,{childList:true});window.addEventListener('resize',update,{passive:true});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();})();</script>
 </body>
 </html>
 
@@ -10644,7 +10662,19 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
   const avatarStatus=document.getElementById('popAvatarStatus');
   if(avatarStatus)avatarStatus.innerHTML=renderAuralisStatusIcon(status);
   const meAvatar=document.getElementById('meAv');
-  if(meAvatar){const userTrigger=meAvatar.closest('.user-trigger');if(userTrigger){let indicator=document.getElementById('mePresenceToggle');if(!indicator){indicator=document.createElement('button');indicator.type='button';indicator.id='mePresenceToggle';indicator.className='me-presence-toggle';indicator.setAttribute('aria-label','Переключить режим невидимки');indicator.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();window.auralisSetGhostMode(!ghostEnabled());});userTrigger.appendChild(indicator);}indicator.innerHTML=renderAuralisStatusIcon(status);indicator.title=ghostEnabled()?'Невидимка включена — нажми, чтобы выключить':'Статус: '+item.label+' — нажми, чтобы включить невидимку';indicator.setAttribute('aria-pressed',String(ghostEnabled()));}}
+  if(meAvatar){
+   let indicator=document.getElementById('mePresenceToggle');
+   if(!indicator){
+    indicator=document.createElement('button');
+    indicator.type='button';indicator.id='mePresenceToggle';indicator.className='me-presence-toggle';
+    indicator.setAttribute('aria-label','Переключить режим невидимки');
+    indicator.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();window.auralisSetGhostMode(!ghostEnabled());});
+    meAvatar.appendChild(indicator);
+   }
+   indicator.innerHTML=renderAuralisStatusIcon(status);
+   indicator.title=ghostEnabled()?'Невидимка включена — нажми, чтобы выключить':'Статус: '+item.label+' — нажми, чтобы включить невидимку';
+   indicator.setAttribute('aria-pressed',String(ghostEnabled()));
+  }
   if(icon)icon.innerHTML=renderAuralisStatusIcon('ghost');
   if(toggle){toggle.classList.toggle('enabled',ghostEnabled());toggle.setAttribute('aria-pressed',String(ghostEnabled()));}
   if(label)label.textContent=ghostEnabled()?'Включён · вы невидимы':'Выключен · обычный режим';
