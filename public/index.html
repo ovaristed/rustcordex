@@ -10717,11 +10717,14 @@ body.auralis-no-active-chat #gifPicker { display:none !important; }
 .chat-header .peer-info { display:flex !important; flex-direction:row !important; align-items:center !important; gap:12px !important; }
 .chat-header .peer-info > #peerAv { order:0 !important; align-self:center !important; }
 .chat-header .peer-info > div:not(#peerAv) { order:1 !important; min-width:0 !important; }
-/* Sticker artwork uses one transparent, fixed-size canvas in every picker and message. */
-.msg-sticker-big { width:128px !important; height:128px !important; display:grid !important; place-items:center !important; font-size:82px !important; line-height:1 !important; background:transparent !important; border:0 !important; box-shadow:none !important; filter:none !important; padding:0 !important; }
-.msg-sticker-big img { display:block !important; width:128px !important; height:128px !important; max-width:128px !important; max-height:128px !important; object-fit:contain !important; background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; filter:none !important; }
+/* Repeated stickers flow horizontally as separate tiles, wrapping only when space runs out. */
+.msg-sticker-big { width:100% !important; max-width:100% !important; height:auto !important; min-height:88px !important; display:flex !important; flex-direction:row !important; flex-wrap:wrap !important; align-items:center !important; justify-content:flex-start !important; gap:8px !important; font-size:82px !important; line-height:1 !important; background:transparent !important; border:0 !important; box-shadow:none !important; filter:none !important; padding:0 !important; }
+.msg-sticker-big .msg-sticker-token { display:block !important; flex:0 0 88px !important; width:88px !important; height:88px !important; max-width:88px !important; max-height:88px !important; object-fit:contain !important; background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; filter:none !important; }
+.msg-sticker-big .msg-sticker-emoji { display:flex !important; flex:0 0 88px !important; width:88px !important; height:88px !important; align-items:center !important; justify-content:center !important; }
 .sticker-picker-item { width:64px !important; height:64px !important; min-width:64px !important; min-height:64px !important; padding:0 !important; display:grid !important; place-items:center !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
 .sticker-picker-item img { width:54px !important; height:54px !important; object-fit:contain !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
+.msg-sticker-big .msg-sticker-token { flex-basis:72px !important; width:72px !important; height:72px !important; max-width:72px !important; max-height:72px !important; }
+.msg-sticker-big .msg-sticker-emoji { flex-basis:72px !important; width:72px !important; height:72px !important; }
 .profile-sticker-choice { width:42px !important; height:42px !important; flex:0 0 42px !important; background:transparent !important; }
 .profile-sticker-choice img, .profile-sticker-art { width:42px !important; height:42px !important; object-fit:contain !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
 .msg .msg-bubble:has(.msg-sticker-big), .msg:has(.msg-sticker-big) .msg-bubble {

@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.5",
-  "description": "Auralis 3.6.4 — branded icon and empty chat header fixes",
+  "version": "3.6.6",
+  "description": "Auralis 3.6.6 — horizontal repeated sticker messages",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
