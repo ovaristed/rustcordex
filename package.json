@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.8",
-  "description": "Auralis 3.6.8 — only group add/remove activity in chat",
+  "version": "3.6.9",
+  "description": "Auralis 3.6.9 — screen sharing contained in call profile tile",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",

@@ -11693,3 +11693,52 @@ body.auralis-no-active-chat .sidebar .panel-body::after { content:none !importan
  sync();
 })();
 </script>
+
+
+<style id="auralis-screen-share-fit-profile-tile-v369">
+  /* Демонстрация экрана всегда вписывается в прямоугольник плитки участника звонка. */
+  #callStage #callGrid .tile.screen-mode {
+    box-sizing:border-box !important;
+    position:relative !important;
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    aspect-ratio:16 / 9 !important;
+    overflow:hidden !important;
+    padding:0 !important;
+    background:#05070b !important;
+  }
+  #callStage #callGrid .tile.screen-mode > video,
+  #callStage #callGrid .tile.screen-mode video.screen-video,
+  #callStage #callGrid .tile.screen-mode video.screen-share-video,
+  #callStage #callGrid .tile.screen-mode video[data-screen-share="true"] {
+    position:absolute !important;
+    inset:0 !important;
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    max-width:100% !important;
+    max-height:100% !important;
+    object-fit:contain !important;
+    object-position:center !important;
+    border:0 !important;
+    border-radius:inherit !important;
+  }
+  #callStage #callGrid .tile.screen-mode .tile-tag,
+  #callStage #callGrid .tile.screen-mode .fs-btn {
+    z-index:5 !important;
+  }
+  @media(max-width:760px) {
+    #callStage #callGrid .tile.screen-mode {
+      width:100% !important;
+      aspect-ratio:16 / 9 !important;
+      max-height:42vh !important;
+    }
+  }
+</style>
