@@ -10269,6 +10269,19 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 }
 </style>
 
+
+<style id="auralis-android-tab-visibility-fix-3502">
+@media(max-width:760px){
+  /* The inactive panels must retain the native .hidden behavior. */
+  body.android-md3 #app .sidebar-top>.panel-body.hidden{
+    display:none!important;
+  }
+  body.android-md3 #app .sidebar-top>.panel-body:not(.hidden){
+    display:flex!important;
+  }
+}
+</style>
+
 </body>
 </html>
 
