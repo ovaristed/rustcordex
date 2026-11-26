@@ -8122,7 +8122,7 @@ async function openGroupChat(groupId) {
   document.getElementById('composer').classList.remove('hidden');
   const grp = getGroupById(groupId);
   const inp = document.getElementById('msgInput');
-  inp.placeholder = 'Написать в группу «' + getGroupTitle(grp) + '»...';
+  inp.placeholder = '';
   inp.value = localStorage.getItem(getDraftKey()) || '';
 
   const box = document.getElementById('messages');
@@ -10479,7 +10479,14 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
       <button type="button" class="auralis-rail-btn auralis-rail-create" id="auralisRailCreateGroup" aria-label="Создать группу">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8m-4-4h8"/></svg><span>Создать<br>группу</span>
       </button>
-      <div class="auralis-rail-spacer"></div>`;
+      <div class="auralis-rail-spacer"></div>
+      <div class="auralis-rail-divider"></div>
+      <button type="button" class="auralis-rail-btn auralis-rail-utility" aria-label="Настройки" title="Настройки" onclick="openSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Настройки</span>
+      </button>
+      <button type="button" class="auralis-rail-btn auralis-rail-utility auralis-rail-logout" aria-label="Выйти" title="Выйти" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Выйти</span>
+      </button>
     app.insertBefore(rail,app.firstChild);
 
     function setActive(view){
@@ -10867,3 +10874,50 @@ body.android-md3 button.primary-btn,body.android-md3 .send-btn,body.android-md3 
 body.android-md3 .modal-card,body.android-md3 .incoming-card,body.android-md3 .app-dialog,body.android-md3 .voice-ctx-menu,body.android-md3 .group-ctx-menu{background:linear-gradient(145deg,#23262b,#191b1f)!important;color:var(--text)!important;border-color:var(--border)!important}
 }
 </style>
+
+
+<style id="auralis-mobile-rail-profile-composer-repair-2628">
+/* The Android rail replaces .top-tabs, so account actions live on the rail itself. */
+@media(max-width:760px){
+ body.android-md3 #auralisMobileRail .auralis-rail-utility{
+  color:var(--muted)!important;background:transparent!important;border:1px solid transparent!important;
+  min-height:54px!important;height:auto!important;width:100%!important;flex:0 0 auto!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  gap:4px!important;padding:7px 2px!important;font-size:9px!important;line-height:1.1!important;
+ }
+ body.android-md3 #auralisMobileRail .auralis-rail-utility svg{width:20px!important;height:20px!important;flex:0 0 auto!important}
+ body.android-md3 #auralisMobileRail .auralis-rail-utility:hover,
+ body.android-md3 #auralisMobileRail .auralis-rail-utility:focus-visible{
+  color:var(--accent)!important;background:rgba(var(--accent-rgb),.12)!important;
+  border-color:rgba(var(--accent-rgb),.28)!important
+ }
+ body.android-md3 #auralisMobileRail .auralis-rail-logout{color:#ff7777!important}
+ body.android-md3 #auralisMobileRail .auralis-rail-logout:hover{background:rgba(255,90,90,.1)!important}
+}
+/* Message field has no hint text in either direct or group chats. */
+#msgInput::placeholder{color:transparent!important;opacity:0!important}
+#profilePopover .pop-av{width:76px!important;height:76px!important;min-width:76px!important;flex-basis:76px!important;aspect-ratio:1/1!important;overflow:hidden!important;background:#252930!important}
+#profilePopover .pop-av img,
+#profilePopover .pop-av .default-avatar-fox img,
+.user-trigger #meAv>img,
+.user-profile-avatar img{
+ object-fit:contain!important;object-position:center!important;
+}
+/* Reflow the profile header instead of absolutely overlapping the avatar and name. */
+#profilePopover .pop-banner{height:104px!important}
+#profilePopover .pop-body{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;padding:0 16px 18px!important}
+#profilePopover .pop-av-row{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;margin:-42px 0 0!important;min-height:76px!important;gap:12px!important}
+#profilePopover .pop-identity{position:static!important;inset:auto!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;text-align:left!important;gap:4px!important;min-width:0!important;width:100%!important;margin:0!important}
+#profilePopover .pop-nick{justify-content:flex-start!important;text-align:left!important;max-width:100%!important}
+#profilePopover .pop-av{border:4px solid #202328!important;box-shadow:0 5px 18px rgba(0,0,0,.42)!important}
+#profilePopover .pop-card{width:100%!important;min-width:0!important}
+#profilePopover .pop-menu-btn{width:100%!important;box-sizing:border-box!important}
+@media(max-width:760px){
+ #profilePopover{max-height:min(88dvh,800px)!important;overflow-x:hidden!important}
+ #profilePopover .pop-banner{height:100px!important}
+ #profilePopover .pop-body{padding:0 16px max(18px,env(safe-area-inset-bottom))!important}
+ #profilePopover .pop-av-row{margin-top:-40px!important}
+ #profilePopover .pop-identity{padding:0 2px!important}
+}
+</style>
+
