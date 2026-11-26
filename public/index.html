@@ -4348,12 +4348,13 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
     </div>
 
     <div id="sPanelAppearance" class="s-section">
-      <div class="field desktop-theme-field">
+      <div class="field">
         <div class="lbl">Тема оформления</div>
         <div class="theme-grid">
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
           <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#66e7d2"></span>Aurora</button>
+          <button type="button" class="theme-swatch auralis-cosmic-swatch" data-theme="cosmic" onclick="applyTheme('cosmic')"><span class="dot" style="background:linear-gradient(135deg,#c6a6ff,#596bff)"></span>Cosmic Glass</button>
           <button type="button" class="theme-swatch theme-custom-swatch" data-theme="custom" onclick="applyTheme('custom')"><span class="dot">✦</span>Своя тема</button>
           
         </div>
@@ -6229,6 +6230,11 @@ const THEMES = {
     glow2: 'rgba(70, 220, 202, 0.28)', wallpaper: "url('/backgrounds/aurora.svg')",
     overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.15, effect: 'aurora'
   },
+  cosmic: {
+    bg: '#080612', panelRgb: '25, 20, 43', accent: '#a77bff',
+    glow2: 'rgba(91, 73, 190, 0.34)', wallpaper: 'none',
+    overlay: 'rgba(8, 6, 18, 0.08)', panelAlpha: 0.22, effect: 'aurora'
+  },
 };
 
 function hexToRgb(hex) {
@@ -6255,6 +6261,8 @@ function applyTheme(name) {
   else { localStorage.setItem('rc_desktop_theme_mode','preset'); localStorage.setItem('rc_desktop_base_theme',valid); }
   activeThemeName = valid;
   document.documentElement.dataset.theme = valid;
+  if(typeof window.auralisSyncThemeAppIcon==='function')window.auralisSyncThemeAppIcon();
+  else window.__auralisPendingThemeIconSync=true;
   const t = THEMES[valid];
   // Built-in appearance presets have their own fixed glass settings.
   // The custom theme workspace remains independent and keeps its own values.
@@ -6262,7 +6270,8 @@ function applyTheme(name) {
     const presetGlass = {
       violet: { opacity: 82, blur: 3, wallpaper: 'purple', effect: 'sakura', accent: '#ff78ad', panel: '#3b1d2b' },
       emerald: { opacity: 82, blur: 3, wallpaper: 'green', effect: 'leaves', accent: '#30d158', panel: '#0e1e16' },
-      aurora: { opacity: 85, blur: 6, wallpaper: 'aurora', effect: 'aurora', accent: '#35c9f2', panel: '#162a40' }
+      aurora: { opacity: 85, blur: 6, wallpaper: 'aurora', effect: 'aurora', accent: '#35c9f2', panel: '#162a40' },
+      cosmic: { opacity: 78, blur: 8, wallpaper: 'theme', effect: 'aurora', accent: '#a77bff', panel: '#19142b' }
     };
     if (presetGlass[valid]) writeDesktopThemeSettings(presetGlass[valid]);
   }
@@ -6980,6 +6989,10 @@ function stopIncomingRing() {
 }
 
 function showIncomingCallModal(callerUsername, ctxObj, callId) {
+  if (window.auralisIsGhostMode && window.auralisIsGhostMode()) {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'call-reject', to: callerUsername, callContext: ctxObj || null, callId: callId || null }));
+    return;
+  }
   if (isUserBlocked(callerUsername)) {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ type: 'call-reject', to: callerUsername, callContext: ctxObj || null }));
@@ -8722,7 +8735,7 @@ function connectWS() {
       if (data.group) upsertGroup(data.group);
       scheduleSocialRefresh();
     } else if (data.type === 'call-invite') {
-      if (inCall || pendingCaller || isUserBlocked(data.from) || !data.callId) {
+      if (inCall || pendingCaller || isUserBlocked(data.from) || !data.callId || (window.auralisIsGhostMode && window.auralisIsGhostMode())) {
         if (sock.readyState === WebSocket.OPEN) sock.send(JSON.stringify({ type: 'call-reject', to: data.from, callContext: data.callContext || null, callId: data.callId || null }));
         return;
       }
@@ -10456,30 +10469,52 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 @keyframes auralisStatusBreath{50%{filter:drop-shadow(0 0 10px rgba(37,255,137,.5))}}
 @keyframes auralisGhostFloat{50%{transform:translateY(-2px)}}
 </style>
+<style id="auralis-cosmic-glass-theme">
+/* Opt-in Cosmic Glass preset. All selectors are scoped so existing themes remain unchanged. */
+html[data-theme="cosmic"]{--bg:#080612;--accent:#a77bff;--accent-rgb:167,123,255;--icon-color:rgba(194,164,255,.96);--icon-muted:rgba(167,123,255,.62);--glow-2:rgba(91,73,190,.34);--green:#47f0a1;--text:#f6f1ff;--muted:rgba(224,214,255,.66);--border:rgba(190,164,255,.20)}
+html[data-theme="cosmic"] body{background:radial-gradient(ellipse at 12% 8%,rgba(116,75,210,.26),transparent 38%),radial-gradient(ellipse at 88% 18%,rgba(57,92,210,.20),transparent 36%),radial-gradient(ellipse at 50% 100%,rgba(90,45,150,.18),transparent 48%),#080612!important}
+html[data-theme="cosmic"] .sidebar,html[data-theme="cosmic"] .main,html[data-theme="cosmic"] .card,html[data-theme="cosmic"] .modal-card,html[data-theme="cosmic"] .incoming-card,html[data-theme="cosmic"] .profile-popover,html[data-theme="cosmic"] .user-profile-card,html[data-theme="cosmic"] .voice-ctx-menu,html[data-theme="cosmic"] .group-ctx-menu,html[data-theme="cosmic"] .app-dialog{background:linear-gradient(145deg,rgba(35,27,57,.84),rgba(17,14,31,.88) 58%,rgba(13,12,27,.92))!important;border-color:rgba(190,164,255,.19)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 16px 48px rgba(0,0,0,.28),0 0 28px rgba(112,78,205,.07);backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%)}
+html[data-theme="cosmic"] .chat-header,html[data-theme="cosmic"] .top-tabs,html[data-theme="cosmic"] .bottom-dock,html[data-theme="cosmic"] .composer,html[data-theme="cosmic"] .panel-body{background-color:rgba(20,16,35,.66)!important;border-color:rgba(190,164,255,.14)!important}
+html[data-theme="cosmic"] .primary-btn,html[data-theme="cosmic"] .send-btn,html[data-theme="cosmic"] .sm-btn.blue{background:linear-gradient(135deg,#9d72f4,#596ee8)!important;border:1px solid rgba(220,205,255,.28)!important;box-shadow:0 5px 18px rgba(111,80,208,.27),inset 0 1px 0 rgba(255,255,255,.22)}
+html[data-theme="cosmic"] .tab-btn.active,html[data-theme="cosmic"] .auralis-rail-btn.active,html[data-theme="cosmic"] .list-item.active{background:linear-gradient(120deg,rgba(143,105,230,.24),rgba(83,102,213,.13))!important;border-color:rgba(183,155,255,.24)!important;box-shadow:inset 0 0 18px rgba(126,93,215,.08),0 0 18px rgba(126,93,215,.08)}
+html[data-theme="cosmic"] input:not([type="checkbox"]):not([type="range"]),html[data-theme="cosmic"] textarea,html[data-theme="cosmic"] select{background:rgba(12,10,24,.62)!important;border-color:rgba(181,155,245,.22)!important;color:var(--text)!important}
+html[data-theme="cosmic"] .avatar,html[data-theme="cosmic"] .user-profile-avatar,html[data-theme="cosmic"] .pop-av{box-shadow:0 0 0 1px rgba(190,164,255,.20),0 0 18px rgba(133,99,226,.12)}
+html[data-theme="cosmic"] .auralis-status-icon{width:28px;height:28px;flex-basis:28px;filter:drop-shadow(0 3px 8px var(--status-glow,rgba(120,90,210,.28)))}
+html[data-theme="cosmic"] .auralis-status-icon.status-online{--status-glow:rgba(37,255,137,.62)}
+html[data-theme="cosmic"] .auralis-status-icon.status-offline{--status-glow:rgba(183,190,224,.38)}
+html[data-theme="cosmic"] .auralis-status-icon.status-idle{--status-glow:rgba(112,126,255,.62)}
+html[data-theme="cosmic"] .auralis-status-icon.status-dnd{--status-glow:rgba(255,69,58,.62)}
+html[data-theme="cosmic"] .auralis-status-icon.status-invisible{--status-glow:rgba(180,187,204,.34)}
+html[data-theme="cosmic"] .auralis-status-icon.status-ghost{--status-glow:rgba(180,95,255,.66)}
+html[data-theme="cosmic"] .auralis-status-menu{background:linear-gradient(145deg,rgba(35,27,57,.97),rgba(17,14,31,.98))!important;border-color:rgba(190,164,255,.25)!important;box-shadow:0 18px 48px rgba(0,0,0,.5),0 0 24px rgba(126,93,215,.13)}
+html[data-theme="cosmic"] .auralis-status-menu button:hover,html[data-theme="cosmic"] .auralis-status-menu button.active{background:rgba(151,117,237,.18)!important}
+html[data-theme="cosmic"] .theme-swatch[data-theme="cosmic"]{border-color:#b99aff;box-shadow:0 0 0 2px rgba(167,123,255,.2),0 0 20px rgba(167,123,255,.22)}
+@media(prefers-reduced-motion:no-preference){html[data-theme="cosmic"] .primary-btn:hover,html[data-theme="cosmic"] .send-btn:hover,html[data-theme="cosmic"] .sm-btn.blue:hover{filter:brightness(1.1);box-shadow:0 7px 22px rgba(111,80,208,.38)}}
+</style>
 <script id="auralis-android-sidebar-account-status-runtime-2538">
 (function(){
- const STATUSES={
-  online:{label:'В сети',color:'#30d158'},
-  offline:{label:'Не в сети',color:'#aeb4c8'},
-  idle:{label:'Не активен',color:'#8792ff'},
-  dnd:{label:'Не беспокоить',color:'#ff453a'},
-  invisible:{label:'Невидимый',color:'#aeb4c8'},
-  ghost:{label:'Призрак',color:'#bd72ff'}
- };
+ const LABELS={online:{label:'В сети',color:'#30d158'},offline:{label:'Не в сети',color:'#aeb4c8'},ghost:{label:'Призрак',color:'#bd72ff'}};
+ function ghostEnabled(){return localStorage.getItem('auralis_presence_status')==='ghost'}
+ function currentStatus(){return ghostEnabled()?'ghost':(navigator.onLine?'online':'offline')}
  function renderAuralisStatusIcon(key){
   const common='class="auralis-status-icon status-'+key+'" viewBox="0 0 48 48" role="img" aria-hidden="true"';
   const defs=(id,a,b)=>'<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient></defs>';
   const icons={
    online:defs('gOn','#baffd8','#00b85e')+'<circle cx="24" cy="24" r="15" fill="url(#gOn)" stroke="#d7ffe8" stroke-width="1.5"/><circle cx="24" cy="24" r="5.8" fill="#effff5"/><path d="M5 25c3-11 11-17 20-17 8 0 14 4 18 10M4 30c5 8 13 12 22 10 6-1 11-4 15-9" fill="none" stroke="#39f58f" stroke-width="2.1" stroke-linecap="round" opacity=".85"/><circle cx="8" cy="16" r="2" fill="#8dffc0"/>',
    offline:defs('gOff','#f4f5ff','#7d849c')+'<circle cx="24" cy="24" r="15" fill="url(#gOff)" fill-opacity=".82" stroke="#e6e9ff" stroke-width="1.5"/><circle cx="24" cy="24" r="5.8" fill="#dfe3f7"/><path d="M5 25c3-11 11-17 20-17 8 0 14 4 18 10M4 30c5 8 13 12 22 10 6-1 11-4 15-9" fill="none" stroke="#9da5c4" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>',
-   idle:defs('gIdle','#d8ddff','#5c6cff')+'<path d="M31 5c-10 2-17 12-15 23 2 10 12 17 22 14-5 5-12 7-19 4C7 42 1 29 5 17 9 6 21 0 31 5Z" fill="url(#gIdle)" stroke="#e3e7ff" stroke-width="1.2"/><path d="m35 8 2.3 5.1 5.2 2.2-5.2 2.2-2.3 5.2-2.1-5.2-5.2-2.2 5.2-2.2Z" fill="#bfc7ff"/>',
-   dnd:defs('gDnd','#ff8b80','#c51f32')+'<path d="M11 9h26l3 4v22l-4 4H12l-4-4V13Z" fill="url(#gDnd)" stroke="#ffc0b9" stroke-width="1.5"/><path d="M15 23h18" stroke="#7e101f" stroke-width="5.5" stroke-linecap="round"/><path d="M15 22h18" stroke="#ffb4aa" stroke-width="1.4" stroke-linecap="round"/>',
-   invisible:defs('gInv','#f0f2fa','#70778c')+'<circle cx="24" cy="24" r="15.5" fill="url(#gInv)" fill-opacity=".68" stroke="#e4e7f3" stroke-width="1.4"/><path d="M15 15c4-5 11-7 17-4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".8"/><path d="M13 31c4 7 14 9 21 4" fill="none" stroke="#aeb5ca" stroke-width="1.4" opacity=".7"/>',
    ghost:defs('gGhost','#f2dfff','#9360ed')+'<path d="M24 5c-10 0-16 8-16 18v16c0 3 3 4 5 2l4-3 4 3c2 2 4 2 6 0l4-3 4 3c2 2 5 1 5-2V23C40 12 34 5 24 5Z" fill="url(#gGhost)" fill-opacity=".9" stroke="#f1dfff" stroke-width="1.6"/><ellipse cx="18" cy="23" rx="2.2" ry="3.5" fill="#47316f"/><ellipse cx="30" cy="23" rx="2.2" ry="3.5" fill="#47316f"/><path d="M17 11c4-3 10-3 14 0" fill="none" stroke="#fff" stroke-width="2" opacity=".8" stroke-linecap="round"/>'
   };
   return '<svg '+common+'>'+icons[key]+'</svg>';
  }
  window.renderAuralisStatusIcon=renderAuralisStatusIcon;
+ window.auralisIsGhostMode=ghostEnabled;
+ window.auralisSyncThemeAppIcon=function(){
+  const active=document.documentElement.dataset.theme==='cosmic';
+  document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]').forEach(link=>{link.href=active?'/auralis-cosmic-icon.svg':'/auralis-icon.svg'});
+  const manifest=document.querySelector('link[rel="manifest"]');
+  if(manifest)manifest.href=active?'/auralis-cosmic.webmanifest':'/manifest.webmanifest';
+ };
+ if(window.__auralisPendingThemeIconSync){window.auralisSyncThemeAppIcon();window.__auralisPendingThemeIconSync=false;}
  function init(){
   const isAndroid=document.body.classList.contains('android-md3');
   const rail=isAndroid?document.getElementById('auralisMobileRail'):null;
@@ -10487,14 +10522,9 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   const userBar=document.querySelector('.bottom-dock .user-bar');
   if(isAndroid&&(!rail||rail.dataset.accountStatusReady==='1'))return;
   if(isAndroid)rail.dataset.accountStatusReady='1';
-  let status=localStorage.getItem('auralis_presence_status')||'online';
-  if(!STATUSES[status])status='online';
   const menu=document.createElement('div');menu.className='auralis-status-menu hidden';
-  Object.entries(STATUSES).forEach(([key,item])=>{
-   const option=document.createElement('button');option.type='button';option.dataset.status=key;
-   option.innerHTML=renderAuralisStatusIcon(key)+'<span>'+item.label+'</span>';
-   option.addEventListener('click',()=>setStatus(key));menu.appendChild(option);
-  });
+  const ghostOption=document.createElement('button');ghostOption.type='button';
+  ghostOption.addEventListener('click',()=>setGhost(!ghostEnabled()));menu.appendChild(ghostOption);
   let statusBtn;
   if(isAndroid){
    const oldActions=document.querySelector('.bottom-dock .user-bar .item-actions');if(oldActions)oldActions.remove();
@@ -10515,34 +10545,41 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
    dock.appendChild(menu);
   }else return;
   statusBtn.addEventListener('click',()=>menu.classList.toggle('hidden'));
-  function setStatus(next){
-   if(!STATUSES[next])return;
-   status=next;localStorage.setItem('auralis_presence_status',status);menu.classList.add('hidden');
-   const sub=document.getElementById('meLoginSub');if(sub){sub.textContent=STATUSES[status].label;sub.style.color=STATUSES[status].color}
-   statusBtn.style.color=STATUSES[status].color;
-   if(isAndroid)statusBtn.innerHTML=renderAuralisStatusIcon(status)+'<span>Статус</span>';
-   else statusBtn.innerHTML=renderAuralisStatusIcon(status)+'<span>'+STATUSES[status].label+'</span>';
-   menu.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.status===status));
+  function syncStatus(){
+   const status=currentStatus(),item=LABELS[status];
+   const sub=document.getElementById('meLoginSub');if(sub){sub.textContent=item.label;sub.style.color=item.color}
+   statusBtn.style.color=item.color;
+   statusBtn.innerHTML=isAndroid?'<span>Статус</span>':renderAuralisStatusIcon(status)+'<span>'+item.label+'</span>';
+   statusBtn.title=item.label;
+   ghostOption.innerHTML=renderAuralisStatusIcon('ghost')+'<span>'+(ghostEnabled()?'Отключить призрака':'Призрак')+'</span>';
+   ghostOption.classList.toggle('active',ghostEnabled());
    document.body.dataset.auralisPresence=status;
-   window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:STATUSES[status].label}}));
+   window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:item.label}}));
   }
-  window.auralisGetPresenceStatus=()=>status;
-  window.auralisSetPresenceStatus=setStatus;
+  function setGhost(enabled){
+   if(enabled)localStorage.setItem('auralis_presence_status','ghost');else localStorage.removeItem('auralis_presence_status');
+   menu.classList.add('hidden');syncStatus();
+  }
+  window.auralisGetPresenceStatus=currentStatus;
+  window.auralisSetPresenceStatus=(next)=>setGhost(next==='ghost');
+  window.auralisSetGhostMode=setGhost;
+  window.addEventListener('online',syncStatus);
+  window.addEventListener('offline',syncStatus);
+  syncStatus();
   const sub=document.getElementById('meLoginSub');
-  if(sub)new MutationObserver(()=>{if(sub.textContent!==STATUSES[status].label){sub.textContent=STATUSES[status].label;sub.style.color=STATUSES[status].color}}).observe(sub,{childList:true,characterData:true,subtree:true});
-  setStatus(status);
+  if(sub)new MutationObserver(()=>{const item=LABELS[currentStatus()];if(sub.textContent!==item.label){sub.textContent=item.label;sub.style.color=item.color}}).observe(sub,{childList:true,characterData:true,subtree:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
-<script id="auralis-do-not-disturb-notification-guard-2538">
+<script id="auralis-ghost-notification-guard-2538">
 (function(){
- const blocked=()=>document.body&&document.body.dataset.auralisPresence==='dnd';
+ const blocked=()=>!!(window.auralisIsGhostMode&&window.auralisIsGhostMode());
  const wrap=(name)=>{
   const original=window[name];
-  if(typeof original!=='function'||original.__auralisDndGuard)return;
+  if(typeof original!=='function'||original.__auralisGhostGuard)return;
   const guarded=function(){if(blocked())return;return original.apply(this,arguments)};
-  guarded.__auralisDndGuard=true;window[name]=guarded;
+  guarded.__auralisGhostGuard=true;window[name]=guarded;
  };
  function install(){wrap('notifyDesktop');wrap('playNotificationSound');}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
