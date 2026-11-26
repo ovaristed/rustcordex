@@ -10710,3 +10710,130 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
  body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;flex:0 0 38px!important;width:38px!important;min-width:38px!important;height:38px!important;pointer-events:auto!important}
 }
 </style>
+
+
+
+<style id="auralis-graphite-theme-2542">
+/* Auralis Graphite — unified charcoal surfaces and restrained steel accents. */
+:root,
+html,
+html[data-theme],
+body,
+body.android-md3 {
+  color-scheme: dark;
+  --bg:#101114;
+  --panel-rgb:29,31,35;
+  --panel-alpha:.96;
+  --glass:rgba(29,31,35,.94);
+  --glass-solid:#202328;
+  --glass-2:rgba(255,255,255,.045);
+  --border:rgba(190,198,209,.13);
+  --text:#f0f1f3;
+  --muted:rgba(220,224,230,.62);
+  --accent:#747d89;
+  --accent-rgb:116,125,137;
+  --icon-color:#aeb5bf;
+  --icon-muted:#818a96;
+  --glow-2:rgba(116,125,137,.16);
+  --android-surface-0:#101114;
+  --android-surface-1:#191b1f;
+  --android-surface-2:#22252a;
+  --android-outline:rgba(190,198,209,.16);
+  --android-on-surface:#f0f1f3;
+  --android-primary:#747d89;
+  --android-on-primary:#fff;
+}
+html[data-theme="emerald"],
+html[data-theme="light"],
+html[data-theme="midnight"],
+html[data-theme="ocean"],
+html[data-theme="purple"],
+html[data-theme="rose"],
+html[data-theme="sunset"] {
+  --bg:#101114;
+  --panel-rgb:29,31,35;
+  --panel-alpha:.96;
+  --glass:rgba(29,31,35,.94);
+  --glass-solid:#202328;
+  --glass-2:rgba(255,255,255,.045);
+  --border:rgba(190,198,209,.13);
+  --text:#f0f1f3;
+  --muted:rgba(220,224,230,.62);
+  --accent:#747d89;
+  --accent-rgb:116,125,137;
+  --icon-color:#aeb5bf;
+  --icon-muted:#818a96;
+  --glow-2:rgba(116,125,137,.16);
+}
+body, body.android-md3 {
+  background-color:var(--bg)!important;
+  color:var(--text);
+}
+#app, #app>.sidebar, #app>.main,
+.sidebar, .main, .bottom-dock,
+.chat-header, .chat-input-area, .composer,
+.modal, .popover, .dropdown-menu, .context-menu,
+#profilePopover, .settings-panel, .panel-body {
+  --accent:#747d89;
+  --accent-rgb:116,125,137;
+}
+#app>.sidebar, .sidebar, .bottom-dock {
+  background-color:#17191d;
+  border-color:rgba(190,198,209,.11);
+}
+#app>.main, .main {
+  background-color:#111316;
+}
+.chat-header, .chat-input-area, .composer,
+.modal, .popover, .dropdown-menu, .context-menu,
+#profilePopover, .settings-panel {
+  background-color:#202328;
+  border-color:rgba(190,198,209,.14);
+}
+button, .btn, .icon-btn, .tab, .nav-item,
+.auralis-rail-btn, .send-btn, #recVoiceBtn {
+  accent-color:var(--accent);
+}
+button.primary, .btn-primary, .active, .selected,
+.nav-item.active, .tab.active, .auralis-rail-btn.active {
+  --accent:#747d89;
+  --accent-rgb:116,125,137;
+}
+input, textarea, select, .message-input, #messageInput {
+  color:var(--text);
+  caret-color:#c1c7d0;
+}
+input:focus, textarea:focus, select:focus,
+.message-input:focus, #messageInput:focus {
+  border-color:rgba(150,160,174,.58)!important;
+  box-shadow:0 0 0 3px rgba(116,125,137,.13)!important;
+}
+::selection {background:rgba(116,125,137,.35);color:#fff}
+a {color:#b5bdc8}
+a:hover {color:#e0e4e9}
+.list-item:hover, .nav-item:hover, .icon-btn:hover,
+button:not(:disabled):hover {
+  background-color:rgba(160,169,181,.09);
+}
+.list-item.active, .list-item.selected,
+.nav-item.active, .tab.active {
+  background:rgba(116,125,137,.16)!important;
+  border-color:rgba(160,169,181,.2)!important;
+}
+.badge, .chip, .tag {
+  border-color:rgba(160,169,181,.18);
+}
+#profilePopover .pop-avatar-status {
+  border-color:#202328;
+  background:#202328;
+}
+#profilePopover .pop-presence-row-bottom {
+  background:linear-gradient(110deg,rgba(116,125,137,.13),rgba(255,255,255,.025));
+}
+@media(prefers-reduced-motion:no-preference) {
+  button, .icon-btn, .list-item, .nav-item, .tab {
+    transition:background-color .18s ease,border-color .18s ease,color .18s ease,box-shadow .18s ease;
+  }
+}
+</style>
+
