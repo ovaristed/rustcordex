@@ -8076,7 +8076,7 @@ async function openChat(username) {
   document.getElementById('emojiBar').classList.remove('hidden');
   document.getElementById('composer').classList.remove('hidden');
   const inp = document.getElementById('msgInput');
-  inp.placeholder = 'Написать сообщение для ' + displayNameOf(username) + '...';
+  inp.placeholder = '';
   inp.value = localStorage.getItem(getDraftKey()) || '';
 
   const box = document.getElementById('messages');
