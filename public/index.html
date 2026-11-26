@@ -10337,7 +10337,7 @@ body::before,body::after{
  window.getChatDateLabel=getChatDateLabel;window.bindAutoGrowInput=bindAutoGrowInput;window.renderDmStatusBadge=renderDmStatusBadge;
  function addDateDivider(box,stamp){
   const label=getChatDateLabel(stamp);if(!label)return;
-  const last=box.querySelector('.chat-date-divider:last-of-type');
+  const dividers=box.querySelectorAll('.chat-date-divider');const last=dividers.length?dividers[dividers.length-1]:null;
   if(last&&last.dataset.dateLabel===label)return;
   const divider=document.createElement('div');divider.className='chat-date-divider';divider.dataset.dateLabel=label;
   const span=document.createElement('span');span.textContent=label;divider.appendChild(span);box.appendChild(divider);
