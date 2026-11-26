@@ -4225,17 +4225,11 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
       <button id="stickerPickerBtn" type="button" class="rec-btn sticker-picker-btn" title="Стикеры" aria-label="Открыть стикеры" aria-expanded="false" onclick="toggleStickerPicker()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8"/><path d="M14 21v-5a2 2 0 0 1 2-2h5"/><path d="M14 21l7-7"/></svg>
       </button>
-      <button id="attachFileBtn" type="button" class="rec-btn attach-file-btn" title="Добавить фото или файл" aria-label="Добавить фото или файл" onclick="document.getElementById('fileInput').click()">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/><path d="M12 12v6m-3-3h6"/></svg>
-      </button>
-      <button id="recVoiceBtn" type="button" class="rec-btn" title="Зажми и проведи вверх для записи без удержания" onpointerdown="startVoiceRecord(event)" onpointermove="moveVoiceRecord(event)" onpointerup="releaseVoiceRecord()" onpointercancel="releaseVoiceRecord()" style="touch-action:none;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
-      </button>
       <span id="recTimer" class="item-sub hidden" style="color:#ff6961;font-weight:700;">0:00</span>
       <div id="voiceLockActions" class="voice-lock-actions"><button type="button" class="voice-action-cancel" onclick="cancelLockedVoice()">Отмена</button><button type="button" class="voice-action-send" onclick="sendLockedVoice()">Отправить</button></div>
-      <textarea id="msgInput" rows="1" placeholder="Написать сообщение..." oninput="onMsgInput();this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
-      <button type="button" class="send-btn" title="Отправить" onclick="sendChat()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      <textarea id="msgInput" rows="1" placeholder="" aria-label="Сообщение" oninput="onMsgInput();this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+      <button id="recVoiceBtn" type="button" class="rec-btn composer-action-btn" title="Зажми и проведи вверх для записи голосового сообщения" aria-label="Записать голосовое сообщение" onclick="if(event.detail===0){if(document.getElementById('msgInput').value.trim())sendChat();else toggleVoiceRecord()}" onpointerdown="startVoiceRecord(event)" onpointermove="moveVoiceRecord(event)" onpointerup="releaseVoiceRecord()" onpointercancel="releaseVoiceRecord()" style="touch-action:none;">
+        <svg class="composer-mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
       </button>
     </div>
   </div>
@@ -7332,7 +7326,21 @@ function getDraftKey() {
   return 'rc_draft_' + activeChat.kind + '_' + activeChat.id;
 }
 
+function updateComposerActionButton() {
+  const input = document.getElementById('msgInput');
+  const button = document.getElementById('recVoiceBtn');
+  if (!input || !button) return;
+  const hasText = !!input.value.trim();
+  button.classList.toggle('is-send-mode', hasText);
+  button.title = hasText ? 'Отправить сообщение' : 'Зажми и проведи вверх для записи голосового сообщения';
+  button.setAttribute('aria-label', hasText ? 'Отправить сообщение' : 'Записать голосовое сообщение');
+  button.innerHTML = hasText
+    ? '<svg class="composer-send-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'
+    : '<svg class="composer-mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>';
+}
+
 function onMsgInput() {
+  updateComposerActionButton();
   const dk = getDraftKey();
   if (!dk) return;
   const val = document.getElementById('msgInput').value;
@@ -8543,6 +8551,7 @@ async function sendChat() {
   if (!sent) return;
   inp.value = '';
   if (inp.tagName === 'TEXTAREA') inp.style.height = '44px';
+  updateComposerActionButton();
   const dk = getDraftKey(); if (dk) localStorage.removeItem(dk);
 }
 
@@ -8561,6 +8570,8 @@ let voiceRecordStartY = 0;
 let voiceRecordStream = null;
 
 async function startVoiceRecord(ev) {
+  const messageInput = document.getElementById('msgInput');
+  if (messageInput && messageInput.value.trim()) return;
   if (!activeChat || (mediaRecorder && mediaRecorder.state === 'recording')) return;
   ev.preventDefault();
   if (ev.currentTarget && ev.pointerId !== undefined && ev.currentTarget.setPointerCapture) {
@@ -10095,6 +10106,33 @@ body.android-md3 #app .bottom-dock .user-bar .user-trigger{flex:1 1 auto!importa
 body.android-md3 #app .bottom-dock .user-bar .item-actions{display:flex!important;flex:0 0 auto!important;align-items:center!important;gap:2px!important}
 body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;width:40px!important;height:40px!important;min-width:40px!important;flex:0 0 40px!important;pointer-events:auto!important}
 </style>
+
+
+<style id="auralis-compact-three-control-composer-2540">
+  #composer { display:flex; align-items:center; flex-wrap:wrap; gap:8px !important; }
+  #composer > #fileInput { display:none !important; }
+  #composer > #stickerPickerBtn { order:1 !important; flex:0 0 42px !important; width:42px !important; min-width:42px !important; }
+  #composer > #msgInput { order:2 !important; flex:1 1 0% !important; min-width:0 !important; width:0 !important; }
+  #composer > #recVoiceBtn { order:3 !important; flex:0 0 44px !important; width:44px !important; min-width:44px !important; height:44px !important; padding:0 !important; display:inline-flex; align-items:center; justify-content:center; }
+  #composer > #recTimer { order:1 !important; }
+  #composer > #voiceLockActions { order:3 !important; }
+  #composer > #recVoiceBtn.is-send-mode { background:var(--accent) !important; color:#fff !important; }
+  #composer > #recVoiceBtn.is-send-mode svg { color:inherit !important; }
+  #composer.voice-recording > #recVoiceBtn { display:inline-flex !important; }
+  #composer.voice-recording > #msgInput,
+  #composer.voice-recording > #stickerPickerBtn { display:none !important; }
+  #composer.voice-locked > #recVoiceBtn { display:none !important; }
+  @media(max-width:760px) {
+    #composer { gap:7px !important; }
+    #composer > #stickerPickerBtn { flex-basis:40px !important; width:40px !important; min-width:40px !important; }
+    #composer > #recVoiceBtn { flex-basis:42px !important; width:42px !important; min-width:42px !important; height:42px !important; }
+    #composer > #msgInput { font-size:16px !important; }
+  }
+</style>
+<script id="auralis-compact-three-control-composer-runtime-2540">
+  document.addEventListener('DOMContentLoaded', updateComposerActionButton);
+  updateComposerActionButton();
+</script>
 
 </body>
 </html>
