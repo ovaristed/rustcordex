@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.4.7",
-  "description": "Auralis 3.4.7 — desktop presence, themes and group calls",
+  "version": "3.4.8",
+  "description": "Auralis 3.4.8 — desktop UI fixes",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
