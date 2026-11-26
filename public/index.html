@@ -1081,15 +1081,15 @@
     gap: 7px;
     padding: 8px 14px;
     border-radius: 13px;
-    border: 1px solid rgba(48, 209, 88, 0.35);
-    background: rgba(48, 209, 88, 0.16);
-    color: var(--green);
+    border: 1px solid rgba(var(--accent-rgb), 0.38);
+    background: rgba(var(--accent-rgb), 0.16);
+    color: var(--accent);
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
   }
-  .call-pill svg { color: var(--green); }
-  .call-pill:hover { background: rgba(48, 209, 88, 0.25); }
+  .call-pill svg { color: var(--accent); }
+  .call-pill:hover { background: rgba(var(--accent-rgb), 0.25); }
 
   .call-stage {
     padding: 14px 18px;
@@ -1418,7 +1418,7 @@
   }
   .msg-sticker-big img {
     display:block;
-    width:clamp(104px, 15vw, 156px);
+    width:clamp(160px, 19vw, 220px);
     height:auto;
     object-fit:contain;
     user-select:none;
@@ -4239,7 +4239,7 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
       </button>
       <span id="recTimer" class="item-sub hidden" style="color:#ff6961;font-weight:700;">0:00</span>
       <div id="voiceLockActions" class="voice-lock-actions"><button type="button" class="voice-action-cancel" onclick="cancelLockedVoice()">Отмена</button><button type="button" class="voice-action-send" onclick="sendLockedVoice()">Отправить</button></div>
-      <textarea id="msgInput" rows="1" placeholder="" aria-label="Сообщение" oninput="onMsgInput();this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
+      <textarea id="msgInput" rows="1" placeholder="" aria-label="Сообщение" oninput="onMsgInput()" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
       <button id="recVoiceBtn" type="button" class="rec-btn composer-action-btn" title="Зажми и проведи вверх для записи голосового сообщения" aria-label="Записать голосовое сообщение" onclick="if(document.getElementById('msgInput').value.trim())sendChat();else if(event.detail===0)toggleVoiceRecord()" onpointerdown="startVoiceRecord(event)" onpointermove="moveVoiceRecord(event)" onpointerup="releaseVoiceRecord()" onpointercancel="releaseVoiceRecord()" style="touch-action:none;">
         <svg class="composer-mic-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
       </button>
@@ -10235,76 +10235,7 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 </style>
 
 
-<style id="auralis-graphite-neutral-theme-351">
-:root{
-  --bg:#202226!important;
-  --panel-rgb:35,37,42!important;
-  --panel-alpha:1!important;
-  --glass:rgba(35,37,42,.96)!important;
-  --glass-solid:rgba(35,37,42,.99)!important;
-  --glass-2:rgba(255,255,255,.045)!important;
-  --glass-hover:rgba(255,255,255,.085)!important;
-  --input-bg:rgba(255,255,255,.055)!important;
-  --input-focus-bg:rgba(255,255,255,.085)!important;
-  --border:rgba(255,255,255,.12)!important;
-  --text:#f2f3f5!important;
-  --muted:rgba(225,228,233,.62)!important;
-  --glow-2:rgba(0,0,0,0)!important;
-  --auralis-glass-blur:18px;
-  color-scheme:dark;
-}
-html,body{
-  background:#202226!important;
-  background-image:none!important;
-  color:var(--text)!important;
-}
-body{
-  background:#202226!important;
-  background-image:none!important;
-}
-.app,.sidebar,.main,.chat-header,.messages,.composer,
-.panel-body,.settings-panel,.modal-card,.modal-content,
-.profile-popover,.user-profile-card,.incoming-card,
-.call-stage,.call-ctrls,.glass-studio-panel,.auralis-glass-studio{
-  background-color:rgba(35,37,42,.97)!important;
-  background-image:none!important;
-}
-.sidebar,.main,.chat-header,.composer,.modal-card,
-.settings-panel,.incoming-card,.profile-popover,
-.user-profile-card,.glass-studio-panel,.auralis-glass-studio{
-  border-color:rgba(255,255,255,.12)!important;
-}
-/* Accent remains on controls and outlines, not on large surfaces or selected-row fills. */
-.list-item.active,.settings-tabs .s-tab.active,
-.theme-swatch.active,.member-pick-row.selected,
-.tab-btn.active,.top-tabs .active,.nav-item.active,
-.friend-row.active,.channel-item.active{
-  background:rgba(255,255,255,.075)!important;
-  border-color:var(--accent)!important;
-  color:var(--text)!important;
-  box-shadow:none!important;
-}
-.sidebar,.main,.chat-header,.messages,.composer,
-.panel-body,.settings-panel,.modal-card,.modal-content,
-.profile-popover,.user-profile-card,.incoming-card,
-.call-stage,.call-ctrls{
-  color:var(--text);
-}
-body::before,body::after{
-  background-image:none!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
-@media(max-width:760px){
-  body.android-md3 #app>.main,
-  body.android-md3 #app>.main>.chat-header,
-  body.android-md3 #app>.main>.messages,
-  body.android-md3 #app>.main>.composer{
-    background:#23252a!important;
-    background-image:none!important;
-  }
-}
-</style>
+
 
 
 <div id="avatarCropModal" class="crop-modal" hidden>
@@ -10377,7 +10308,7 @@ body::before,body::after{
   out.toBlob(blob=>{if(!blob){alert('Не удалось обработать изображение');return;}const reader=new FileReader();reader.onload=()=>{const cb=cropResolve;close();cb(String(reader.result));};reader.readAsDataURL(blob);},'image/jpeg',.88);
  });
  window.auralisOpenAvatarCrop=openCrop;
- document.addEventListener('DOMContentLoaded',()=>{const inp=document.getElementById('msgInput');if(inp){inp.classList.add('chat-input-textarea');bindAutoGrowInput(inp,160);}});
+ document.addEventListener('DOMContentLoaded',()=>{const inp=document.getElementById('msgInput');if(inp){inp.classList.remove('chat-input-textarea');inp.style.height='';}});
 })();
 </script>
 </body>
@@ -11072,8 +11003,11 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 #callStage #callGrid{display:grid!important;grid-template-columns:repeat(var(--call-cols,1),minmax(0,1fr))!important;grid-auto-rows:auto!important;grid-auto-flow:row!important;gap:8px!important;width:100%!important;max-width:100%!important;margin:0!important;align-content:start!important;justify-content:stretch!important;overflow:visible!important;container-type:inline-size}
 #callStage #callGrid>.tile{width:100%!important;min-width:0!important;max-width:100%!important;height:clamp(92px,calc(100cqi / var(--call-cols,1) * .62),210px)!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;padding:0!important;border-radius:14px!important;overflow:hidden!important}
 #callStage #callGrid>.tile .big-av{width:clamp(30px,calc(100cqi / var(--call-cols,1) * .30),80px)!important;height:clamp(30px,calc(100cqi / var(--call-cols,1) * .30),80px)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;flex:0 0 auto!important;font-size:clamp(11px,calc(100cqi / var(--call-cols,1) * .12),26px)!important}
+#callStage #callGrid>.tile .big-av.hidden,#callStage #callGrid>.tile video.hidden{display:none!important}
 #callStage #callGrid>.tile .tile-tag{max-width:calc(100% - 12px)!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:clamp(9px,calc(100cqi / var(--call-cols,1) * .06),13px)!important}
-#callStage #callGrid>.tile.screen-mode{grid-column:1/-1!important;height:clamp(200px,42vh,440px)!important}
+#callStage #callGrid>.tile.screen-mode{grid-column:1/-1!important;height:clamp(180px,48vh,420px)!important;min-height:180px!important;max-height:420px!important;overflow:hidden!important}
+#callStage #callGrid>.tile.screen-mode .big-av{display:none!important}
+#callStage #callGrid>.tile.screen-mode video{display:block!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:contain!important}
 @media(max-width:760px){#callStage #callGrid{grid-template-columns:repeat(var(--call-cols,1),minmax(0,1fr))!important;gap:6px!important}#callStage #callGrid>.tile{height:clamp(96px,calc(100cqi / var(--call-cols,1) * .75),190px)!important}}
 </style>
 
@@ -11094,7 +11028,7 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 .profile-footer-main{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .dm-avatar-box{position:relative;width:40px;height:40px;flex-shrink:0}
 .dm-avatar-box>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.dm-status-dot{position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;border:2px solid var(--panel-rgb,#202226);display:flex;align-items:center;justify-content:center;font-size:9px}
+.dm-status-dot{position:absolute;right:-4px;top:-7px;bottom:auto;width:13px;height:13px;border-radius:50%;border:2px solid var(--glass-solid,var(--bg));display:flex;align-items:center;justify-content:center;font-size:8px;z-index:4;box-shadow:0 1px 5px rgba(0,0,0,.28)}
 .dm-status-dot.status-online{background:#22c55e}.dm-status-dot.status-offline{background:#6b7280}
 .dm-status-dot.status-ghost{background:#475569;color:#e2e8f0;box-shadow:0 0 8px rgba(148,163,184,.45)}
 .crop-modal[hidden]{display:none!important}.crop-modal{position:fixed;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(9px)}
