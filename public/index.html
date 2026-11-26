@@ -10210,6 +10210,65 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 </style>
 
 <script id="auralis-desktop-call-layout-repair-347">(function(){function update(){var grid=document.getElementById('callGrid');if(!grid)return;var count=Math.max(1,grid.querySelectorAll(':scope > .tile').length);var max=window.innerWidth<=760?2:5;grid.style.setProperty('--call-participant-count',String(count));grid.style.setProperty('--call-cols',String(Math.min(count,max)));}function start(){var grid=document.getElementById('callGrid');if(!grid)return;update();new MutationObserver(update).observe(grid,{childList:true});window.addEventListener('resize',update,{passive:true});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();})();</script>
+
+<style id="auralis-android-sidebar-and-presence-hotfix-3501">
+/* Android: restore the actual navigation tabs and keep the sidebar content full width. */
+@media(max-width:760px){
+  body.android-md3 #auralisMobileRail{display:none!important}
+  body.android-md3 #app{
+    display:block!important;position:relative!important;
+    width:100vw!important;height:100dvh!important;min-height:0!important;
+    overflow:hidden!important
+  }
+  body.android-md3 #app>.sidebar{
+    position:absolute!important;inset:0!important;
+    display:flex!important;flex-direction:column!important;
+    justify-content:space-between!important;align-items:stretch!important;
+    width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+    padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom))!important;
+    overflow:hidden!important
+  }
+  body.android-md3 #app>.sidebar>.sidebar-top{
+    display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+    width:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important
+  }
+  body.android-md3 #app .sidebar-top>.top-tabs{
+    order:0!important;display:grid!important;visibility:visible!important;opacity:1!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    flex:0 0 auto!important;width:100%!important;min-width:0!important;
+    padding:8px!important;gap:7px!important
+  }
+  body.android-md3 #app .sidebar-top>.panel-body{
+    order:1!important;display:flex!important;flex:1 1 auto!important;
+    width:100%!important;min-width:0!important;min-height:0!important;
+    overflow-y:auto!important
+  }
+  body.android-md3 #app>.sidebar>.bottom-dock{
+    display:block!important;flex:0 0 auto!important;width:100%!important;
+    min-width:0!important
+  }
+  body.android-md3:not(.mobile-chat-open) #app>.main{display:none!important}
+  body.android-md3.mobile-chat-open #app>.sidebar{display:none!important}
+  body.android-md3.mobile-chat-open #app>.main{display:flex!important}
+  /* Presence control is a small badge over the avatar, never a full-size avatar layer. */
+  body.android-md3 #meAv{position:relative!important;overflow:visible!important}
+  body.android-md3 #mePresenceToggle{
+    position:absolute!important;right:-3px!important;bottom:-3px!important;left:auto!important;top:auto!important;
+    display:grid!important;place-items:center!important;
+    width:19px!important;height:19px!important;min-width:19px!important;min-height:19px!important;
+    max-width:19px!important;max-height:19px!important;flex:0 0 19px!important;
+    padding:0!important;margin:0!important;overflow:hidden!important;
+    border:2px solid var(--bg)!important;border-radius:50%!important;
+    background:var(--glass-solid)!important;z-index:8!important;line-height:1!important
+  }
+  body.android-md3 #mePresenceToggle .auralis-status-icon{
+    display:block!important;width:13px!important;height:13px!important;
+    min-width:13px!important;min-height:13px!important;max-width:13px!important;max-height:13px!important;
+    flex:0 0 13px!important
+  }
+}
+</style>
+
 </body>
 </html>
 
