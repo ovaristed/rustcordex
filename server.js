@@ -48,6 +48,7 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_description TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_sticker_url TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT NOT NULL DEFAULT '';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS presence_status TEXT NOT NULL DEFAULT 'auto';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_reason TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_until TIMESTAMPTZ;`);
@@ -528,12 +529,26 @@ app.get('/api/users/:username/profile', authMiddleware, async (req, res) => {
   try {
     const username = String(req.params.username || '').trim();
     if (!username) return res.status(400).json({ error: 'Не указан логин пользователя' });
-    const result = await pool.query('SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+    const result = await pool.query('SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, presence_status FROM users WHERE LOWER(username) = LOWER($1)', [username]);
     if (!result.rows.length) return res.status(404).json({ error: 'Пользователь не найден' });
-    return res.json({ user: { ...result.rows[0], online: !!(socketsByUser.get(result.rows[0].username)?.size) } });
+    const user = result.rows[0];
+    const online = !!(socketsByUser.get(user.username)?.size);
+    const presenceStatus = user.presence_status === 'ghost' ? 'ghost' : (online ? 'online' : 'offline');
+    return res.json({ user: { ...user, online, presence_status: presenceStatus } });
   } catch (err) {
     console.error('Public profile error:', err);
     return res.status(500).json({ error: 'Ошибка загрузки профиля' });
+  }
+});
+
+app.patch('/api/presence', authMiddleware, async (req, res) => {
+  try {
+    const status = req.body && req.body.status === 'ghost' ? 'ghost' : 'auto';
+    await pool.query('UPDATE users SET presence_status = $1 WHERE id = $2', [status, req.user.id]);
+    return res.json({ ok: true, presence_status: status });
+  } catch (err) {
+    console.error('Presence update error:', err);
+    return res.status(500).json({ error: 'Не удалось обновить статус' });
   }
 });
 app.get('/api/friends', authMiddleware, async (req, res) => {
