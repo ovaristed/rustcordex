@@ -10201,6 +10201,72 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 }
 </style>
 
+
+<style id="auralis-android-chat-surface-and-presence-fix-3503">
+@media(max-width:760px){
+  /* Use the selected theme panel color for the actual conversation surface. */
+  body.android-md3 #app>.main{
+    background:rgba(var(--panel-rgb),.96)!important;
+  }
+  body.android-md3 #app>.main>.chat-header{
+    background:rgba(var(--panel-rgb),.98)!important;
+    border-bottom:1px solid rgba(var(--accent-rgb),.18)!important;
+  }
+  body.android-md3 #app>.main>.messages{
+    background:rgba(var(--panel-rgb),.94)!important;
+  }
+  body.android-md3 #app>.main>.composer{
+    background:rgba(var(--panel-rgb),.99)!important;
+    border-top:1px solid rgba(var(--accent-rgb),.18)!important;
+  }
+  body.android-md3 #app>.main>.composer textarea,
+  body.android-md3 #app>.main>.composer input{
+    background:color-mix(in srgb,rgba(var(--panel-rgb),1) 82%,var(--bg))!important;
+  }
+
+  /* The presence control is a compact badge attached to the avatar, not an avatar overlay. */
+  body.android-md3 .user-trigger #meAv{
+    position:relative!important;
+    overflow:visible!important;
+    isolation:isolate!important;
+  }
+  body.android-md3 #mePresenceToggle{
+    position:absolute!important;
+    inset:auto -3px -3px auto!important;
+    display:grid!important;
+    place-items:center!important;
+    box-sizing:border-box!important;
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    min-height:18px!important;
+    max-width:18px!important;
+    max-height:18px!important;
+    padding:0!important;
+    margin:0!important;
+    flex:0 0 18px!important;
+    overflow:hidden!important;
+    border:2px solid var(--panel-rgb)!important;
+    border-radius:50%!important;
+    background:rgba(var(--panel-rgb),1)!important;
+    z-index:5!important;
+    line-height:1!important;
+    transform:none!important;
+  }
+  body.android-md3 #mePresenceToggle .auralis-status-icon{
+    display:block!important;
+    width:13px!important;
+    height:13px!important;
+    min-width:13px!important;
+    min-height:13px!important;
+    max-width:13px!important;
+    max-height:13px!important;
+    flex:0 0 13px!important;
+    margin:0!important;
+  }
+}
+</style>
+
 </body>
 </html>
 
