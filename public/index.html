@@ -10483,6 +10483,8 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
    document.body.dataset.auralisPresence=status;
   }
   window.auralisGetPresenceStatus=()=>status;
+  const presenceLabel=document.getElementById('meLoginSub');
+  if(presenceLabel)new MutationObserver(()=>{if(presenceLabel.textContent!==STATUSES[status].label){presenceLabel.textContent=STATUSES[status].label;presenceLabel.style.color=STATUSES[status].color}}).observe(presenceLabel,{childList:true,characterData:true,subtree:true});
   setStatus(status);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
