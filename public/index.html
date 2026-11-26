@@ -4247,7 +4247,7 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
   <div class="pop-banner"></div>
   <div class="pop-body">
     <div class="pop-av-row">
-      <div id="popAv" class="avatar pop-av">Я</div>
+      <div class="pop-avatar-status-wrap"><div id="popAv" class="avatar pop-av">Я</div><span id="popAvatarStatus" class="pop-avatar-status" aria-label="Статус аккаунта"></span></div>
     </div>
 
     <div class="pop-identity">
@@ -4257,7 +4257,6 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
       </button>
     </div>
 
-    <div class="pop-presence-row"><span class="pop-presence-label">Статус</span><button id="popGhostToggle" type="button" class="pop-ghost-toggle" aria-pressed="false" onclick="toggleGhostFromProfile()"><span id="popGhostIcon"></span><span id="popGhostText">Призрак выключен</span><span class="pop-ghost-switch" aria-hidden="true"></span></button></div>
     <div class="pop-profile-strip">
       <button id="popSticker" type="button" class="pop-sticker" title="Выбрать стикер профиля" onclick="toggleProfileStickerPicker('popover')">＋</button>
       <div id="popDescription" class="pop-description">Здесь будет описание</div>
@@ -4275,6 +4274,7 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
         <span id="popAccArrow">›</span>
       </button>
       <div id="popAccountsBox" class="pop-acc-list hidden"></div>
+      <div class="pop-presence-row pop-presence-row-bottom"><div class="pop-presence-copy"><b>Режим призрака</b><small id="popGhostText">Призрак выключен</small></div><button id="popGhostToggle" type="button" class="pop-ghost-toggle" aria-label="Переключить режим призрака" aria-pressed="false" onclick="toggleGhostFromProfile()"><span id="popGhostIcon"></span><span class="pop-ghost-switch" aria-hidden="true"></span></button></div>
     </div>
   </div>
 </div>
@@ -10537,9 +10537,11 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
   const status=currentStatus(),item=LABELS[status],sub=document.getElementById('meLoginSub');
   if(sub){sub.textContent=item.label;sub.style.color=item.color}
   const toggle=document.getElementById('popGhostToggle'),icon=document.getElementById('popGhostIcon'),label=document.getElementById('popGhostText');
+  const avatarStatus=document.getElementById('popAvatarStatus');
+  if(avatarStatus)avatarStatus.innerHTML=renderAuralisStatusIcon(status);
   if(icon)icon.innerHTML=renderAuralisStatusIcon('ghost');
   if(toggle){toggle.classList.toggle('enabled',ghostEnabled());toggle.setAttribute('aria-pressed',String(ghostEnabled()));}
-  if(label)label.textContent=ghostEnabled()?'Призрак включён':'Призрак выключен';
+  if(label)label.textContent=ghostEnabled()?'Включён · вы невидимы':'Выключен · обычный режим';
   document.body.dataset.auralisPresence=status;
   window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:item.label}}));
  }
@@ -10618,4 +10620,17 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 @media(prefers-reduced-motion:reduce){
  body.android-md3.auralis-animations-enabled *,body.android-md3.auralis-animations-enabled *::before,body.android-md3.auralis-animations-enabled *::after{animation:none!important;transition:none!important}
 }
+</style>
+
+<style id="auralis-profile-status-layout-2538">
+#profilePopover .pop-avatar-status-wrap{position:relative;flex:0 0 68px;width:68px;height:68px}
+#profilePopover .pop-avatar-status{position:absolute;right:-3px;bottom:-3px;z-index:5;width:31px;height:31px;display:grid;place-items:center;border:3px solid #17181c;border-radius:50%;background:#17181c;box-shadow:0 3px 12px rgba(0,0,0,.4)}
+#profilePopover .pop-avatar-status .auralis-status-icon{width:27px;height:27px;flex-basis:27px}
+#profilePopover .pop-presence-row-bottom{margin:0;border:0;border-top:1px solid rgba(255,255,255,.07);border-radius:0;padding:12px 13px;background:linear-gradient(110deg,rgba(var(--accent-rgb),.09),rgba(255,255,255,.025));min-height:62px}
+#profilePopover .pop-presence-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+#profilePopover .pop-presence-copy b{font-size:12px;font-weight:750;color:var(--text)}
+#profilePopover .pop-presence-copy small{font-size:11px;color:var(--muted)}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle{width:48px;height:28px;min-height:28px;padding:2px 4px;justify-content:center;border-radius:99px;background:rgba(255,255,255,.06)}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle .auralis-status-icon{width:21px;height:21px;flex-basis:21px}
+#profilePopover .pop-presence-row-bottom .pop-ghost-switch{display:none}
 </style>
