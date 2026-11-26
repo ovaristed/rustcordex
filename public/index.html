@@ -4721,11 +4721,11 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
 
       <div class="field">
         <div class="lbl">Ник (отображаемое имя)</div>
-        <input id="profileNickInput" type="text" maxlength="32" placeholder="Твой ник в чатах и звонках" />
+        <input id="profileNickInput" type="text" maxlength="32" placeholder="Твой ник в чатах и звонках" oninput="scheduleProfileSave()" />
       </div>
       <div class="field">
         <div class="lbl">Мысли (до 50 символов)</div>
-        <input id="profileDescriptionInput" class="profile-description-input" type="text" maxlength="50" placeholder="Что у тебя на уме?" />
+        <input id="profileDescriptionInput" class="profile-description-input" type="text" maxlength="50" placeholder="Что у тебя на уме?" oninput="scheduleProfileSave()" />
       </div>
       <div class="field">
         <div class="lbl">Стикер профиля</div>
@@ -4739,10 +4739,7 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
       </div>
 
 
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button type="button" class="sm-btn green" onclick="saveProfile()">Сохранить профиль</button>
-        <span id="profileStatus" class="item-sub"></span>
-      </div>
+      <div><span id="profileStatus" class="item-sub" aria-live="polite"></span></div>
     </div>
 
 
@@ -6323,7 +6320,7 @@ function renderRecentStickers() {
   const box = document.getElementById('recentStickersBox');
   if (!box) return;
   box.innerHTML = recentStickers.map((s) => {
-    const code = /^(?:67|777|52|48)$/.test(String(s));
+    const code = /^(?:67|777|6767|52|48)$/.test(String(s));
     const visual = code
       ? '<img class="emoji-sticker-icon" src="/stickers/' + s + '.svg" alt="Стикер ' + s + '" draggable="false">'
       : esc(String(s));
@@ -6355,7 +6352,7 @@ function toggleStickerPicker(forceState) {
   if (button) button.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (open) {
     if (!Array.isArray(recentStickers) || !recentStickers.length) {
-      recentStickers = ['🔥','😂','😎','🐸','💀','🎉','67','777','52','48'];
+      recentStickers = ['🔥','😂','😎','🐸','💀','🎉','67','777','6767','52','48'];
     }
     setStickerPickerMode(stickerPickerMode);
   }
@@ -6393,7 +6390,7 @@ function renderStickerPicker() {
   if (!grid) return;
   const items = [...new Set(recentStickers || [])].slice(0, 30);
   grid.innerHTML = items.map((s) => {
-    const code = /^(?:67|777|52|48)$/.test(String(s));
+    const code = /^(?:67|777|6767|52|48)$/.test(String(s));
     const visual = code
       ? '<img src="/stickers/' + s + '.svg" alt="" draggable="false">'
       : esc(String(s));
@@ -6424,7 +6421,7 @@ function isSingleStickerMessage(text) {
   const trimmed = String(text || '').trim();
   if (!trimmed || trimmed.startsWith('__VOICE__:') || trimmed.startsWith('__FILE__:') || trimmed.startsWith('__CALL__:')) return false;
   const emojis = extractEmojis(trimmed);
-  return (emojis.length === 1 && trimmed === emojis[0]) || /^(?:67|777|52|48)$/.test(trimmed);
+  return (emojis.length === 1 && trimmed === emojis[0]) || /^(?:67|777|6767|52|48)$/.test(trimmed);
 }
 
 const THEMES = {
@@ -7310,13 +7307,14 @@ function loadProfileForm() {
 
 function onAvatarFileChange(ev) {
   const file=ev.target.files&&ev.target.files[0];ev.target.value='';if(!file||!me)return;
-  window.auralisOpenAvatarCrop(file,(dataUrl)=>{me.avatar_url=dataUrl;document.getElementById('profileAvPreview').innerHTML=renderAvatarHtml(me.username);});
+  window.auralisOpenAvatarCrop(file,(dataUrl)=>{me.avatar_url=dataUrl;document.getElementById('profileAvPreview').innerHTML=renderAvatarHtml(me.username);saveProfile();});
 }
 
 function clearAvatar() {
   if (!me) return;
   me.avatar_url = '';
   document.getElementById('profileAvPreview').innerHTML = renderAvatarHtml(me.username);
+  saveProfile();
 }
 
 function toggleProfileStickerPicker(source) {
@@ -7326,7 +7324,7 @@ function toggleProfileStickerPicker(source) {
   const willOpen = panel.classList.contains('hidden');
   document.querySelectorAll('.profile-sticker-choices').forEach((el) => el.classList.add('hidden'));
   if (!willOpen) return;
-  const choices = Array.from(new Set([...(recentStickers || []), '67','777','52','48','🔥','😂','😎','🐸','💀','🎉','❤️','✨','🌸','🌿','⭐','👑','🚀','🎮','💜','🩷','🤍']));
+  const choices = Array.from(new Set([...(recentStickers || []), '67','777','6767','52','48','🔥','😂','😎','🐸','💀','🎉','❤️','✨','🌸','🌿','⭐','👑','🚀','🎮','💜','🩷','🤍']));
   const current = String(me && me.profile_sticker_url || '');
   panel.innerHTML = choices.map((st) => '<button type="button" class="profile-sticker-choice ' + (current === st ? 'active' : '') + '" data-profile-sticker="' + esc(st) + '" title="Выбрать ' + esc(st) + '">' + renderProfileSticker(st, 'Стикер ' + st) + '</button>').join('') +
     '<button type="button" class="profile-sticker-choice" data-profile-sticker="" title="Убрать стикер">×</button>';
@@ -7354,12 +7352,20 @@ async function selectProfileSticker(value, source) {
       setPopoverFeedback('Стикер профиля обновлён ✓');
     } catch (err) { setPopoverFeedback(err.message || 'Ошибка сохранения стикера', true); }
   } else {
-    setPopoverFeedback('Стикер выбран. Нажми «Сохранить профиль» в настройках.');
+    saveProfile();
   }
 }
 function clearProfileSticker() {
   if (!me) return;
   selectProfileSticker('', 'settings');
+}
+
+let profileSaveTimer = null;
+function scheduleProfileSave(){
+  if(profileSaveTimer) clearTimeout(profileSaveTimer);
+  const status=document.getElementById('profileStatus');
+  if(status){status.style.color='var(--muted)';status.textContent='Сохранение…';}
+  profileSaveTimer=setTimeout(()=>{profileSaveTimer=null;saveProfile();},500);
 }
 
 function profileBgGradient(){const t=THEMES[activeThemeName]||THEMES.discord;return 'linear-gradient(125deg,'+t.bg+' 0%, '+t.accent+' 54%, '+t.bg+' 100%)';}
@@ -8537,7 +8543,7 @@ function appendMsg(m) {
       }
     } catch { bodyHtml = '<div class="msg-text">Вложение</div>'; }
   } else if (bigSticker) {
-    const stickerCode = /^(?:67|777|52|48)$/.test(String(rawText || '').trim()) ? String(rawText).trim() : '';
+    const stickerCode = /^(?:67|777|6767|52|48)$/.test(String(rawText || '').trim()) ? String(rawText).trim() : '';
     bodyHtml = '<div class="msg-sticker-big">' + (stickerCode
       ? '<img src="/stickers/' + stickerCode + '.svg" alt="Стикер ' + stickerCode + '" draggable="false">'
       : esc(rawText)) + '</div>';
@@ -10064,7 +10070,7 @@ checkSession();
     const open=typeof forceState==='boolean'?forceState:picker.classList.contains('hidden');
     if(open){
       picker.classList.remove('hidden');
-      if(Array.isArray(window.recentStickers)&&!window.recentStickers.length) window.recentStickers=['🔥','😂','😎','🐸','💀','🎉','67','777','52','48'];
+      if(Array.isArray(window.recentStickers)&&!window.recentStickers.length) window.recentStickers=['🔥','😂','😎','🐸','💀','🎉','67','777','6767','52','48'];
       if(typeof window.setStickerPickerMode==='function') window.setStickerPickerMode(window.stickerPickerMode||'stickers');
       placePicker();
       requestAnimationFrame(placePicker);
@@ -10602,20 +10608,20 @@ body.auralis-no-active-chat #stickerPicker,
 body.auralis-no-active-chat #emojiBar,
 body.auralis-no-active-chat #gifPicker { display:none !important; }
 #messages > .empty-chat { display:flex !important; flex-direction:column; align-items:center; justify-content:center; gap:13px; }
-#messages > .empty-chat::before {
-  content:"?"; display:grid; place-items:center; width:58px; height:58px;
-  border-radius:18px; color:#fff; background:var(--accent);
-  box-shadow:0 8px 24px rgba(var(--accent-rgb),.25);
-  font-size:34px; line-height:1; font-weight:650;
+#messages > .empty-chat::before { content:none !important; display:none !important; }
+body.auralis-no-active-chat .sidebar .panel-body::after {
+  content:"?"; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  display:grid; place-items:center; width:54px; height:54px; border-radius:17px;
+  color:#fff; background:var(--accent); box-shadow:0 8px 24px rgba(var(--accent-rgb),.22);
+  font-size:32px; line-height:1; font-weight:650; pointer-events:none; z-index:0;
 }
-/* Sticker artwork: no tile, no plate, no drop-shadow; preserve the original aspect ratio. */
-.msg-sticker-big { background:transparent !important; border:0 !important; box-shadow:none !important; filter:none !important; padding:0 !important; }
-.msg-sticker-big img {
-  width:clamp(144px,16vw,184px) !important; height:clamp(144px,16vw,184px) !important;
-  max-width:min(184px,72vw) !important; max-height:min(184px,72vw) !important;
-  object-fit:contain !important; background:transparent !important; border:0 !important;
-  border-radius:0 !important; box-shadow:none !important; filter:none !important;
-}
+/* Sticker artwork uses one transparent, fixed-size canvas in every picker and message. */
+.msg-sticker-big { width:128px !important; height:128px !important; display:grid !important; place-items:center !important; font-size:82px !important; line-height:1 !important; background:transparent !important; border:0 !important; box-shadow:none !important; filter:none !important; padding:0 !important; }
+.msg-sticker-big img { display:block !important; width:128px !important; height:128px !important; max-width:128px !important; max-height:128px !important; object-fit:contain !important; background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; filter:none !important; }
+.sticker-picker-item { width:64px !important; height:64px !important; min-width:64px !important; min-height:64px !important; padding:0 !important; display:grid !important; place-items:center !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
+.sticker-picker-item img { width:54px !important; height:54px !important; object-fit:contain !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
+.profile-sticker-choice { width:42px !important; height:42px !important; flex:0 0 42px !important; background:transparent !important; }
+.profile-sticker-choice img, .profile-sticker-art { width:42px !important; height:42px !important; object-fit:contain !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
 .msg .bubble:has(.msg-sticker-big), .msg:has(.msg-sticker-big) .bubble {
   background:transparent !important; border:0 !important; box-shadow:none !important; padding:0 !important;
 }
@@ -10646,9 +10652,10 @@ body.auralis-no-active-chat #gifPicker { display:none !important; }
 #callStage .tile.screen-mode .tile-tag { z-index:3; }
 #callStage .tile.screen-mode .big-av { position:relative; z-index:2; }
 /* Compact settings footer and remove doubled decorative separators. */
-.settings-menu hr, .settings-panel hr, .settings-content hr,
-.settings-menu .settings-divider + .settings-divider,
-.settings-panel .settings-divider + .settings-divider { display:none !important; }
+.settings-menu hr, .settings-panel hr, .settings-content hr, #settingsModal hr,
+.settings-menu .settings-divider, .settings-panel .settings-divider,
+#settingsModal .settings-divider, #settingsModal .settings-header::before,
+#settingsModal .settings-header::after { display:none !important; border:0 !important; }
 .app-version-link { margin-top:6px !important; padding:7px 8px 2px !important; border-top:0 !important; }
 .desktop-update-panel { margin-top:4px !important; padding:4px 6px 0 !important; }
 </style>
@@ -10657,8 +10664,8 @@ body.auralis-no-active-chat #gifPicker { display:none !important; }
   const messages=document.getElementById('messages');
   if(!messages)return;
   const update=()=>{
-    const empty=!!messages.querySelector(':scope > .empty-chat') &&
-      !Array.from(messages.children).some(n=>!n.classList.contains('empty-chat') && !n.classList.contains('chat-date-divider'));
+    const empty=!(typeof activeChat !== 'undefined' && activeChat) &&
+      !!messages.querySelector(':scope > .empty-chat');
     document.body.classList.toggle('auralis-no-active-chat',empty);
     if(empty){
       const picker=document.getElementById('stickerPicker');
