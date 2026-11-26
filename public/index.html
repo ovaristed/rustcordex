@@ -5087,26 +5087,8 @@ async function persistAvatarChange(nextAvatarUrl, doneMsg) {
 }
 
 function onPopoverAvatarChange(ev) {
-  const file = ev.target.files && ev.target.files[0];
-  if (!file || !me) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxDim = 200;
-      let w = img.width, h = img.height;
-      if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-      else if (h >= w && h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      persistAvatarChange(dataUrl, 'Новая аватарка установлена ✓');
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-  ev.target.value = '';
+  const file=ev.target.files&&ev.target.files[0];ev.target.value='';if(!file||!me)return;
+  window.auralisOpenAvatarCrop(file,(dataUrl)=>persistAvatarChange(dataUrl,'Новая аватарка установлена ✓'));
 }
 
 function removePopoverAvatar() {
@@ -5438,7 +5420,7 @@ function openGroupModal(nextMode) {
     picker.innerHTML = candidates.map((f) => (
       '<div class="member-pick-row" data-pick-user="' + esc(f.username) + '">' +
         '<div class="item-left">' +
-          '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + '</div>' +
+          '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + renderDmStatusBadge(f.status || f.presence || 'offline') + '</div>' +
           '<div>' +
             '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
             '<div class="item-sub">@' + esc(f.username) + '</div>' +
@@ -7128,25 +7110,8 @@ function loadProfileForm() {
 }
 
 function onAvatarFileChange(ev) {
-  const file = ev.target.files && ev.target.files[0];
-  if (!file || !me) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxDim = 200;
-      let w = img.width, h = img.height;
-      if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-      else if (h >= w && h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      me.avatar_url = canvas.toDataURL('image/jpeg', 0.8);
-      document.getElementById('profileAvPreview').innerHTML = renderAvatarHtml(me.username);
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
+  const file=ev.target.files&&ev.target.files[0];ev.target.value='';if(!file||!me)return;
+  window.auralisOpenAvatarCrop(file,(dataUrl)=>{me.avatar_url=dataUrl;document.getElementById('profileAvPreview').innerHTML=renderAvatarHtml(me.username);});
 }
 
 function clearAvatar() {
@@ -7708,7 +7673,7 @@ function renderLists() {
     return (
       '<div class="list-item ' + (isAct ? 'active' : '') + '" data-open-dm="' + esc(c.username) + '">' +
         '<div class="item-left">' +
-          '<div class="avatar profile-open-target" data-profile-user="' + esc(c.username) + '">' + renderAvatarHtml(c.username) + '</div>' +
+          '<div class="avatar profile-open-target" data-profile-user="' + esc(c.username) + '">' + renderAvatarHtml(c.username) + renderDmStatusBadge(c.status || c.presence || 'offline') + '</div>' +
           '<div style="min-width:0">' +
             '<div class="item-name">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
             '<div class="item-sub">' + esc(blocked ? 'Пользователь заблокирован' : formatPreviewText(c.lastMessage)) + '</div>' +
@@ -8297,6 +8262,7 @@ function appendMsg(m) {
   const rawText = String(m.text || '');
   const callInfo = parseCallLogMessage(rawText);
   if (callInfo) {
+    if(m.created_at)window.auralisAddChatDateDivider(box,m.created_at);
     const initName = displayNameOf(callInfo.initiator || m.sender);
     const whenStr = formatCallDateTime(callInfo.at || m.created_at);
     const row = document.createElement('div');
@@ -8322,6 +8288,7 @@ function appendMsg(m) {
   }
 
   const isMine = me && m.sender === me.username;
+  if(m.created_at)window.auralisAddChatDateDivider(box,m.created_at);
   const dt = m.created_at ? new Date(m.created_at) : new Date();
   const hh = String(dt.getHours()).padStart(2, '0');
   const mm = String(dt.getMinutes()).padStart(2, '0');
@@ -10339,6 +10306,80 @@ body::before,body::after{
 }
 </style>
 
+
+<div id="avatarCropModal" class="crop-modal" hidden>
+ <div class="crop-modal__card" role="dialog" aria-modal="true" aria-labelledby="cropModalTitle">
+  <div class="crop-modal__header"><h3 id="cropModalTitle">Редактировать изображение</h3><button type="button" id="cropCloseBtn" aria-label="Закрыть">✕</button></div>
+  <div class="crop-stage-wrap"><canvas id="cropCanvas" width="360" height="360"></canvas></div>
+  <div class="crop-controls">
+   <div class="crop-zoom-row"><span aria-hidden="true">🔍</span><input id="cropZoomRange" type="range" min="1" max="3" step="0.01" value="1" aria-label="Масштаб"/><button type="button" id="cropRotateBtn" title="Повернуть на 90°">↻ Поворот</button></div>
+   <div class="crop-actions"><button type="button" id="cropResetBtn" class="btn-ghost">Сброс</button><div class="crop-actions__right"><button type="button" id="cropCancelBtn" class="btn-secondary">Отмена</button><button type="button" id="cropSubmitBtn" class="btn-primary">Применить</button></div></div>
+  </div>
+ </div>
+</div>
+
+<script id="auralis-chat-date-cropper-351-js">
+(function(){
+ function getChatDateLabel(timestamp){
+  const d=new Date(timestamp),n=new Date();
+  if(!Number.isFinite(d.getTime()))return '';
+  const a=new Date(n.getFullYear(),n.getMonth(),n.getDate()),b=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const diff=Math.round((a-b)/86400000);
+  if(diff===0)return 'Сегодня';if(diff===1)return 'Вчера';
+  return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+ }
+ function bindAutoGrowInput(el,maxHeight){if(!el)return;maxHeight=maxHeight||160;const resize=()=>{el.style.height='auto';el.style.height=Math.min(el.scrollHeight,maxHeight)+'px'};el.addEventListener('input',resize);resize();}
+ function renderDmStatusBadge(status){
+  const st=['online','offline','ghost'].includes(status)?status:'offline';
+  const labels={online:'В сети',offline:'Не в сети',ghost:'Призрак'};
+  return '<span class="dm-status-dot status-'+st+'" title="'+labels[st]+'" aria-label="'+labels[st]+'">'+(st==='ghost'?'👻':'')+'</span>';
+ }
+ window.getChatDateLabel=getChatDateLabel;window.bindAutoGrowInput=bindAutoGrowInput;window.renderDmStatusBadge=renderDmStatusBadge;
+ function addDateDivider(box,stamp){
+  const label=getChatDateLabel(stamp);if(!label)return;
+  const last=box.querySelector('.chat-date-divider:last-of-type');
+  if(last&&last.dataset.dateLabel===label)return;
+  const divider=document.createElement('div');divider.className='chat-date-divider';divider.dataset.dateLabel=label;
+  const span=document.createElement('span');span.textContent=label;divider.appendChild(span);box.appendChild(divider);
+ }
+ window.auralisAddChatDateDivider=addDateDivider;
+ let cropResolve=null,cropImage=null,zoom=1,rotation=0,panX=0,panY=0,drag=null;
+ const modal=document.getElementById('avatarCropModal'),canvas=document.getElementById('cropCanvas');
+ if(!modal||!canvas)return;
+ const ctx=canvas.getContext('2d'),zoomInput=document.getElementById('cropZoomRange');
+ function dimensions(){const w=cropImage.naturalWidth,h=cropImage.naturalHeight;return rotation%180===0?{w,h}:{w:h,h:w};}
+ function baseScale(){const d=dimensions();return Math.max(canvas.width/d.w,canvas.height/d.h);}
+ function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();ctx.translate(canvas.width/2+panX,canvas.height/2+panY);ctx.rotate(rotation*Math.PI/180);
+  const sc=baseScale()*zoom;ctx.drawImage(cropImage,-cropImage.naturalWidth*sc/2,-cropImage.naturalHeight*sc/2,cropImage.naturalWidth*sc,cropImage.naturalHeight*sc);ctx.restore();
+  ctx.save();ctx.fillStyle='rgba(0,0,0,.48)';ctx.fillRect(0,0,360,360);ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(180,180,164,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.beginPath();ctx.arc(180,180,164,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2;ctx.stroke();
+ }
+ function reset(){zoom=1;rotation=0;panX=0;panY=0;zoomInput.value='1';if(cropImage)draw();}
+ function openCrop(file,onDone){
+  if(!file||!/^image\//i.test(file.type||''))return;
+  if(file.size>12*1024*1024){alert('Изображение больше 12 МБ');return;}
+  const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{cropImage=img;reset();cropResolve=onDone;modal.hidden=false;};img.onerror=()=>alert('Не удалось открыть изображение');img.src=reader.result;};reader.readAsDataURL(file);
+ }
+ function close(){modal.hidden=true;cropImage=null;cropResolve=null;}
+ document.getElementById('cropCloseBtn').addEventListener('click',close);document.getElementById('cropCancelBtn').addEventListener('click',close);
+ document.getElementById('cropResetBtn').addEventListener('click',reset);
+ document.getElementById('cropRotateBtn').addEventListener('click',()=>{rotation=(rotation+90)%360;panX=0;panY=0;draw();});
+ zoomInput.addEventListener('input',()=>{zoom=Number(zoomInput.value)||1;draw();});
+ canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,px:panX,py:panY};canvas.setPointerCapture(e.pointerId);});
+ canvas.addEventListener('pointermove',e=>{if(!drag)return;const r=canvas.getBoundingClientRect();panX=drag.px+(e.clientX-drag.x)*canvas.width/r.width;panY=drag.py+(e.clientY-drag.y)*canvas.height/r.height;draw();});
+ ['pointerup','pointercancel','lostpointercapture'].forEach(n=>canvas.addEventListener(n,()=>{drag=null;}));
+ document.getElementById('cropSubmitBtn').addEventListener('click',()=>{
+  if(!cropImage||!cropResolve)return;
+  const out=document.createElement('canvas');out.width=512;out.height=512;const c=out.getContext('2d');
+  c.save();c.beginPath();c.arc(256,256,256,0,Math.PI*2);c.clip();c.translate(256+panX*(512/360),256+panY*(512/360));c.rotate(rotation*Math.PI/180);
+  const sc=baseScale()*zoom*(512/360);c.drawImage(cropImage,-cropImage.naturalWidth*sc/2,-cropImage.naturalHeight*sc/2,cropImage.naturalWidth*sc,cropImage.naturalHeight*sc);c.restore();
+  out.toBlob(blob=>{if(!blob){alert('Не удалось обработать изображение');return;}const reader=new FileReader();reader.onload=()=>{const cb=cropResolve;close();cb(String(reader.result));};reader.readAsDataURL(blob);},'image/jpeg',.88);
+ });
+ window.auralisOpenAvatarCrop=openCrop;
+ document.addEventListener('DOMContentLoaded',()=>{const inp=document.getElementById('msgInput');if(inp){inp.classList.add('chat-input-textarea');bindAutoGrowInput(inp,160);}});
+})();
+</script>
 </body>
 </html>
 
@@ -11034,4 +11075,37 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 #callStage #callGrid>.tile .tile-tag{max-width:calc(100% - 12px)!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:clamp(9px,calc(100cqi / var(--call-cols,1) * .06),13px)!important}
 #callStage #callGrid>.tile.screen-mode{grid-column:1/-1!important;height:clamp(200px,42vh,440px)!important}
 @media(max-width:760px){#callStage #callGrid{grid-template-columns:repeat(var(--call-cols,1),minmax(0,1fr))!important;gap:6px!important}#callStage #callGrid>.tile{height:clamp(96px,calc(100cqi / var(--call-cols,1) * .75),190px)!important}}
+</style>
+
+
+<style id="auralis-chat-date-cropper-351">
+.chat-date-divider{display:flex;align-items:center;justify-content:center;margin:14px 0 10px;font-size:12px;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}
+.chat-date-divider span{padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--border,rgba(255,255,255,.12));backdrop-filter:blur(8px)}
+.chat-input-bar{display:flex;align-items:flex-end;gap:10px;min-height:54px;padding:8px 12px;border-radius:16px;background:var(--input-bg,rgba(12,34,22,.75));border:1px solid var(--border,rgba(255,255,255,.14))}
+.chat-input-textarea{flex:1;min-height:38px;max-height:160px;resize:none;overflow-y:auto;border:0;outline:0;background:transparent;color:var(--text,#fff);font:inherit;font-size:14px;line-height:1.4;padding:8px 4px}
+.chat-input-bar .icon-btn{flex-shrink:0;align-self:flex-end}
+.groups-nav-icon{color:var(--accent);fill:currentColor;transition:color .2s ease,transform .2s ease}
+.groups-nav-icon .icon-secondary{color:var(--text);fill:currentColor}
+.sticker-message-caption,.sticker-wrapper .message-caption,.sticker-wrapper .msg-text{display:none!important}
+.sticker-card,.sticker-wrapper{position:relative;display:inline-block}
+.sticker-meta-corner{position:absolute;right:6px;bottom:6px;padding:2px 7px;border-radius:8px;font-size:11px;line-height:1.2;color:#fff;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);pointer-events:none}
+.left-rail{display:flex;flex-direction:column;height:100%}.rail-logout-btn{margin-top:auto}
+.profile-footer-bar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.profile-footer-main{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.dm-avatar-box{position:relative;width:40px;height:40px;flex-shrink:0}
+.dm-avatar-box>img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.dm-status-dot{position:absolute;right:-2px;bottom:-2px;width:14px;height:14px;border-radius:50%;border:2px solid var(--panel-rgb,#202226);display:flex;align-items:center;justify-content:center;font-size:9px}
+.dm-status-dot.status-online{background:#22c55e}.dm-status-dot.status-offline{background:#6b7280}
+.dm-status-dot.status-ghost{background:#475569;color:#e2e8f0;box-shadow:0 0 8px rgba(148,163,184,.45)}
+.crop-modal[hidden]{display:none!important}.crop-modal{position:fixed;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(9px)}
+.crop-modal__card{width:min(440px,100%);padding:18px;border-radius:18px;background:#202226;color:#f3f4f6;border:1px solid rgba(255,255,255,.14);box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.crop-modal__header,.crop-actions,.crop-actions__right,.crop-zoom-row{display:flex;align-items:center;gap:10px}
+.crop-modal__header{justify-content:space-between;margin-bottom:14px}.crop-modal__header h3{margin:0;font-size:16px}
+.crop-modal__header button,.crop-actions button,.crop-zoom-row button{border:1px solid var(--border);border-radius:9px;padding:8px 11px;background:rgba(255,255,255,.07);color:inherit;cursor:pointer}
+.crop-stage-wrap{display:grid;place-items:center;width:100%;padding:8px;background:#15171b;border-radius:14px}
+#cropCanvas{display:block;width:min(100%,360px);height:auto;aspect-ratio:1;touch-action:none;cursor:grab;border-radius:10px}
+#cropCanvas:active{cursor:grabbing}.crop-controls{margin-top:14px}.crop-zoom-row input{flex:1;min-width:0}
+.crop-actions{justify-content:space-between;margin-top:14px}.crop-actions__right{justify-content:flex-end}
+.crop-actions .btn-primary{background:var(--accent);border-color:var(--accent);color:white}
+@media(max-width:480px){.crop-modal__card{padding:13px}.crop-actions{align-items:stretch;flex-direction:column}.crop-actions__right{width:100%}.crop-actions__right button{flex:1}}
 </style>
