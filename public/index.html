@@ -10212,4 +10212,43 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   body.android-md3 .accent-choice.active { border-color:var(--accent) !important; }
 }
 </style>
+<script id="auralis-android-navigation-swipes-2538">
+(() => {
+  if (!/Android/i.test(navigator.userAgent || '') ||
+      !(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' &&
+        window.Capacitor.getPlatform() === 'android')) return;
+  let start = null;
+  const ignored = 'input,textarea,select,button,a,[contenteditable="true"],#composer,.composer,.voice-ctx-menu,.group-ctx-menu';
+  document.addEventListener('touchstart', (event) => {
+    if (!event.touches || event.touches.length !== 1) { start = null; return; }
+    const target = event.target;
+    if (target && target.closest && target.closest(ignored)) { start = null; return; }
+    const settings = document.getElementById('settingsModal');
+    const settingsOpen = !!(settings && !settings.classList.contains('hidden'));
+    const chatOpen = document.body.classList.contains('mobile-chat-open');
+    if (!settingsOpen && !chatOpen) { start = null; return; }
+    const touch = event.touches[0];
+    start = { x: touch.clientX, y: touch.clientY, settingsOpen, chatOpen, target };
+  }, { passive: true });
+  document.addEventListener('touchend', (event) => {
+    if (!start || !event.changedTouches || event.changedTouches.length !== 1) { start = null; return; }
+    const end = event.changedTouches[0], state = start;
+    const dx = end.clientX - state.x, dy = end.clientY - state.y;
+    start = null;
+    if (state.settingsOpen) {
+      const section = state.target && state.target.closest ? state.target.closest('#settingsModal .s-section') : null;
+      if (dx > 85 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+        if (typeof closeSettings === 'function') closeSettings();
+      } else if (dy > 105 && Math.abs(dy) > Math.abs(dx) * 1.35 && (!section || section.scrollTop <= 0)) {
+        if (typeof closeSettings === 'function') closeSettings();
+      }
+      return;
+    }
+    if (state.chatOpen && dx > 85 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+      if (typeof mobileBackToChats === 'function') mobileBackToChats();
+    }
+  }, { passive: true });
+  document.addEventListener('touchcancel', () => { start = null; }, { passive: true });
+})();
+</script>
 
