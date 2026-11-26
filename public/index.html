@@ -10537,7 +10537,8 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
       <button type="button" class="auralis-rail-btn auralis-rail-utility auralis-rail-logout" aria-label="Выйти" title="Выйти" onclick="logout()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Выйти</span>
       </button>
-    \n    </div>`;\n    app.insertBefore(rail,app.firstChild);
+    `;
+    app.insertBefore(rail,app.firstChild);
 
     function setActive(view){
       rail.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
