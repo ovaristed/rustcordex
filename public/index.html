@@ -4354,6 +4354,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
           <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
           <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
           <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#66e7d2"></span>Aurora</button>
+          <button type="button" class="theme-swatch auralis-cosmic-swatch" data-theme="cosmic" onclick="applyTheme('cosmic')"><span class="dot" style="background:linear-gradient(135deg,#c6a6ff,#596bff)"></span>Cosmic Glass</button>
           <button type="button" class="theme-swatch theme-custom-swatch" data-theme="custom" onclick="applyTheme('custom')"><span class="dot">✦</span>Своя тема</button>
           
         </div>
@@ -6229,6 +6230,11 @@ const THEMES = {
     glow2: 'rgba(70, 220, 202, 0.28)', wallpaper: "url('/backgrounds/aurora.svg')",
     overlay: 'rgba(3, 12, 22, 0.12)', panelAlpha: 0.15, effect: 'aurora'
   },
+  cosmic: {
+    bg: '#080612', panelRgb: '25, 20, 43', accent: '#a77bff',
+    glow2: 'rgba(91, 73, 190, 0.34)', wallpaper: 'none',
+    overlay: 'rgba(8, 6, 18, 0.08)', panelAlpha: 0.22, effect: 'aurora'
+  },
 };
 
 function hexToRgb(hex) {
@@ -6262,7 +6268,8 @@ function applyTheme(name) {
     const presetGlass = {
       violet: { opacity: 82, blur: 3, wallpaper: 'purple', effect: 'sakura', accent: '#ff78ad', panel: '#3b1d2b' },
       emerald: { opacity: 82, blur: 3, wallpaper: 'green', effect: 'leaves', accent: '#30d158', panel: '#0e1e16' },
-      aurora: { opacity: 85, blur: 6, wallpaper: 'aurora', effect: 'aurora', accent: '#35c9f2', panel: '#162a40' }
+      aurora: { opacity: 85, blur: 6, wallpaper: 'aurora', effect: 'aurora', accent: '#35c9f2', panel: '#162a40' },
+      cosmic: { opacity: 78, blur: 8, wallpaper: 'theme', effect: 'aurora', accent: '#a77bff', panel: '#19142b' }
     };
     if (presetGlass[valid]) writeDesktopThemeSettings(presetGlass[valid]);
   }
