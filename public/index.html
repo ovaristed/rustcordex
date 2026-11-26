@@ -10543,7 +10543,7 @@ html[data-theme="cosmic"] .theme-swatch[data-theme="cosmic"]{border-color:#b99af
    const status=currentStatus(),item=LABELS[status];
    const sub=document.getElementById('meLoginSub');if(sub){sub.textContent=item.label;sub.style.color=item.color}
    statusBtn.style.color=item.color;
-   statusBtn.innerHTML=isAndroid?'<span>Статус</span>':renderAuralisStatusIcon(status)+'<span>'+item.label+'</span>';
+   statusBtn.innerHTML=isAndroid?renderAuralisStatusIcon(status)+'<span>Статус</span>':renderAuralisStatusIcon(status)+'<span>'+item.label+'</span>';
    statusBtn.title=item.label;
    ghostOption.innerHTML=renderAuralisStatusIcon('ghost')+'<span>'+(ghostEnabled()?'Отключить призрака':'Призрак')+'</span>';
    ghostOption.classList.toggle('active',ghostEnabled());
