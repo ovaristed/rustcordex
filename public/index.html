@@ -3923,6 +3923,75 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
   }
 }
 </style>
+
+<style id="auralis-android-accent-picker-2537">
+/* Android 2.5.37 — native-feeling accent palette, mobile only */
+@media (max-width:760px) {
+  body.android-md3 .mobile-accent-field {
+    display:block !important;
+    margin:14px 0 16px !important;
+    padding:16px 15px 14px !important;
+    border:1px solid rgba(var(--accent-rgb),.24) !important;
+    border-radius:22px !important;
+    background:
+      radial-gradient(ellipse at 8% 0%,rgba(var(--accent-rgb),.16),transparent 58%),
+      linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018)) !important;
+    box-shadow:0 10px 26px rgba(0,0,0,.14),inset 0 1px rgba(255,255,255,.045) !important;
+  }
+  body.android-md3 .mobile-accent-field .lbl {
+    display:flex !important;
+    align-items:center !important;
+    gap:8px !important;
+    margin-bottom:5px !important;
+    font-size:14px !important;
+    font-weight:800 !important;
+    letter-spacing:.01em !important;
+  }
+  body.android-md3 .mobile-accent-field .lbl::before {
+    content:"";
+    width:9px;height:9px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 13px rgba(var(--accent-rgb),.65);
+  }
+  body.android-md3 .mobile-accent-field .accent-picker {
+    display:grid !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:0 !important;
+    align-items:center !important;
+    justify-items:center !important;
+    margin:14px 0 12px !important;
+    padding:4px 0 !important;
+  }
+  body.android-md3 .mobile-accent-field .accent-choice {
+    width:48px !important;height:48px !important;min-width:48px !important;
+    padding:4px !important;
+    border:2px solid rgba(255,255,255,.16) !important;
+    background:rgba(255,255,255,.045) !important;
+    box-shadow:0 3px 12px rgba(0,0,0,.18) !important;
+  }
+  body.android-md3 .mobile-accent-field .accent-choice span {
+    width:100% !important;height:100% !important;
+    border-radius:50% !important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 0 15px currentColor !important;
+  }
+  body.android-md3 .mobile-accent-field .accent-choice.active {
+    border-color:#fff !important;
+    box-shadow:0 0 0 3px rgba(var(--accent-rgb),.24),0 0 22px rgba(var(--accent-rgb),.3) !important;
+    transform:scale(1.08) !important;
+  }
+  body.android-md3 .mobile-accent-field .item-sub {
+    margin-top:4px !important;
+    font-size:11px !important;
+    line-height:1.45 !important;
+    color:var(--text-muted) !important;
+  }
+}
+@media (max-width:380px) {
+  body.android-md3 .mobile-accent-field .accent-choice {
+    width:42px !important;height:42px !important;min-width:42px !important;
+  }
+}
+</style>
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
