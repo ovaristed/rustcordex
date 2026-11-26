@@ -4422,6 +4422,14 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
         </label>
         <div id="notificationPermissionStatus" class="item-sub">Разрешение на системные уведомления</div>
       </div>
+      <div class="field auralis-motion-setting">
+        <div class="lbl">Анимации интерфейса</div>
+        <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;margin:8px 0;">
+          <input id="auralisMotionToggle" type="checkbox" style="width:auto;" checked />
+          <span>Плавные переходы и эффекты</span>
+        </label>
+        <div class="item-sub">Можно отключить, если хочется более спокойный интерфейс</div>
+      </div>
     </div>
 
     <div id="sPanelAudio" class="s-section hidden">
@@ -10213,42 +10221,36 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 }
 </style>
 <script id="auralis-android-navigation-swipes-2538">
-(() => {
-  if (!/Android/i.test(navigator.userAgent || '') ||
-      !(window.Capacitor && typeof window.Capacitor.getPlatform === 'function' &&
-        window.Capacitor.getPlatform() === 'android')) return;
-  let start = null;
-  const ignored = 'input,textarea,select,button,a,[contenteditable="true"],#composer,.composer,.voice-ctx-menu,.group-ctx-menu';
-  document.addEventListener('touchstart', (event) => {
-    if (!event.touches || event.touches.length !== 1) { start = null; return; }
-    const target = event.target;
-    if (target && target.closest && target.closest(ignored)) { start = null; return; }
-    const settings = document.getElementById('settingsModal');
-    const settingsOpen = !!(settings && !settings.classList.contains('hidden'));
-    const chatOpen = document.body.classList.contains('mobile-chat-open');
-    if (!settingsOpen && !chatOpen) { start = null; return; }
-    const touch = event.touches[0];
-    start = { x: touch.clientX, y: touch.clientY, settingsOpen, chatOpen, target };
-  }, { passive: true });
-  document.addEventListener('touchend', (event) => {
-    if (!start || !event.changedTouches || event.changedTouches.length !== 1) { start = null; return; }
-    const end = event.changedTouches[0], state = start;
-    const dx = end.clientX - state.x, dy = end.clientY - state.y;
-    start = null;
-    if (state.settingsOpen) {
-      const section = state.target && state.target.closest ? state.target.closest('#settingsModal .s-section') : null;
-      if (dx > 85 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-        if (typeof closeSettings === 'function') closeSettings();
-      } else if (dy > 105 && Math.abs(dy) > Math.abs(dx) * 1.35 && (!section || section.scrollTop <= 0)) {
-        if (typeof closeSettings === 'function') closeSettings();
-      }
-      return;
-    }
-    if (state.chatOpen && dx > 85 && Math.abs(dx) > Math.abs(dy) * 1.25) {
-      if (typeof mobileBackToChats === 'function') mobileBackToChats();
-    }
-  }, { passive: true });
-  document.addEventListener('touchcancel', () => { start = null; }, { passive: true });
+(function(){
+ function init(){
+  if(!document.body.classList.contains('android-md3'))return;
+  let start=null;
+  const ignored='input,textarea,select,button,a,[contenteditable="true"],#composer,.composer,.voice-ctx-menu,.group-ctx-menu';
+  document.addEventListener('touchstart',event=>{
+   if(!event.touches||event.touches.length!==1){start=null;return}
+   const target=event.target;
+   if(target&&target.closest&&target.closest(ignored)){start=null;return}
+   const settings=document.getElementById('settingsModal');
+   const settingsOpen=!!(settings&&!settings.classList.contains('hidden'));
+   const chatOpen=document.body.classList.contains('mobile-chat-open');
+   if(!settingsOpen&&!chatOpen){start=null;return}
+   const t=event.touches[0];start={x:t.clientX,y:t.clientY,settingsOpen,chatOpen,target};
+  },{passive:true});
+  document.addEventListener('touchend',event=>{
+   if(!start||!event.changedTouches||event.changedTouches.length!==1){start=null;return}
+   const t=event.changedTouches[0],st=start,dx=t.clientX-st.x,dy=t.clientY-st.y;start=null;
+   if(st.settingsOpen){
+    const section=st.target&&st.target.closest?st.target.closest('#settingsModal .s-section'):null;
+    if(dx>85&&Math.abs(dx)>Math.abs(dy)*1.25&&typeof closeSettings==='function')closeSettings();
+    else if(dy>105&&Math.abs(dy)>Math.abs(dx)*1.35&&(!section||section.scrollTop<=0)&&typeof closeSettings==='function')closeSettings();
+   }else if(st.chatOpen&&dx>85&&Math.abs(dx)>Math.abs(dy)*1.25){
+    if(typeof mobileBackToChats==='function')mobileBackToChats();
+    if(window.auralisSyncMobileNav)window.auralisSyncMobileNav('chats');
+   }
+  },{passive:true});
+  document.addEventListener('touchcancel',()=>{start=null},{passive:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
 
@@ -10334,62 +10336,124 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 </style>
 
 <script id="auralis-android-sidebar-layout-runtime-2538">
-(function initAuralisAndroidSidebar(){
-  const isAndroidApp=/Android/i.test(navigator.userAgent||'') &&
-    window.Capacitor && typeof window.Capacitor.getPlatform==='function' &&
-    window.Capacitor.getPlatform()==='android';
-  if(!isAndroidApp) return;
-  const app=document.getElementById('app');
-  const sidebar=app&&app.querySelector(':scope > .sidebar');
-  if(!app||!sidebar||document.getElementById('auralisMobileRail')) return;
+(function(){
+  function init(){
+    if(!document.body.classList.contains('android-md3')) return;
+    const app=document.getElementById('app');
+    const sidebar=app&&app.querySelector('.sidebar');
+    if(!app||!sidebar||document.getElementById('auralisMobileRail')) return;
 
-  const rail=document.createElement('nav');
-  rail.id='auralisMobileRail';
-  rail.setAttribute('aria-label','Основная навигация');
-  rail.innerHTML=`
-    <div class="auralis-rail-brand"><img src="/auralis-icon.svg" alt="Auralis"></div>
-    <button type="button" class="auralis-rail-btn active" data-view="chats" aria-label="Чаты">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Чаты</span>
-    </button>
-    <button type="button" class="auralis-rail-btn" data-view="friends" aria-label="Друзья">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg><span>Друзья</span>
-    </button>
-    <button type="button" class="auralis-rail-btn" data-view="requests" aria-label="Запросы в друзья">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg><span>Запросы</span><b id="auralisRailReqBadge" class="auralis-rail-badge hidden">0</b>
-    </button>
-    <div class="auralis-rail-divider"></div>
-    <button type="button" class="auralis-rail-btn auralis-rail-create" id="auralisRailCreateGroup" aria-label="Создать группу">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8m-4-4h8"/></svg><span>Создать<br>группу</span>
-    </button>
-    <div class="auralis-rail-spacer"></div>`;
-  app.insertBefore(rail,app.firstChild);
+    const rail=document.createElement('nav');
+    rail.id='auralisMobileRail';
+    rail.setAttribute('aria-label','Основная навигация');
+    rail.innerHTML=`
+      <div class="auralis-rail-brand"><img src="/auralis-icon.svg" alt="Auralis"></div>
+      <button type="button" class="auralis-rail-btn active" data-view="chats" aria-label="Чаты">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Чаты</span>
+      </button>
+      <button type="button" class="auralis-rail-btn" data-view="friends" aria-label="Друзья">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg><span>Друзья</span>
+      </button>
+      <button type="button" class="auralis-rail-btn" data-view="requests" aria-label="Запросы в друзья">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6m3-3h-6"/></svg><span>Запросы</span><b id="auralisRailReqBadge" class="auralis-rail-badge hidden">0</b>
+      </button>
+      <div class="auralis-rail-divider"></div>
+      <button type="button" class="auralis-rail-btn auralis-rail-create" id="auralisRailCreateGroup" aria-label="Создать группу">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8m-4-4h8"/></svg><span>Создать<br>группу</span>
+      </button>
+      <div class="auralis-rail-spacer"></div>`;
+    app.insertBefore(rail,app.firstChild);
 
-  const activate=(view)=>{
-    document.body.classList.remove('mobile-chat-open');
-    if(typeof switchTab==='function') switchTab(view);
-    rail.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
-  };
-  rail.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>activate(btn.dataset.view)));
-  const create=rail.querySelector('#auralisRailCreateGroup');
-  if(create) create.addEventListener('click',()=>{if(typeof openGroupModal==='function')openGroupModal('create');});
-
-  const oldBadge=document.getElementById('reqBadge');
-  const newBadge=document.getElementById('auralisRailReqBadge');
-  const syncBadge=()=>{
-    if(!oldBadge||!newBadge)return;
-    newBadge.textContent=oldBadge.textContent||'0';
-    newBadge.classList.toggle('hidden',oldBadge.classList.contains('hidden'));
-  };
-  if(oldBadge){
-    new MutationObserver(syncBadge).observe(oldBadge,{attributes:true,childList:true,characterData:true,subtree:true});
-    syncBadge();
-  }
-  const bindActiveSync=()=>{
-    ['tabChats','tabFriends','tabRequests'].forEach((id)=>{
-      const el=document.getElementById(id);
-      if(el) new MutationObserver(()=>{const active=document.querySelector('#'+id+'.active');if(active){const key=id==='tabChats'?'chats':id==='tabFriends'?'friends':'requests';rail.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===key));}}).observe(el,{attributes:true,attributeFilter:['class']});
+    function setActive(view){
+      rail.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));
+    }
+    rail.addEventListener('click',event=>{
+      const btn=event.target.closest('[data-view]');
+      if(btn){
+        document.body.classList.remove('mobile-chat-open');
+        if(typeof window.switchTab==='function') window.switchTab(btn.dataset.view);
+        setActive(btn.dataset.view);
+        return;
+      }
+      if(event.target.closest('#auralisRailCreateGroup') && typeof window.openGroupModal==='function'){
+        window.openGroupModal('create');
+      }
     });
-  };
-  bindActiveSync();
+
+    const badge=document.getElementById('reqBadge');
+    const railBadge=document.getElementById('auralisRailReqBadge');
+    const syncBadge=()=>{
+      if(!badge||!railBadge)return;
+      railBadge.textContent=badge.textContent||'0';
+      railBadge.classList.toggle('hidden',badge.classList.contains('hidden'));
+    };
+    if(badge){
+      new MutationObserver(syncBadge).observe(badge,{attributes:true,childList:true,characterData:true,subtree:true});
+      syncBadge();
+    }
+    ['chats','friends','requests'].forEach(view=>{
+      const tab=document.getElementById('tab'+view[0].toUpperCase()+view.slice(1));
+      if(tab)new MutationObserver(()=>{if(tab.classList.contains('active'))setActive(view)}).observe(tab,{attributes:true,attributeFilter:['class']});
+    });
+
+    const motionToggle=document.getElementById('auralisMotionToggle');
+    const motionOn=localStorage.getItem('auralis_android_motion')!=='off';
+    document.body.classList.toggle('auralis-animations-enabled',motionOn);
+    if(motionToggle){
+      motionToggle.checked=motionOn;
+      motionToggle.addEventListener('change',()=>{
+        const enabled=motionToggle.checked;
+        localStorage.setItem('auralis_android_motion',enabled?'on':'off');
+        document.body.classList.toggle('auralis-animations-enabled',enabled);
+      });
+    }
+    window.auralisSyncMobileNav=setActive;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
+  else init();
 })();
 </script>
+<style id="auralis-android-motion-and-nav-fix-2538">
+@media(max-width:760px){
+  body.android-md3 #auralisMobileRail{z-index:30;touch-action:pan-y}
+  body.android-md3 #auralisMobileRail button{pointer-events:auto;touch-action:manipulation}
+  body.android-md3.mobile-chat-open #auralisMobileRail{display:none!important}
+  body.android-md3 #app>.main{left:0!important}
+  body.android-md3.mobile-chat-open #app>.main{left:0!important}
+  body.android-md3 #app>.sidebar{left:74px!important}
+  body.android-md3.mobile-chat-open #app>.sidebar{display:none!important}
+  body.android-md3 #app>.main{width:calc(100% - 74px)!important}
+  body.android-md3.mobile-chat-open #app>.main{width:100%!important}
+  body.android-md3 #app>.sidebar{width:calc(100% - 74px)!important}
+  body.android-md3 #app .main{overflow:hidden}
+  body.android-md3.auralis-animations-enabled #auralisMobileRail .auralis-rail-btn{
+    transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s ease,color .22s ease,box-shadow .22s ease!important
+  }
+  body.android-md3.auralis-animations-enabled #auralisMobileRail .auralis-rail-btn:active{transform:scale(.91)}
+  body.android-md3.auralis-animations-enabled #auralisMobileRail .auralis-rail-btn.active svg{
+    animation:auralisIconPop .32s cubic-bezier(.2,.9,.25,1.35)
+  }
+  body.android-md3.auralis-animations-enabled #app #panelChats:not(.hidden),
+  body.android-md3.auralis-animations-enabled #app #panelFriends:not(.hidden),
+  body.android-md3.auralis-animations-enabled #app #panelRequests:not(.hidden){
+    animation:auralisPanelEnter .34s cubic-bezier(.2,.75,.25,1) both
+  }
+  body.android-md3.auralis-animations-enabled #app .panel-body:not(.hidden) .list-item{
+    animation:auralisListEnter .32s cubic-bezier(.2,.75,.25,1) both
+  }
+  body.android-md3.auralis-animations-enabled.mobile-chat-open #app>.main{
+    animation:auralisChatEnter .32s cubic-bezier(.2,.8,.2,1) both
+  }
+  body.android-md3.auralis-animations-enabled #app .list-item{
+    transition:transform .2s ease,background .2s ease,border-color .2s ease!important
+  }
+  body.android-md3.auralis-animations-enabled #app .list-item:active{transform:scale(.985)}
+}
+@keyframes auralisIconPop{0%{transform:scale(.65) rotate(-12deg)}70%{transform:scale(1.16) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes auralisPanelEnter{from{opacity:0;transform:translateY(12px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes auralisListEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes auralisChatEnter{from{opacity:.65;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){
+ body.android-md3.auralis-animations-enabled *,body.android-md3.auralis-animations-enabled *::before,body.android-md3.auralis-animations-enabled *::after{animation:none!important;transition:none!important}
+}
+</style>
