@@ -4954,7 +4954,16 @@ async function openUserProfile(username) {
     const description = String(p.profile_description || '').trim().slice(0, 50);
     if (thoughtEl) { thoughtEl.textContent = description; thoughtEl.classList.toggle('hidden', !description); }
     const presenceEl = document.getElementById('userProfilePresence');
-    if (presenceEl) { const presenceStatus = p.online ? 'online' : 'offline'; presenceEl.classList.toggle('is-online', !!p.online); presenceEl.classList.toggle('is-offline', !p.online); presenceEl.innerHTML = renderAuralisStatusIcon(presenceStatus); presenceEl.title = p.online ? 'В сети' : 'Не в сети'; presenceEl.setAttribute('aria-label', presenceEl.title); presenceEl.dataset.status = presenceStatus; }
+    if (presenceEl) {
+      const presenceStatus = p.presence_status === 'ghost' ? 'ghost' : (p.online ? 'online' : 'offline');
+      const presenceLabels = { online:'В сети', offline:'Не в сети', ghost:'Призрак' };
+      presenceEl.classList.remove('is-online','is-offline','is-ghost');
+      presenceEl.classList.add('is-' + presenceStatus);
+      presenceEl.innerHTML = renderAuralisStatusIcon(presenceStatus);
+      presenceEl.title = presenceLabels[presenceStatus];
+      presenceEl.setAttribute('aria-label', presenceEl.title);
+      presenceEl.dataset.status = presenceStatus;
+    }
     const sticker = String(p.profile_sticker_url || '');
     if (sticker) {
       stickerEl.innerHTML = renderProfileSticker(sticker);
@@ -10134,6 +10143,15 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
   updateComposerActionButton();
 </script>
 
+<style id="auralis-sidebar-actions-final-2541">
+@media(max-width:760px){
+ body.android-md3 #app .bottom-dock .user-bar{display:flex!important;visibility:visible!important;opacity:1!important}
+ body.android-md3 #app .bottom-dock .user-bar .item-actions{display:flex!important;visibility:visible!important;opacity:1!important;position:static!important;flex:0 0 auto!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important}
+ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inline-flex!important;visibility:visible!important;opacity:1!important;position:relative!important;pointer-events:auto!important;width:40px!important;min-width:40px!important;height:40px!important;flex:0 0 40px!important}
+}
+#userProfilePresence .auralis-status-icon{width:34px;height:34px;flex-basis:34px}
+#userProfilePresence.is-ghost{filter:drop-shadow(0 0 9px rgba(189,114,255,.38))}
+</style>
 </body>
 </html>
 
@@ -10571,6 +10589,7 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
  }
  window.renderAuralisStatusIcon=renderAuralisStatusIcon;
  window.auralisIsGhostMode=ghostEnabled;
+ let lastSyncedPresence='';
  function syncStatus(){
   const status=currentStatus(),item=LABELS[status],sub=document.getElementById('meLoginSub');
   if(sub){sub.textContent=item.label;sub.style.color=item.color}
@@ -10582,6 +10601,14 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
   if(label)label.textContent=ghostEnabled()?'Включён · вы невидимы':'Выключен · обычный режим';
   document.body.dataset.auralisPresence=status;
   window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:item.label}}));
+  const authToken=typeof token!=='undefined'?token:'';
+  const stored=ghostEnabled()?'ghost':'auto';
+  if(authToken&&stored!==lastSyncedPresence){
+   lastSyncedPresence=stored;
+   fetch('/api/presence',{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+authToken},body:JSON.stringify({status:stored})})
+    .then(r=>{if(!r.ok)throw new Error('presence sync failed');})
+    .catch(()=>{lastSyncedPresence='';});
+  }
  }
  window.auralisGetPresenceStatus=currentStatus;
  window.auralisSetGhostMode=function(enabled){const key=accountKey();if(!key)return;if(enabled)localStorage.setItem(key,'ghost');else localStorage.removeItem(key);syncStatus();};
