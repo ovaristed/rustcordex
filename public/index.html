@@ -10476,6 +10476,16 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 </script>
 
 <style id="auralis-theme-and-avatar-final-3560">
+/* Keep the Aurora effect above translucent glass, below app controls. */
+html[data-theme="aurora"] #zoomRoot {position:relative;z-index:5!important;isolation:isolate!important}
+html[data-theme="aurora"] #bgCanvas {position:fixed!important;z-index:4!important;opacity:1!important;pointer-events:none!important}
+html[data-theme="aurora"] #zoomRoot .sidebar,
+html[data-theme="aurora"] #zoomRoot .main {z-index:3!important}
+html[data-theme="aurora"] #zoomRoot .chat-header,
+html[data-theme="aurora"] #zoomRoot .messages,
+html[data-theme="aurora"] #zoomRoot .composer,
+html[data-theme="aurora"] #zoomRoot .panel-body,
+html[data-theme="aurora"] #zoomRoot .bottom-dock {z-index:7!important}
 /* Group identity: one clean vector mark with a neutral theme surface. */
 .avatar.group-av,
 #peerAv.group-av {
