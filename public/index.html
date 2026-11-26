@@ -4384,10 +4384,10 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
       <div class="field desktop-theme-field">
         <div class="lbl">Тема оформления</div>
         <div class="theme-grid">
-          <button type="button" class="theme-swatch" data-theme="emerald" onclick="applyTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
-          <button type="button" class="theme-swatch" data-theme="violet" onclick="applyTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
-          <button type="button" class="theme-swatch" data-theme="aurora" onclick="applyTheme('aurora')"><span class="dot" style="background:#66e7d2"></span>Aurora</button>
-          <button type="button" class="theme-swatch theme-custom-swatch" data-theme="custom" onclick="applyTheme('custom')"><span class="dot">✦</span>Своя тема</button>
+          <button type="button" class="theme-swatch" data-theme="emerald" onclick="userPickTheme('emerald')"><span class="dot" style="background:#30d158"></span>Зелень</button>
+          <button type="button" class="theme-swatch" data-theme="violet" onclick="userPickTheme('violet')"><span class="dot" style="background:#ff78ad"></span>Sakura</button>
+          <button type="button" class="theme-swatch" data-theme="aurora" onclick="userPickTheme('aurora')"><span class="dot" style="background:#66e7d2"></span>Aurora</button>
+          <button type="button" class="theme-swatch theme-custom-swatch" data-theme="custom" onclick="userPickTheme('custom')"><span class="dot">✦</span>Своя тема</button>
           
         </div>
       </div>
@@ -6286,6 +6286,13 @@ function syncThemeEffect() {
 
 try { localStorage.removeItem('rc_clear_cache_exit'); } catch {}
 
+function userPickTheme(name) {
+  try {
+    if (name === 'emerald') localStorage.removeItem('rc_theme_user_pick');
+    else localStorage.setItem('rc_theme_user_pick', '1');
+  } catch {}
+  applyTheme(name);
+}
 function applyTheme(name) {
   const wantsCustom = name === 'custom';
   const requested = ['dark','crimson','discord','auralis'].includes(String(name).toLowerCase()) ? 'emerald' : name;
@@ -6635,7 +6642,20 @@ function setSidebarWidth(px) {
   } catch {}
   try { localStorage.removeItem('rc_lite_mode'); } catch {}
   const isMobileAppearance = window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
-  applyTheme(isMobileAppearance ? 'emerald' : (migrateToGreenDefault ? 'emerald' : (savedTheme && savedTheme !== 'discord' && savedTheme !== 'auralis' ? savedTheme : 'emerald')));
+  // Зелень — базовая тема. Другая тема/обои применяются при запуске только если пользователь выбрал их сам.
+  let userPickedTheme = false;
+  try { userPickedTheme = localStorage.getItem('rc_theme_user_pick') === '1'; } catch {}
+  if (!userPickedTheme) {
+    try {
+      localStorage.removeItem('rc_desktop_theme_mode');
+      localStorage.removeItem('rc_desktop_base_theme');
+      localStorage.removeItem('rc_theme_settings_emerald');
+      localStorage.removeItem('rc_theme_settings_custom');
+      localStorage.removeItem('rc_custom_wallpaper');
+    } catch {}
+  }
+  const bootTheme = (!isMobileAppearance && userPickedTheme && !migrateToGreenDefault && THEMES[savedTheme]) ? savedTheme : 'emerald';
+  applyTheme(bootTheme);
   const savedAccent = migrateToGreenDefault ? null : localStorage.getItem('rc_accent_color');
   if (savedAccent) applyAccentColor(savedAccent, false);
   initMenuOpacity();
@@ -10192,7 +10212,7 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
 }
 </style>
 
-<script id="auralis-desktop-call-layout-repair-347">(function(){function update(){var grid=document.getElementById('callGrid');if(!grid)return;var count=Math.max(1,grid.querySelectorAll(':scope > .tile').length);grid.style.setProperty('--call-participant-count',String(count));}function start(){var grid=document.getElementById('callGrid');if(!grid)return;update();new MutationObserver(update).observe(grid,{childList:true});window.addEventListener('resize',update,{passive:true});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();})();</script>
+<script id="auralis-desktop-call-layout-repair-347">(function(){function update(){var grid=document.getElementById('callGrid');if(!grid)return;var count=Math.max(1,grid.querySelectorAll(':scope > .tile').length);var max=window.innerWidth<=760?2:5;grid.style.setProperty('--call-participant-count',String(count));grid.style.setProperty('--call-cols',String(Math.min(count,max)));}function start(){var grid=document.getElementById('callGrid');if(!grid)return;update();new MutationObserver(update).observe(grid,{childList:true});window.addEventListener('resize',update,{passive:true});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();})();</script>
 </body>
 </html>
 
@@ -10691,19 +10711,7 @@ body.android-md3 #app .bottom-dock .user-bar .item-actions .icon-btn{display:inl
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
 </script>
-<script id="auralis-ghost-notification-guard-2538">
-(function(){
- const blocked=()=>!!(window.auralisIsGhostMode&&window.auralisIsGhostMode());
- const wrap=(name)=>{
-  const original=window[name];
-  if(typeof original!=='function'||original.__auralisGhostGuard)return;
-  const guarded=function(){if(blocked())return;return original.apply(this,arguments)};
-  guarded.__auralisGhostGuard=true;window[name]=guarded;
- };
- function install(){wrap('notifyDesktop');wrap('playNotificationSound');}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
-})();
-</script>
+
 
 <style id="auralis-android-motion-and-nav-fix-2538">
 @media(max-width:760px){
@@ -11008,4 +11016,36 @@ body.android-md3 .modal-card,body.android-md3 .incoming-card,body.android-md3 .a
   body.android-md3.mobile-chat-open #app>.main{display:flex!important}
   body.android-md3.mobile-chat-open #auralisMobileRail{display:none!important}
 }
+</style>
+
+
+<style id="auralis-profile-popover-compact-header">
+/* Compact profile card: big avatar overlapping banner, name/login to its right, tighter spacing, "Призрак" pill. */
+#profilePopover .pop-body{position:relative!important;gap:12px!important}
+#profilePopover .pop-av-row{margin:-48px 0 0!important;min-height:88px!important}
+#profilePopover .pop-avatar-status-wrap{flex:0 0 88px!important;width:88px!important;height:88px!important}
+#profilePopover .pop-av{width:88px!important;height:88px!important;min-width:88px!important;flex-basis:88px!important}
+#profilePopover .pop-avatar-status{right:-2px!important;bottom:-2px!important}
+#profilePopover .pop-identity{position:absolute!important;top:-48px!important;left:118px!important;right:16px!important;width:auto!important;height:88px!important;padding:0!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important}
+#profilePopover .pop-profile-strip{margin-top:0!important}
+#profilePopover .pop-login-row{justify-content:flex-start!important}
+/* Ghost toggle -> pill with dot + label */
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle{width:auto!important;height:28px!important;min-height:28px!important;padding:0 12px 0 10px!important;gap:7px!important;border-radius:99px!important;background:rgba(0,0,0,.28)!important;border:1px solid rgba(255,255,255,.1)!important;color:var(--text)!important;font:650 11px/1 inherit!important}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle #popGhostIcon{display:none!important}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle::before{content:"";width:9px;height:9px;border-radius:50%;background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,.7);opacity:.35;transition:opacity .18s ease}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle::after{content:"Призрак";font-size:11px;font-weight:650;letter-spacing:.01em}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle.enabled{background:rgba(124,92,230,.22)!important;border-color:rgba(167,139,250,.45)!important;color:#e6dcff!important}
+#profilePopover .pop-presence-row-bottom .pop-ghost-toggle.enabled::before{opacity:1}
+/* Settings: remove the opaque gray slab behind tab content (came from glass.css + graphite panel vars) */
+#settingsModal .s-section{background:transparent!important;background-color:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;border:0!important}
+/* Chat area: no gray slab behind messages */
+.main .messages{background:transparent!important;background-color:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,56,34,.55),rgba(6,37,21,.55))!important}
+/* Call grid: up to 5 tiles per row (2 on phones), tiles scale with the row, extra participants wrap to the next row. */
+#callStage #callGrid{display:grid!important;grid-template-columns:repeat(var(--call-cols,1),minmax(0,1fr))!important;grid-auto-rows:auto!important;grid-auto-flow:row!important;gap:8px!important;width:100%!important;max-width:100%!important;margin:0!important;align-content:start!important;justify-content:stretch!important;overflow:visible!important;container-type:inline-size}
+#callStage #callGrid>.tile{width:100%!important;min-width:0!important;max-width:100%!important;height:clamp(92px,calc(100cqi / var(--call-cols,1) * .62),210px)!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;padding:0!important;border-radius:14px!important;overflow:hidden!important}
+#callStage #callGrid>.tile .big-av{width:clamp(30px,calc(100cqi / var(--call-cols,1) * .30),80px)!important;height:clamp(30px,calc(100cqi / var(--call-cols,1) * .30),80px)!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;flex:0 0 auto!important;font-size:clamp(11px,calc(100cqi / var(--call-cols,1) * .12),26px)!important}
+#callStage #callGrid>.tile .tile-tag{max-width:calc(100% - 12px)!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:clamp(9px,calc(100cqi / var(--call-cols,1) * .06),13px)!important}
+#callStage #callGrid>.tile.screen-mode{grid-column:1/-1!important;height:clamp(200px,42vh,440px)!important}
+@media(max-width:760px){#callStage #callGrid{grid-template-columns:repeat(var(--call-cols,1),minmax(0,1fr))!important;gap:6px!important}#callStage #callGrid>.tile{height:clamp(96px,calc(100cqi / var(--call-cols,1) * .75),190px)!important}}
 </style>
