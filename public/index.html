@@ -4339,6 +4339,7 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
       </div>
       <div class="header-actions">
         <button id="inviteGroupBtn" type="button" class="sm-btn hidden" onclick="openGroupModal('invite')">+ Добавить друзей</button>
+        <button id="groupMembersBtn" type="button" class="sm-btn hidden" onclick="openGroupMembers()">Участники</button>
         <button id="startCallBtn" type="button" class="call-pill chat-header-call hidden" onclick="startCallWithActiveChat()" aria-label="Позвонить">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span>Позвонить</span>
@@ -11420,3 +11421,40 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 body.auralis-no-active-chat .sidebar .panel-body { position:relative !important; }
 body.auralis-no-active-chat .sidebar .panel-body::after { opacity:.82; }
 </style>
+
+<style id="auralis-members-ui">
+body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:50%!important;transform:translateX(-50%)!important}
+.msg:has(.msg-sticker-big) .msg-bubble,.msg.sticker-only .msg-bubble{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;min-width:0!important}
+.group-members-backdrop{position:fixed;inset:0;z-index:170;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.66);backdrop-filter:blur(8px)}
+.group-members-card{width:min(470px,100%);max-height:90vh;overflow:auto;padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--glass-solid);color:var(--text)}
+.group-members-head,.group-members-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.group-members-row{padding:10px 0;border-top:1px solid var(--border)}
+.group-members-name{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}
+.group-members-actions{display:flex;flex-wrap:wrap;gap:5px}
+.group-members-actions button{font-size:11px;padding:5px 8px}
+@media(max-width:760px){.group-members-backdrop{align-items:flex-end;padding:0}.group-members-card{width:100%;max-height:86dvh;border-radius:22px 22px 0 0}}
+</style>
+<script id="auralis-group-members-actions">
+(function(){
+ function sync(){var b=document.getElementById('groupMembersBtn');if(b)b.classList.toggle('hidden',!(activeChat&&activeChat.kind==='group'));}
+ var og=window.openGroupChat,od=window.openChat;
+ if(og)window.openGroupChat=async function(){var r=await og.apply(this,arguments);sync();return r;};
+ if(od)window.openChat=async function(){var r=await od.apply(this,arguments);sync();return r;};
+ window.openGroupMembers=async function(){
+  var chat=activeChat;if(!chat||chat.kind!=='group')return;var group=getGroupById(chat.id);if(!group)return;
+  var old=document.getElementById('groupMembersBackdrop');if(old)old.remove();
+  var back=document.createElement('div');back.id='groupMembersBackdrop';back.className='group-members-backdrop';
+  var card=document.createElement('div');card.className='group-members-card';
+  var head=document.createElement('div');head.className='group-members-head';var h=document.createElement('b');h.textContent='Участники группы';var close=document.createElement('button');close.className='sm-btn';close.textContent='Закрыть';close.onclick=function(){back.remove();};head.append(h,close);card.append(head);
+  var fr=await fetch('/api/friends',{headers:{Authorization:'Bearer '+token}});var fd=fr.ok?await fr.json():{friends:[]};var fs=new Set((fd.friends||[]).map(function(x){return x.username;}));
+  (group.members||[]).forEach(function(u){var row=document.createElement('div');row.className='group-members-row';var nm=document.createElement('div');nm.className='group-members-name';nm.textContent=displayNameOf(u)+' (@'+u+')';var acts=document.createElement('div');acts.className='group-members-actions';
+   if(u!==me.username){var fbtn=document.createElement('button');fbtn.className='sm-btn';fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';fbtn.onclick=async function(){var yes=fs.has(u);var r=await fetch(yes?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:u})});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось изменить друзей','error');return;}if(yes)fs.delete(u);else fs.add(u);fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';refreshSocial();};acts.append(fbtn);
+    var bl=document.createElement('button');bl.className='sm-btn';bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';bl.onclick=function(){ctxTargetUser=u;toggleCtxBlockUser();bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';};acts.append(bl);
+    if(group.owner===me.username){var rm=document.createElement('button');rm.className='sm-btn';rm.textContent='Удалить из группы';rm.onclick=async function(){if(!confirm('Удалить @'+u+' из группы?'))return;var r=await fetch('/api/groups/'+encodeURIComponent(group.id)+'/members/'+encodeURIComponent(u)+'/remove',{method:'POST',headers:{Authorization:'Bearer '+token}});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось удалить участника','error');return;}if(d.group)upsertGroup(d.group);showToast('@'+u+' удалён из группы');back.remove();openGroupMembers();};acts.append(rm);}
+   }row.append(nm,acts);card.append(row);
+  });
+  back.onclick=function(e){if(e.target===back)back.remove();};back.append(card);document.body.append(back);
+ };
+ sync();
+})();
+</script>
