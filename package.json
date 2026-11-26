@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.6",
-  "description": "Auralis 3.6.6 — horizontal repeated sticker messages",
+  "version": "3.6.7",
+  "description": "Auralis 3.6.7 — horizontal sticker strip and group member activity logs",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",

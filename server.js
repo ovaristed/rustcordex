@@ -843,6 +843,15 @@ app.post('/api/groups/:id/invite', authMiddleware, async (req, res) => {
       );
       if (r.rows.length) newcomers.push(u);
     }
+    if (newcomers.length) {
+      const auditText = '__SYSTEM__:' + JSON.stringify({ actor: req.user.username, targets: newcomers, action: 'member-added', at: new Date().toISOString() });
+      const saved = await pool.query(
+        'INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3) RETURNING id, group_id AS "groupId", sender, text, created_at',
+        [groupId, req.user.username, auditText]
+      );
+      const recipients = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
+      for (const row of recipients.rows) sendToUser(row.username, { type: 'group-dm', groupId, message: saved.rows[0] });
+    }
     const group = await loadGroup(groupId);
     for (const u of group.members) {
       sendToUser(u, { type: newcomers.includes(u) ? 'group-invited' : 'group-update', group });

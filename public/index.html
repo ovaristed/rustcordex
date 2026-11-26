@@ -8495,9 +8495,11 @@ function appendMsg(m) {
   if (systemInfo) {
     if (m.created_at) window.auralisAddChatDateDivider(box, m.created_at);
     const actor = displayNameOf(systemInfo.actor || m.sender || 'Система');
+    const targets = Array.isArray(systemInfo.targets) ? systemInfo.targets.map(displayNameOf) : [];
     const target = systemInfo.target ? displayNameOf(systemInfo.target) : '';
     const actionText = {
       'member-removed': 'удалил из группы',
+      'member-added': 'добавил в группу',
       'friend-added': 'отправил запрос в друзья',
       'friend-removed': 'удалил из друзей',
       'blocked': 'заблокировал',
@@ -8509,7 +8511,7 @@ function appendMsg(m) {
     row.innerHTML =
       '<span class="system-log-icon" aria-hidden="true">ⓘ</span>' +
       '<span><span class="call-log-author">' + esc(actor) + '</span> ' + esc(actionText) +
-      (target ? ' <span class="call-log-author">@' + esc(target) + '</span>' : '') +
+      (targets.length ? ' ' + targets.map((name) => '<span class="call-log-author">@' + esc(name) + '</span>').join(', ') : (target ? ' <span class="call-log-author">@' + esc(target) + '</span>' : '')) +
       '.</span>' +
       (m.created_at ? '<span class="call-log-date">' + esc(formatCallDateTime(m.created_at)) + '</span>' : '');
     box.appendChild(row);
@@ -10701,6 +10703,48 @@ html[data-theme="aurora"] #zoomRoot .bottom-dock {z-index:7!important}
 .group-member-row,
 .group-member-row * { cursor:default !important; }
 .group-member-row .avatar { pointer-events:none !important; }
+</style>
+
+<style id="auralis-sticker-single-horizontal-row">
+/* Keep every repeated sticker in one horizontal strip, never stack them vertically. */
+.msg-sticker-big {
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+}
+.msg-sticker-big .msg-sticker-token {
+  display:block!important;
+  flex:0 0 88px!important;
+  width:88px!important;
+  height:88px!important;
+  max-width:88px!important;
+  max-height:88px!important;
+  object-fit:contain!important;
+}
+.msg-sticker-big .msg-sticker-emoji {
+  display:inline-flex!important;
+  flex:0 0 88px!important;
+  width:88px!important;
+  height:88px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:72px!important;
+}
+@media(max-width:760px){
+  .msg-sticker-big .msg-sticker-token,
+  .msg-sticker-big .msg-sticker-emoji {
+    flex-basis:72px!important;
+    width:72px!important;
+    height:72px!important;
+  }
+}
 </style>
 </body>
 
