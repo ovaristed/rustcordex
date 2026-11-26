@@ -507,7 +507,7 @@ app.post('/api/profile', authMiddleware, async (req, res) => {
     }
     if (stickerUrl) {
       const stickerMatches = stickerUrl.match(/(?:[\u2600-\u27BF\u2B50\u{1F300}-\u{1FAFF}])(?:\uFE0F|\u200D[\u2600-\u27BF\u2B50\u{1FAFF}])*/gu) || [];
-      const numericSticker = /^(?:67|777|6767|52|48)$/.test(stickerUrl);
+      const numericSticker = /^(?:67|777|52|48)$/.test(stickerUrl);
       if (!numericSticker && (stickerMatches.length !== 1 || stickerMatches[0] !== stickerUrl)) {
         return res.status(400).json({ error: 'Выбери один стикер из набора' });
       }

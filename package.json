@@ -1,6 +1,6 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.4",
+  "version": "3.6.5",
   "description": "Auralis 3.6.4 — branded icon and empty chat header fixes",
   "main": "electron-main.js",
   "scripts": {

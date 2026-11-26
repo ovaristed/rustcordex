@@ -6318,8 +6318,8 @@ function setBgEffect(val) {
   rebuildBgParticles();
 }
 
-let recentStickers = JSON.parse(localStorage.getItem('rc_recent_stickers') || '["🔥","😂","😎","🐸","💀","🎉","67","777","6767","52","48"]');
-recentStickers = [...new Set([...(recentStickers || []), '67', '777', '6767', '52', '48'])].slice(0, 12);
+let recentStickers = JSON.parse(localStorage.getItem('rc_recent_stickers') || '["🔥","😂","😎","🐸","💀","🎉","67","777","52","48"]');
+recentStickers = [...new Set([...(Array.isArray(recentStickers) ? recentStickers : []).filter((s) => String(s) !== '6767'), '67', '777', '52', '48'])].slice(0, 12);
 function saveRecentSticker(st) {
   const clean = String(st || '').trim();
   if (!clean) return;
@@ -6331,7 +6331,7 @@ function renderRecentStickers() {
   const box = document.getElementById('recentStickersBox');
   if (!box) return;
   box.innerHTML = recentStickers.map((s) => {
-    const code = /^(?:67|777|6767|52|48)$/.test(String(s));
+    const code = /^(?:67|777|52|48)$/.test(String(s));
     const visual = code
       ? '<img class="emoji-sticker-icon" src="/stickers/' + s + '.svg" alt="Стикер ' + s + '" draggable="false">'
       : esc(String(s));
@@ -6363,7 +6363,7 @@ function toggleStickerPicker(forceState) {
   if (button) button.setAttribute('aria-expanded', open ? 'true' : 'false');
   if (open) {
     if (!Array.isArray(recentStickers) || !recentStickers.length) {
-      recentStickers = ['🔥','😂','😎','🐸','💀','🎉','67','777','6767','52','48'];
+      recentStickers = ['🔥','😂','😎','🐸','💀','🎉','67','777','52','48'];
     }
     setStickerPickerMode(stickerPickerMode);
   }
@@ -6401,7 +6401,7 @@ function renderStickerPicker() {
   if (!grid) return;
   const items = [...new Set(recentStickers || [])].slice(0, 30);
   grid.innerHTML = items.map((s) => {
-    const code = /^(?:67|777|6767|52|48)$/.test(String(s));
+    const code = /^(?:67|777|52|48)$/.test(String(s));
     const visual = code
       ? '<img src="/stickers/' + s + '.svg" alt="" draggable="false">'
       : esc(String(s));
@@ -6428,11 +6428,18 @@ const STICKER_REGEX = new RegExp(
 function extractEmojis(str) {
   try { return String(str).match(STICKER_REGEX) || []; } catch { return []; }
 }
-function isSingleStickerMessage(text) {
+function getStickerMessageTokens(text) {
   const trimmed = String(text || '').trim();
-  if (!trimmed || trimmed.startsWith('__VOICE__:') || trimmed.startsWith('__FILE__:') || trimmed.startsWith('__CALL__:')) return false;
-  const emojis = extractEmojis(trimmed);
-  return (emojis.length === 1 && trimmed === emojis[0]) || /^(?:67|777|6767|52|48)$/.test(trimmed);
+  if (!trimmed || trimmed.startsWith('__VOICE__:') || trimmed.startsWith('__FILE__:') || trimmed.startsWith('__CALL__:')) return [];
+  const tokens = trimmed.split(/\s+/);
+  return tokens.every((token) => {
+    if (/^(?:67|777|52|48)$/.test(token)) return true;
+    const emojis = extractEmojis(token);
+    return emojis.length === 1 && emojis[0] === token;
+  }) ? tokens : [];
+}
+function isSingleStickerMessage(text) {
+  return getStickerMessageTokens(text).length > 0;
 }
 
 const THEMES = {
@@ -7335,7 +7342,7 @@ function toggleProfileStickerPicker(source) {
   const willOpen = panel.classList.contains('hidden');
   document.querySelectorAll('.profile-sticker-choices').forEach((el) => el.classList.add('hidden'));
   if (!willOpen) return;
-  const choices = Array.from(new Set([...(recentStickers || []), '67','777','6767','52','48','🔥','😂','😎','🐸','💀','🎉','❤️','✨','🌸','🌿','⭐','👑','🚀','🎮','💜','🩷','🤍']));
+  const choices = Array.from(new Set([...(recentStickers || []), '67','777','52','48','🔥','😂','😎','🐸','💀','🎉','❤️','✨','🌸','🌿','⭐','👑','🚀','🎮','💜','🩷','🤍']));
   const current = String(me && me.profile_sticker_url || '');
   panel.innerHTML = choices.map((st) => '<button type="button" class="profile-sticker-choice ' + (current === st ? 'active' : '') + '" data-profile-sticker="' + esc(st) + '" title="Выбрать ' + esc(st) + '">' + renderProfileSticker(st, 'Стикер ' + st) + '</button>').join('') +
     '<button type="button" class="profile-sticker-choice" data-profile-sticker="" title="Убрать стикер">×</button>';
@@ -8585,10 +8592,13 @@ function appendMsg(m) {
       }
     } catch { bodyHtml = '<div class="msg-text">Вложение</div>'; }
   } else if (bigSticker) {
-    const stickerCode = /^(?:67|777|6767|52|48)$/.test(String(rawText || '').trim()) ? String(rawText).trim() : '';
-    bodyHtml = '<div class="msg-sticker-big">' + (stickerCode
-      ? '<img src="/stickers/' + stickerCode + '.svg" alt="Стикер ' + stickerCode + '" draggable="false">'
-      : esc(rawText)) + '</div>';
+    const stickerTokens = getStickerMessageTokens(rawText);
+    bodyHtml = '<div class="msg-sticker-big">' + stickerTokens.map((sticker) => {
+      if (/^(?:67|777|52|48)$/.test(sticker)) {
+        return '<img class="msg-sticker-token" src="/stickers/' + sticker + '.svg" alt="Стикер ' + sticker + '" draggable="false" decoding="async">';
+      }
+      return '<span class="msg-sticker-token msg-sticker-emoji">' + esc(sticker) + '</span>';
+    }).join('') + '</div>';
   } else {
     bodyHtml = '<div class="msg-text">' + esc(rawText) + '</div>';
     editable = !!(isMine && m.id != null);
@@ -10122,7 +10132,7 @@ checkSession();
     const open=typeof forceState==='boolean'?forceState:picker.classList.contains('hidden');
     if(open){
       picker.classList.remove('hidden');
-      if(Array.isArray(window.recentStickers)&&!window.recentStickers.length) window.recentStickers=['🔥','😂','😎','🐸','💀','🎉','67','777','6767','52','48'];
+      if(Array.isArray(window.recentStickers)&&!window.recentStickers.length) window.recentStickers=['🔥','😂','😎','🐸','💀','🎉','67','777','52','48'];
       if(typeof window.setStickerPickerMode==='function') window.setStickerPickerMode(window.stickerPickerMode||'stickers');
       placePicker();
       requestAnimationFrame(placePicker);
