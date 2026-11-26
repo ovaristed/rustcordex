@@ -876,6 +876,39 @@ app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
   }
 });
 
+// Журнал действий над участниками в истории группового чата.
+app.post('/api/groups/:id/audit', authMiddleware, async (req, res) => {
+  try {
+    const groupId = String(req.params.id);
+    const actor = req.user.username;
+    const target = String(req.body.username || '').trim();
+    const action = String(req.body.action || '');
+    const phrases = {
+      'friend-added': 'добавил в друзья',
+      'friend-removed': 'удалил из друзей',
+      'blocked': 'заблокировал',
+      'unblocked': 'разблокировал'
+    };
+    if (!phrases[action] || !target || target.toLowerCase() === actor.toLowerCase()) {
+      return res.status(400).json({ error: 'Некорректное действие' });
+    }
+    if (!(await isGroupMember(groupId, actor)) || !(await isGroupMember(groupId, target))) {
+      return res.status(403).json({ error: 'Оба пользователя должны состоять в группе' });
+    }
+    const text = '@' + actor + ' ' + phrases[action] + ' @' + target;
+    const saved = await pool.query(
+      'INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3) RETURNING id, group_id AS "groupId", sender, text, created_at',
+      [groupId, actor, text]
+    );
+    const members = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
+    for (const row of members.rows) sendToUser(row.username, { type: 'group-dm', groupId, message: saved.rows[0] });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Group member audit error:', err);
+    res.status(500).json({ error: 'Не удалось записать действие в чат' });
+  }
+});
+
 // Удаление участника группы с обязательной системной записью в истории.
 app.post('/api/groups/:id/members/:username/remove', authMiddleware, async (req, res) => {
   try {
