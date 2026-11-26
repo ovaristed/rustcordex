@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.2",
-  "description": "Auralis 3.6.2 — chat and avatar editor",
+  "version": "3.6.3",
+  "description": "Auralis 3.6.3 — group member context menu",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",

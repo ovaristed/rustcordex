@@ -10681,6 +10681,17 @@ html[data-theme="aurora"] #zoomRoot .bottom-dock {z-index:7!important}
   #callGrid .tile.screen-mode .tile-tag,
   #callGrid .tile.screen-mode .fs-btn { z-index:4; }
 </style>
+<style id="auralis-group-member-context-layer-fix">
+/* The member context menu must sit above the modal backdrop and card. */
+.group-ctx-menu.group-member-context {
+  position:fixed !important;
+  z-index:10000 !important;
+  pointer-events:auto !important;
+}
+.group-member-row,
+.group-member-row * { cursor:default !important; }
+.group-member-row .avatar { pointer-events:none !important; }
+</style>
 </body>
 
 <style id="auralis-3600-ui-fixes">
@@ -11527,46 +11538,73 @@ body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:
  var og=window.openGroupChat,od=window.openChat;
  if(og)window.openGroupChat=async function(){var r=await og.apply(this,arguments);sync();return r;};
  if(od)window.openChat=async function(){var r=await od.apply(this,arguments);sync();return r;};
- var friendSet=new Set(),menu=null;
- function isOwner(group){return !!(group&&group.owner&&me&&String(group.owner).toLowerCase()===String(me.username).toLowerCase());}
+ var friendSet=new Set(),menu=null,friendsPromise=null;
+ function norm(u){return String(u||'').toLowerCase();}
+ function isOwner(group){return !!(group&&group.owner&&me&&norm(group.owner)===norm(me.username));}
  function closeMenu(){if(menu){menu.remove();menu=null;}document.removeEventListener('pointerdown',outside,true);document.removeEventListener('keydown',escape);}
  function outside(e){if(menu&&!menu.contains(e.target))closeMenu();}
  function escape(e){if(e.key==='Escape')closeMenu();}
- function showMenu(ev,username,group,back){
-  ev.preventDefault();closeMenu();
+ function loadFriends(){
+  friendsPromise=fetch('/api/friends',{headers:{Authorization:'Bearer '+token}})
+   .then(function(r){return r.ok?r.json():{friends:[]};})
+   .then(function(d){friendSet=new Set((d.friends||[]).map(function(x){return norm(typeof x==='string'?x:x.username);}));})
+   .catch(function(){friendSet=new Set();});
+  return friendsPromise;
+ }
+ async function showMenu(ev,username,group,back,refreshRows){
+  ev.preventDefault();ev.stopPropagation();closeMenu();
+  if(friendsPromise)await friendsPromise;
+  if(!back.isConnected)return;
   menu=document.createElement('div');menu.className='group-ctx-menu group-member-context';
   var title=document.createElement('div');title.className='group-ctx-title';title.textContent=displayNameOf(username)+'  ·  @'+username;menu.append(title);
-  function item(label,fn,danger){var b=document.createElement('button');b.type='button';b.className='group-ctx-btn'+(danger?' danger':'');b.textContent=label;b.onclick=async function(){closeMenu();await fn();};menu.append(b);}
-  if(username!==me.username){
-   item(friendSet.has(username)?'Удалить из друзей':'Добавить в друзья',async function(){
-    var remove=friendSet.has(username),r=await fetch(remove?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:username})}),d=await r.json().catch(function(){return {};});
+  function item(label,fn,danger){var b=document.createElement('button');b.type='button';b.className='group-ctx-btn'+(danger?' danger':'');b.textContent=label;b.onclick=async function(e){e.preventDefault();e.stopPropagation();closeMenu();await fn();};menu.append(b);}
+  if(norm(username)!==norm(me.username)){
+   var isFriend=friendSet.has(norm(username));
+   item(isFriend?'Удалить из друзей':'Добавить в друзья',async function(){
+    var remove=friendSet.has(norm(username));
+    var r=await fetch(remove?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:username})});
+    var d=await r.json().catch(function(){return {};});
     if(!r.ok){showToast(d.error||'Не удалось изменить друзей','error');return;}
-    if(remove)friendSet.delete(username);else friendSet.add(username);
-    await logGroupMemberAction(remove?'friend-removed':'friend-added',username);refreshSocial();renderRows();
+    if(remove)friendSet.delete(norm(username));else friendSet.add(norm(username));
+    await logGroupMemberAction(remove?'friend-removed':'friend-added',username);
+    refreshSocial();refreshRows();
    });
    item(isUserBlocked(username)?'Разблокировать':'Заблокировать',async function(){
-    var was=isUserBlocked(username);ctxTargetUser=username;toggleCtxBlockUser();await logGroupMemberAction(was?'unblocked':'blocked',username);renderRows();
+    var was=blockedUsers.has(username);
+    if(was)blockedUsers.delete(username);else{blockedUsers.add(username);cleanupPeerConnection(username);}
+    localStorage.setItem('rc_blocked_users',JSON.stringify([...blockedUsers]));
+    applyRemotePeerAudioSettings(username);renderLists();
+    await logGroupMemberAction(was?'unblocked':'blocked',username);refreshRows();
    });
-   if(isOwner(group)){var sep=document.createElement('div');sep.className='group-ctx-sep';menu.append(sep);
+   if(isOwner(group)){
+    var sep=document.createElement('div');sep.className='group-ctx-sep';menu.append(sep);
     item('Удалить из группы',async function(){
      if(!confirm('Удалить @'+username+' из группы?'))return;
-     var r=await fetch('/api/groups/'+encodeURIComponent(group.id)+'/members/'+encodeURIComponent(username)+'/remove',{method:'POST',headers:{Authorization:'Bearer '+token}}),d=await r.json().catch(function(){return {};});
+     var r=await fetch('/api/groups/'+encodeURIComponent(group.id)+'/members/'+encodeURIComponent(username)+'/remove',{method:'POST',headers:{Authorization:'Bearer '+token}});
+     var d=await r.json().catch(function(){return {};});
      if(!r.ok){showToast(d.error||'Не удалось удалить участника','error');return;}
-     if(d.group)upsertGroup(d.group);showToast('@'+username+' удалён из группы');back.remove();openGroupMembers();
+     if(d.group)upsertGroup(d.group);
+     showToast('@'+username+' удалён из группы');
+     back.remove();closeMenu();window.openGroupMembers();
     },true);
    }
-  }else{var own=document.createElement('div');own.className='group-ctx-title';own.textContent='Это вы';menu.append(own);}
+  }else{
+   var own=document.createElement('div');own.className='group-ctx-title';own.textContent='Это вы';menu.append(own);
+  }
   document.body.append(menu);
   var x=Math.min(ev.clientX,window.innerWidth-menu.offsetWidth-8),y=Math.min(ev.clientY,window.innerHeight-menu.offsetHeight-8);
   menu.style.left=Math.max(8,x)+'px';menu.style.top=Math.max(8,y)+'px';
   setTimeout(function(){document.addEventListener('pointerdown',outside,true);document.addEventListener('keydown',escape);},0);
  }
  async function logGroupMemberAction(action,username){
-  try{var r=await fetch('/api/groups/'+encodeURIComponent(activeChat.id)+'/audit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:action,username:username})});if(!r.ok){var d=await r.json().catch(function(){return {};});showToast(d.error||'Не удалось записать действие в чат','error');}}
-  catch(e){showToast('Не удалось записать действие в чат','error');}
+  try{var groupId=activeChat&&activeChat.kind==='group'?activeChat.id:null;if(!groupId)return;
+   var r=await fetch('/api/groups/'+encodeURIComponent(groupId)+'/audit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:action,username:username})});
+   if(!r.ok){var d=await r.json().catch(function(){return {};});showToast(d.error||'Не удалось записать действие в чат','error');}
+  }catch(e){showToast('Не удалось записать действие в чат','error');}
  }
  window.openGroupMembers=function(){
   var chat=activeChat;if(!chat||chat.kind!=='group')return;var group=getGroupById(chat.id);if(!group)return;
+  closeMenu();
   var old=document.getElementById('groupMembersBackdrop');if(old)old.remove();
   var back=document.createElement('div');back.id='groupMembersBackdrop';back.className='group-members-backdrop';
   var card=document.createElement('div');card.className='group-members-card';
@@ -11582,15 +11620,14 @@ body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:
   function renderRows(){
    list.innerHTML='';
    (group.members||[]).forEach(function(u){
-    var row=document.createElement('div');row.className='list-item group-member-row';
+    var row=document.createElement('div');row.className='list-item group-member-row';row.setAttribute('role','listitem');
     var left=document.createElement('div');left.className='item-left';
-    var av=document.createElement('div');av.className='avatar profile-open-target';av.innerHTML=renderAvatarHtml(u);av.onclick=function(e){e.stopPropagation();openUserProfile(u);};
+    var av=document.createElement('div');av.className='avatar';av.innerHTML=renderAvatarHtml(u);
     var info=document.createElement('div');info.className='group-member-info';
-    var name=document.createElement('div');name.className='item-name';name.textContent=displayNameOf(u)+(isOwner(group)&&String(group.owner).toLowerCase()===String(u).toLowerCase()?'  ·  Создатель':'');
+    var name=document.createElement('div');name.className='item-name';name.textContent=displayNameOf(u)+(String(group.owner||'').toLowerCase()===String(u).toLowerCase()?'  ·  Создатель':'');
     var login=document.createElement('div');login.className='item-sub';login.textContent='@'+u+(isUserBlocked(u)?' · Заблокирован':'');
     info.append(name,login);left.append(av,info);row.append(left);
-    row.addEventListener('contextmenu',function(e){showMenu(e,u,group,back);});
-    row.addEventListener('click',function(e){if(!e.target.closest('button'))openUserProfile(u);});
+    row.addEventListener('contextmenu',function(e){showMenu(e,u,group,back,renderRows);});
     list.append(row);
    });
    if(!(group.members||[]).length){var empty=document.createElement('div');empty.className='item-sub';empty.style.padding='10px 4px';empty.textContent='В группе пока нет участников';list.append(empty);}
@@ -11598,7 +11635,7 @@ body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:
   renderRows();
   back.onclick=function(e){if(e.target===back){closeMenu();back.remove();}};
   back.append(card);document.body.append(back);
-  fetch('/api/friends',{headers:{Authorization:'Bearer '+token}}).then(function(fr){return fr.ok?fr.json():{friends:[]};}).then(function(fd){friendSet=new Set((fd.friends||[]).map(function(x){return x.username;}));}).catch(function(){friendSet=new Set();});
+  loadFriends();
  };
  sync();
 })();
