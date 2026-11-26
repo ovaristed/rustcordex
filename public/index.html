@@ -4183,6 +4183,47 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
 }
 </style>
 
+<style id="auralis-final-polish-3581">
+/* Composer: keep the proven geometry, restore a lighter accent-tinted surface. */
+#composer #msgInput,#composer #msgInput:focus{
+  height:48px!important;min-height:48px!important;max-height:48px!important;
+  resize:none!important;box-sizing:border-box!important;
+  background:color-mix(in srgb,var(--glass-solid,var(--bg)) 72%,var(--accent) 18%,#fff 10%)!important;
+  background-color:color-mix(in srgb,var(--glass-solid,var(--bg)) 72%,var(--accent) 18%,#fff 10%)!important;
+  color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;
+  border:1px solid color-mix(in srgb,var(--accent) 38%,var(--border))!important;
+}
+#composer #msgInput:focus{
+  background:color-mix(in srgb,var(--glass-solid,var(--bg)) 66%,var(--accent) 22%,#fff 12%)!important;
+  border-color:color-mix(in srgb,var(--accent) 68%,var(--border))!important;
+}
+/* Group mark: accent-colored tile, white larger vector drawing. */
+.avatar.group-av,#peerAv.group-av{
+  background:var(--accent)!important;background-image:none!important;
+  color:#fff!important;border:1px solid color-mix(in srgb,var(--accent) 75%,#fff)!important;
+}
+.avatar.group-av .group-avatar-glyph,#peerAv.group-av .group-avatar-glyph{
+  width:82%!important;height:82%!important;color:#fff!important;stroke:currentColor!important;
+}
+/* Status: one bottom-right placement for all avatar contexts. */
+.avatar,.dm-avatar-box{position:relative!important;overflow:visible!important}
+.avatar .dm-status-dot,.dm-avatar-box .dm-status-dot,.dm-status-dot{
+  top:auto!important;bottom:-4px!important;right:-4px!important;left:auto!important;
+  transform:none!important;z-index:30!important;
+}
+/* Sticker message has no bubble, panel, shadow plate or image drop-shadow. */
+.msg.sticker-only .msg-bubble,.msg.sticker-only .msg-sticker-big,
+.msg.sticker-only .msg-sticker-big img{
+  background:transparent!important;background-color:transparent!important;
+  border:0!important;box-shadow:none!important;filter:none!important;
+}
+.msg.sticker-only .msg-bubble{padding:0!important}
+.msg.sticker-only .msg-sticker-big img{display:block!important;object-fit:contain!important}
+/* Date labels are centered as one divider for each consecutive day group. */
+#messages .chat-date-divider{display:flex!important;width:100%!important;justify-content:center!important;align-items:center!important;align-self:stretch!important;text-align:center!important;clear:both!important;margin:16px 0 12px!important}
+#messages .chat-date-divider span{margin:0 auto!important;text-align:center!important}
+</style>
+
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -10537,6 +10578,21 @@ html[data-theme="aurora"] #zoomRoot .bottom-dock {z-index:7!important}
   if(root&&canvas&&canvas.parentElement!==root)root.insertBefore(canvas,root.firstChild);
 })();
 </script>
+<script id="auralis-date-divider-fix-3581">
+(function(){
+  window.auralisAddChatDateDivider=function(box,stamp){
+    if(!box||!window.getChatDateLabel)return;
+    const label=window.getChatDateLabel(stamp);if(!label)return;
+    const lastDivider=Array.from(box.children).reverse().find(n=>n.classList&&n.classList.contains('chat-date-divider'));
+    if(lastDivider&&lastDivider.dataset.dateLabel===label)return;
+    const divider=document.createElement('div');
+    divider.className='chat-date-divider';divider.dataset.dateLabel=label;
+    const span=document.createElement('span');span.textContent=label;divider.appendChild(span);
+    box.appendChild(divider);
+  };
+})();
+</script>
+
 </body>
 </html>
 
