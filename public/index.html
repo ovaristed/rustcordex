@@ -11443,6 +11443,12 @@ body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:
  var og=window.openGroupChat,od=window.openChat;
  if(og)window.openGroupChat=async function(){var r=await og.apply(this,arguments);sync();return r;};
  if(od)window.openChat=async function(){var r=await od.apply(this,arguments);sync();return r;};
+ async function logGroupMemberAction(action,username){
+  try{
+   var r=await fetch('/api/groups/'+encodeURIComponent(activeChat.id)+'/audit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:action,username:username})});
+   if(!r.ok){var d=await r.json().catch(function(){return {};});showToast(d.error||'Не удалось записать действие в чат','error');}
+  }catch(e){showToast('Не удалось записать действие в чат','error');}
+ }
  window.openGroupMembers=async function(){
   var chat=activeChat;if(!chat||chat.kind!=='group')return;var group=getGroupById(chat.id);if(!group)return;
   var old=document.getElementById('groupMembersBackdrop');if(old)old.remove();
@@ -11451,8 +11457,8 @@ body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:
   var head=document.createElement('div');head.className='group-members-head';var h=document.createElement('b');h.textContent='Участники группы';var close=document.createElement('button');close.className='sm-btn';close.textContent='Закрыть';close.onclick=function(){back.remove();};head.append(h,close);card.append(head);
   var fr=await fetch('/api/friends',{headers:{Authorization:'Bearer '+token}});var fd=fr.ok?await fr.json():{friends:[]};var fs=new Set((fd.friends||[]).map(function(x){return x.username;}));
   (group.members||[]).forEach(function(u){var row=document.createElement('div');row.className='group-members-row';var nm=document.createElement('div');nm.className='group-members-name';nm.textContent=displayNameOf(u)+' (@'+u+')';var acts=document.createElement('div');acts.className='group-members-actions';
-   if(u!==me.username){var fbtn=document.createElement('button');fbtn.className='sm-btn';fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';fbtn.onclick=async function(){var yes=fs.has(u);var r=await fetch(yes?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:u})});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось изменить друзей','error');return;}if(yes)fs.delete(u);else fs.add(u);fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';refreshSocial();};acts.append(fbtn);
-    var bl=document.createElement('button');bl.className='sm-btn';bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';bl.onclick=function(){ctxTargetUser=u;toggleCtxBlockUser();bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';};acts.append(bl);
+   if(u!==me.username){var fbtn=document.createElement('button');fbtn.className='sm-btn';fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';fbtn.onclick=async function(){var yes=fs.has(u);var r=await fetch(yes?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:u})});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось изменить друзей','error');return;}await logGroupMemberAction(yes?'friend-removed':'friend-added',u);if(yes)fs.delete(u);else fs.add(u);fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';refreshSocial();};acts.append(fbtn);
+    var bl=document.createElement('button');bl.className='sm-btn';bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';bl.onclick=async function(){var was=isUserBlocked(u);ctxTargetUser=u;toggleCtxBlockUser();bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';await logGroupMemberAction(was?'unblocked':'blocked',u);};acts.append(bl);
     if(group.owner===me.username){var rm=document.createElement('button');rm.className='sm-btn';rm.textContent='Удалить из группы';rm.onclick=async function(){if(!confirm('Удалить @'+u+' из группы?'))return;var r=await fetch('/api/groups/'+encodeURIComponent(group.id)+'/members/'+encodeURIComponent(u)+'/remove',{method:'POST',headers:{Authorization:'Bearer '+token}});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось удалить участника','error');return;}if(d.group)upsertGroup(d.group);showToast('@'+u+' удалён из группы');back.remove();openGroupMembers();};acts.append(rm);}
    }row.append(nm,acts);card.append(row);
   });
