@@ -11409,4 +11409,14 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 .crop-actions{justify-content:space-between;margin-top:14px}.crop-actions__right{justify-content:flex-end}
 .crop-actions .btn-primary{background:var(--accent);border-color:var(--accent);color:white}
 @media(max-width:480px){.crop-modal__card{padding:13px}.crop-actions{align-items:stretch;flex-direction:column}.crop-actions__right{width:100%}.crop-actions__right button{flex:1}}
+</style><style id="auralis-profile-sticker-menu-separator-fix">
+/* Remove both horizontal rules around the Settings heading/tabs. */
+#settingsModal .modal-head { border-bottom:0 !important; box-shadow:none !important; }
+#settingsModal .settings-tabs { border-top:0 !important; border-bottom:0 !important; box-shadow:none !important; }
+#settingsModal .modal-head::before, #settingsModal .modal-head::after,
+#settingsModal .settings-tabs::before, #settingsModal .settings-tabs::after { display:none !important; content:none !important; }
+#settingsModal .s-section { border-top:0 !important; }
+#settingsModal .modal-card .settings-tabs { outline:0 !important; }
+body.auralis-no-active-chat .sidebar .panel-body { position:relative !important; }
+body.auralis-no-active-chat .sidebar .panel-body::after { opacity:.82; }
 </style>
