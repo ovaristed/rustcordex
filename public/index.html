@@ -3235,11 +3235,10 @@ html[data-theme="glasscord"] .pop-profile-strip {
   }
   #composer > #stickerPickerBtn { order:1; flex:0 0 44px; }
   #composer > #attachFileBtn { order:2; flex:0 0 44px; }
-  #composer > #recVoiceBtn { order:3; flex:0 0 44px; }
-  #composer > #recTimer { order:4; }
-  #composer > #voiceLockActions { order:5; }
+  #composer > #recTimer { order:3; }
+  #composer > #voiceLockActions { order:4; }
   #composer > #msgInput {
-    order:6;
+    order:5;
     display:block;
     flex:1 1 0% !important;
     width:0 !important;
@@ -3247,6 +3246,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
     max-width:none !important;
     box-sizing:border-box;
   }
+  #composer > #recVoiceBtn { order:6; flex:0 0 44px; }
   #composer > .send-btn { order:7; flex:0 0 44px; }
   #composer > .rec-btn,
   #composer > .send-btn { min-width:0; padding:0; }
@@ -3323,7 +3323,7 @@ html[data-theme="glasscord"] .pop-profile-strip {
 
 <style id="auralis-aurora-picker-polish-v2517">
   /* Aurora is a background layer, never a foreground overlay on chat content. */
-  html[data-theme="aurora"] #bgCanvas { z-index:1 !important; }
+  html[data-theme="aurora"] #bgCanvas { z-index:4 !important; }
   /* Custom segmented tabs: avoid native browser button appearance. */
   #stickerPicker .sticker-picker-tabs {
     display:inline-flex; align-items:center; gap:4px; padding:4px;
@@ -4039,6 +4039,55 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
  #msgInput::placeholder{color:transparent!important;opacity:0!important}
 }
 </style>
+
+<style id="auralis-composer-contrast-and-layer-order-2601">
+  #composer #msgInput,
+  #composer #msgInput:focus {
+    color:var(--text) !important;
+    -webkit-text-fill-color:var(--text) !important;
+    caret-color:var(--accent) !important;
+    background:var(--input-bg) !important;
+    border:1px solid var(--border) !important;
+    border-radius:13px !important;
+    outline:none !important;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.12) !important;
+    line-height:1.35 !important;
+    height:44px !important;
+    min-height:44px !important;
+    max-height:44px !important;
+    resize:none !important;
+    overflow-y:auto !important;
+    padding:11px 13px !important;
+  }
+  #composer #msgInput:focus {
+    background:var(--input-focus-bg) !important;
+    border-color:rgba(var(--accent-rgb),.72) !important;
+    box-shadow:0 0 0 2px rgba(var(--accent-rgb),.14) !important;
+  }
+  #composer #msgInput::placeholder {
+    color:var(--muted) !important;
+    -webkit-text-fill-color:var(--muted) !important;
+    opacity:1 !important;
+  }
+  #composer > #msgInput { order:5 !important; }
+  #composer > #recVoiceBtn { order:6 !important; }
+  #composer > #recVoiceBtn.is-send-mode {
+    color:var(--accent) !important;
+    border-color:rgba(var(--accent-rgb),.45) !important;
+    background:rgba(var(--accent-rgb),.16) !important;
+  }
+  #composer > #recVoiceBtn.is-send-mode svg { color:var(--accent) !important; }
+  html[data-theme="aurora"] #bgCanvas { z-index:4 !important; }
+  html[data-theme="aurora"] #zoomRoot { position:relative; z-index:5 !important; }
+  html[data-theme="aurora"] #zoomRoot .sidebar,
+  html[data-theme="aurora"] #zoomRoot .main { z-index:6 !important; }
+  html[data-theme="aurora"] #zoomRoot .chat-header,
+  html[data-theme="aurora"] #zoomRoot .messages,
+  html[data-theme="aurora"] #zoomRoot .composer,
+  html[data-theme="aurora"] #zoomRoot .panel-body,
+  html[data-theme="aurora"] #zoomRoot .bottom-dock { z-index:7 !important; }
+</style>
+
 </head>
 <body>
 <script>if(window.Capacitor&&typeof window.Capacitor.getPlatform==='function'&&window.Capacitor.getPlatform()==='android'){document.body.classList.add('android-md3');document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#071b12');}</script>
@@ -7514,6 +7563,8 @@ function normalizeUserEntry(entry) {
     avatar_url: entry.avatar_url || entry.avatarUrl || '',
     profile_description: entry.profile_description || '',
     profile_sticker_url: entry.profile_sticker_url || '',
+    status: entry.status || entry.presence || entry.onlineStatus || entry.online_status || 'offline',
+    presence: entry.presence || entry.status || entry.onlineStatus || entry.online_status || 'offline',
     lastMessage: entry.lastMessage || entry.last_message || ''
   };
 }
@@ -7701,7 +7752,7 @@ function renderLists() {
       return (
         '<div class="list-item ' + (activeChat && activeChat.kind === 'dm' && activeChat.id === f.username ? 'active' : '') + '" data-open-dm="' + esc(f.username) + '">' +
           '<div class="item-left">' +
-            '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + '</div>' +
+            '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + renderDmStatusBadge(f.status || f.presence || 'offline') + '</div>' +
             '<div style="min-width:0">' +
               '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
               (blocked ? '<div class="item-sub" style="color:#ff6961;">Заблокирован</div>' : '<div class="item-sub">@' + esc(f.username) + '</div>') +
