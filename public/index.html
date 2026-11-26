@@ -4275,10 +4275,6 @@ body.android-md3 .chat-header .chat-header-call:hover{background:color-mix(in sr
         <span id="popAccArrow">›</span>
       </button>
       <div id="popAccountsBox" class="pop-acc-list hidden"></div>
-      <button type="button" class="pop-menu-btn danger" onclick="logoutAndSwitchAccount()">
-        <span>Выйти (войти в другой аккаунт)</span>
-        <span>⎋</span>
-      </button>
     </div>
   </div>
 </div>
@@ -4873,6 +4869,7 @@ function syncProfilePopoverUi() {
   if (String(me.profile_sticker_url || '').startsWith('data:image/')) me.profile_sticker_url = '';
   document.getElementById('popNick').innerHTML = formatProfileDisplayName(displayNameOf(me.username));
   document.getElementById('popLoginText').textContent = '@' + me.username;
+  window.dispatchEvent(new CustomEvent('auralis:account-change'));
   document.getElementById('popAv').innerHTML = renderAvatarHtml(me.username);
   const popBanner = document.querySelector('#profilePopover .pop-banner');
   if (popBanner) {
@@ -10470,10 +10467,19 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
 @keyframes auralisStatusBreath{50%{filter:drop-shadow(0 0 10px rgba(37,255,137,.5))}}
 @keyframes auralisGhostFloat{50%{transform:translateY(-2px)}}
 </style>
+<style id="auralis-profile-avatar-and-actions-fix-2539">
+/* Keep profile avatars fully visible in the bottom-sheet account card. */
+#profilePopover .pop-av{position:relative;display:block;flex:0 0 68px;width:68px!important;height:68px!important;min-width:68px!important;overflow:hidden!important;border-radius:50%!important;aspect-ratio:1/1}
+#profilePopover .pop-av img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;border:0!important;border-radius:50%!important;transform:none!important}
+#profilePopover .pop-av .default-avatar-fox{position:absolute;inset:0;width:100%;height:100%;display:grid;place-items:center;overflow:hidden;border-radius:50%}
+#profilePopover .pop-av .default-avatar-fox img{position:static!important;width:100%!important;height:100%!important;object-fit:cover!important}
+</style>
 <script id="auralis-android-sidebar-account-status-runtime-2538">
 (function(){
  const LABELS={online:{label:'В сети',color:'#30d158'},offline:{label:'Не в сети',color:'#aeb4c8'},ghost:{label:'Призрак',color:'#bd72ff'}};
- const ghostEnabled=()=>localStorage.getItem('auralis_presence_status')==='ghost';
+ const accountKey=()=>{const el=document.getElementById('popLoginText');const username=el&&el.textContent?el.textContent.trim().replace(/^@/,''):'';return username?'auralis_presence_status:'+username.toLowerCase():'';};
+ const ghostEnabled=()=>{const key=accountKey();return !!key&&localStorage.getItem(key)==='ghost';};
+ localStorage.removeItem('auralis_presence_status');
  const currentStatus=()=>ghostEnabled()?'ghost':(navigator.onLine?'online':'offline');
  function renderAuralisStatusIcon(key){
   const common='class="auralis-status-icon status-'+key+'" viewBox="0 0 48 48" role="img" aria-hidden="true"';
@@ -10498,10 +10504,10 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   window.dispatchEvent(new CustomEvent('auralis:presence-change',{detail:{status,label:item.label}}));
  }
  window.auralisGetPresenceStatus=currentStatus;
- window.auralisSetGhostMode=function(enabled){if(enabled)localStorage.setItem('auralis_presence_status','ghost');else localStorage.removeItem('auralis_presence_status');syncStatus();};
+ window.auralisSetGhostMode=function(enabled){const key=accountKey();if(!key)return;if(enabled)localStorage.setItem(key,'ghost');else localStorage.removeItem(key);syncStatus();};
  window.auralisSetPresenceStatus=(next)=>window.auralisSetGhostMode(next==='ghost');
  window.toggleGhostFromProfile=()=>window.auralisSetGhostMode(!ghostEnabled());
- window.addEventListener('online',syncStatus);window.addEventListener('offline',syncStatus);
+ window.addEventListener('online',syncStatus);window.addEventListener('offline',syncStatus);window.addEventListener('auralis:account-change',syncStatus);
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncStatus,{once:true});else syncStatus();
  const sub=document.getElementById('meLoginSub');
  if(sub)new MutationObserver(()=>{const item=LABELS[currentStatus()];if(sub.textContent!==item.label){sub.textContent=item.label;sub.style.color=item.color}}).observe(sub,{childList:true,characterData:true,subtree:true});
