@@ -1,6 +1,6 @@
 {
   "name": "auralis-desktop",
-  "version": "3.5.8",
+  "version": "3.5.9",
   "description": "Auralis 3.5.4 — chat and avatar editor",
   "main": "electron-main.js",
   "scripts": {
