@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.3",
-  "description": "Auralis 3.6.3 — group member context menu",
+  "version": "3.6.4",
+  "description": "Auralis 3.6.4 — branded icon and empty chat header fixes",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",

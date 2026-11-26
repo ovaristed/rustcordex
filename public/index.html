@@ -10702,12 +10702,11 @@ body.auralis-no-active-chat #emojiBar,
 body.auralis-no-active-chat #gifPicker { display:none !important; }
 #messages > .empty-chat { display:flex !important; flex-direction:column; align-items:center; justify-content:center; gap:13px; }
 #messages > .empty-chat::before { content:none !important; display:none !important; }
-body.auralis-no-active-chat .sidebar .panel-body::after {
-  content:"?"; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-  display:grid; place-items:center; width:54px; height:54px; border-radius:17px;
-  color:#fff; background:var(--accent); box-shadow:0 8px 24px rgba(var(--accent-rgb),.22);
-  font-size:32px; line-height:1; font-weight:650; pointer-events:none; z-index:0;
-}
+/* The empty-state question mark belongs to #peerAv in the chat header, never the chat list. */
+#peerAv { flex:0 0 42px !important; width:42px !important; height:42px !important; display:flex !important; align-items:center !important; justify-content:center !important; position:relative !important; z-index:2 !important; }
+.chat-header .peer-info { display:flex !important; flex-direction:row !important; align-items:center !important; gap:12px !important; }
+.chat-header .peer-info > #peerAv { order:0 !important; align-self:center !important; }
+.chat-header .peer-info > div:not(#peerAv) { order:1 !important; min-width:0 !important; }
 /* Sticker artwork uses one transparent, fixed-size canvas in every picker and message. */
 .msg-sticker-big { width:128px !important; height:128px !important; display:grid !important; place-items:center !important; font-size:82px !important; line-height:1 !important; background:transparent !important; border:0 !important; box-shadow:none !important; filter:none !important; padding:0 !important; }
 .msg-sticker-big img { display:block !important; width:128px !important; height:128px !important; max-width:128px !important; max-height:128px !important; object-fit:contain !important; background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; filter:none !important; }
@@ -11511,11 +11510,11 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 #settingsModal .s-section { border-top:0 !important; }
 #settingsModal .modal-card .settings-tabs { outline:0 !important; }
 body.auralis-no-active-chat .sidebar .panel-body { position:relative !important; }
-body.auralis-no-active-chat .sidebar .panel-body::after { opacity:.82; }
+body.auralis-no-active-chat .sidebar .panel-body::after { content:none !important; display:none !important; }
 </style>
 
 <style id="auralis-members-ui">
-body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:50%!important;transform:translateX(-50%)!important}
+
 .msg:has(.msg-sticker-big) .msg-bubble,.msg.sticker-only .msg-bubble{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;min-width:0!important}
 .group-members-backdrop{position:fixed;inset:0;z-index:170;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.56);backdrop-filter:blur(8px)}
 .group-members-card{width:min(390px,100%);max-height:min(650px,90vh);overflow:auto;padding:14px;border:1px solid var(--border);border-radius:20px;background:var(--glass-solid);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.42)}

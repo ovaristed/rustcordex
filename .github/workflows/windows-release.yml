@@ -52,11 +52,16 @@ jobs:
           }
           throw "npm install failed after $maxAttempts attempts."
 
-      - name: Prepare Windows installer artwork
+      - name: Install SVG artwork renderer
+        run: npm install --no-save --no-package-lock --prefer-offline --no-audit --no-fund sharp
+
+      - name: Prepare Windows installer artwork from Auralis logo
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force -Path "build" | Out-Null
+          node -e "require('sharp')('build/auralis-icon.svg').resize(512,512).png().toFile('build/auralis-icon.png').then(()=>console.log('Auralis logo rendered'))"
           Add-Type -AssemblyName System.Drawing
-          $source = [System.Drawing.Image]::FromFile((Join-Path $PWD "build/icon.png.jpg"))
+          $source = [System.Drawing.Image]::FromFile((Join-Path $PWD "build/auralis-icon.png"))
           try {
             $iconBitmap = New-Object System.Drawing.Bitmap(256, 256)
             $graphics = [System.Drawing.Graphics]::FromImage($iconBitmap)
