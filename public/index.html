@@ -11428,13 +11428,19 @@ body.auralis-no-active-chat .sidebar .panel-body::after { opacity:.82; }
 <style id="auralis-members-ui">
 body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:50%!important;transform:translateX(-50%)!important}
 .msg:has(.msg-sticker-big) .msg-bubble,.msg.sticker-only .msg-bubble{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important;min-width:0!important}
-.group-members-backdrop{position:fixed;inset:0;z-index:170;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.66);backdrop-filter:blur(8px)}
-.group-members-card{width:min(470px,100%);max-height:90vh;overflow:auto;padding:18px;border:1px solid var(--border);border-radius:18px;background:var(--glass-solid);color:var(--text)}
-.group-members-head,.group-members-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.group-members-row{padding:10px 0;border-top:1px solid var(--border)}
-.group-members-name{flex:1;min-width:0;font-size:13px;overflow-wrap:anywhere}
-.group-members-actions{display:flex;flex-wrap:wrap;gap:5px}
-.group-members-actions button{font-size:11px;padding:5px 8px}
+.group-members-backdrop{position:fixed;inset:0;z-index:170;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.56);backdrop-filter:blur(8px)}
+.group-members-card{width:min(390px,100%);max-height:min(650px,90vh);overflow:auto;padding:14px;border:1px solid var(--border);border-radius:20px;background:var(--glass-solid);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.42)}
+.group-members-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 12px}
+.group-members-heading{display:flex;align-items:center;gap:9px;font-size:15px}
+.group-members-count{display:grid;place-items:center;min-width:23px;height:23px;padding:0 7px;border-radius:999px;background:rgba(var(--accent-rgb),.16);color:var(--accent);font-size:11px;font-weight:750}
+.group-members-hint{padding:0 3px 10px;color:var(--muted);font-size:11px}
+.group-members-list{display:flex;flex-direction:column;gap:5px}
+.group-member-row{width:100%;min-height:58px;padding:8px 10px;cursor:default}
+.group-member-row .item-left{min-width:0;flex:1}
+.group-member-row .avatar{flex:0 0 38px;width:38px;height:38px}
+.group-member-info{min-width:0;flex:1}
+.group-member-info .item-name,.group-member-info .item-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-member-context{min-width:205px}
 @media(max-width:760px){.group-members-backdrop{align-items:flex-end;padding:0}.group-members-card{width:100%;max-height:86dvh;border-radius:22px 22px 0 0}}
 </style>
 <script id="auralis-group-members-actions">
@@ -11443,26 +11449,78 @@ body.auralis-no-active-chat .sidebar .panel-body::after{top:14px!important;left:
  var og=window.openGroupChat,od=window.openChat;
  if(og)window.openGroupChat=async function(){var r=await og.apply(this,arguments);sync();return r;};
  if(od)window.openChat=async function(){var r=await od.apply(this,arguments);sync();return r;};
- async function logGroupMemberAction(action,username){
-  try{
-   var r=await fetch('/api/groups/'+encodeURIComponent(activeChat.id)+'/audit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:action,username:username})});
-   if(!r.ok){var d=await r.json().catch(function(){return {};});showToast(d.error||'Не удалось записать действие в чат','error');}
-  }catch(e){showToast('Не удалось записать действие в чат','error');}
+ var friendSet=new Set(),menu=null;
+ function isOwner(group){return !!(group&&group.owner&&me&&String(group.owner).toLowerCase()===String(me.username).toLowerCase());}
+ function closeMenu(){if(menu){menu.remove();menu=null;}document.removeEventListener('pointerdown',outside,true);document.removeEventListener('keydown',escape);}
+ function outside(e){if(menu&&!menu.contains(e.target))closeMenu();}
+ function escape(e){if(e.key==='Escape')closeMenu();}
+ function showMenu(ev,username,group,back){
+  ev.preventDefault();closeMenu();
+  menu=document.createElement('div');menu.className='group-ctx-menu group-member-context';
+  var title=document.createElement('div');title.className='group-ctx-title';title.textContent=displayNameOf(username)+'  ·  @'+username;menu.append(title);
+  function item(label,fn,danger){var b=document.createElement('button');b.type='button';b.className='group-ctx-btn'+(danger?' danger':'');b.textContent=label;b.onclick=async function(){closeMenu();await fn();};menu.append(b);}
+  if(username!==me.username){
+   item(friendSet.has(username)?'Удалить из друзей':'Добавить в друзья',async function(){
+    var remove=friendSet.has(username),r=await fetch(remove?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:username})}),d=await r.json().catch(function(){return {};});
+    if(!r.ok){showToast(d.error||'Не удалось изменить друзей','error');return;}
+    if(remove)friendSet.delete(username);else friendSet.add(username);
+    await logGroupMemberAction(remove?'friend-removed':'friend-added',username);refreshSocial();renderRows();
+   });
+   item(isUserBlocked(username)?'Разблокировать':'Заблокировать',async function(){
+    var was=isUserBlocked(username);ctxTargetUser=username;toggleCtxBlockUser();await logGroupMemberAction(was?'unblocked':'blocked',username);renderRows();
+   });
+   if(isOwner(group)){var sep=document.createElement('div');sep.className='group-ctx-sep';menu.append(sep);
+    item('Удалить из группы',async function(){
+     if(!confirm('Удалить @'+username+' из группы?'))return;
+     var r=await fetch('/api/groups/'+encodeURIComponent(group.id)+'/members/'+encodeURIComponent(username)+'/remove',{method:'POST',headers:{Authorization:'Bearer '+token}}),d=await r.json().catch(function(){return {};});
+     if(!r.ok){showToast(d.error||'Не удалось удалить участника','error');return;}
+     if(d.group)upsertGroup(d.group);showToast('@'+username+' удалён из группы');back.remove();openGroupMembers();
+    },true);
+   }
+  }else{var own=document.createElement('div');own.className='group-ctx-title';own.textContent='Это вы';menu.append(own);}
+  document.body.append(menu);
+  var x=Math.min(ev.clientX,window.innerWidth-menu.offsetWidth-8),y=Math.min(ev.clientY,window.innerHeight-menu.offsetHeight-8);
+  menu.style.left=Math.max(8,x)+'px';menu.style.top=Math.max(8,y)+'px';
+  setTimeout(function(){document.addEventListener('pointerdown',outside,true);document.addEventListener('keydown',escape);},0);
  }
- window.openGroupMembers=async function(){
+ async function logGroupMemberAction(action,username){
+  try{var r=await fetch('/api/groups/'+encodeURIComponent(activeChat.id)+'/audit',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({action:action,username:username})});if(!r.ok){var d=await r.json().catch(function(){return {};});showToast(d.error||'Не удалось записать действие в чат','error');}}
+  catch(e){showToast('Не удалось записать действие в чат','error');}
+ }
+ window.openGroupMembers=function(){
   var chat=activeChat;if(!chat||chat.kind!=='group')return;var group=getGroupById(chat.id);if(!group)return;
   var old=document.getElementById('groupMembersBackdrop');if(old)old.remove();
   var back=document.createElement('div');back.id='groupMembersBackdrop';back.className='group-members-backdrop';
   var card=document.createElement('div');card.className='group-members-card';
-  var head=document.createElement('div');head.className='group-members-head';var h=document.createElement('b');h.textContent='Участники группы';var close=document.createElement('button');close.className='sm-btn';close.textContent='Закрыть';close.onclick=function(){back.remove();};head.append(h,close);card.append(head);
-  var fr=await fetch('/api/friends',{headers:{Authorization:'Bearer '+token}});var fd=fr.ok?await fr.json():{friends:[]};var fs=new Set((fd.friends||[]).map(function(x){return x.username;}));
-  (group.members||[]).forEach(function(u){var row=document.createElement('div');row.className='group-members-row';var nm=document.createElement('div');nm.className='group-members-name';nm.textContent=displayNameOf(u)+' (@'+u+')';var acts=document.createElement('div');acts.className='group-members-actions';
-   if(u!==me.username){var fbtn=document.createElement('button');fbtn.className='sm-btn';fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';fbtn.onclick=async function(){var yes=fs.has(u);var r=await fetch(yes?'/api/friends/remove':'/api/friends/request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({username:u})});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось изменить друзей','error');return;}await logGroupMemberAction(yes?'friend-removed':'friend-added',u);if(yes)fs.delete(u);else fs.add(u);fbtn.textContent=fs.has(u)?'Удалить из друзей':'Добавить в друзья';refreshSocial();};acts.append(fbtn);
-    var bl=document.createElement('button');bl.className='sm-btn';bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';bl.onclick=async function(){var was=isUserBlocked(u);ctxTargetUser=u;toggleCtxBlockUser();bl.textContent=isUserBlocked(u)?'Разблокировать':'Заблокировать';await logGroupMemberAction(was?'unblocked':'blocked',u);};acts.append(bl);
-    if(group.owner===me.username){var rm=document.createElement('button');rm.className='sm-btn';rm.textContent='Удалить из группы';rm.onclick=async function(){if(!confirm('Удалить @'+u+' из группы?'))return;var r=await fetch('/api/groups/'+encodeURIComponent(group.id)+'/members/'+encodeURIComponent(u)+'/remove',{method:'POST',headers:{Authorization:'Bearer '+token}});var d=await r.json().catch(function(){return {};});if(!r.ok){showToast(d.error||'Не удалось удалить участника','error');return;}if(d.group)upsertGroup(d.group);showToast('@'+u+' удалён из группы');back.remove();openGroupMembers();};acts.append(rm);}
-   }row.append(nm,acts);card.append(row);
-  });
-  back.onclick=function(e){if(e.target===back)back.remove();};back.append(card);document.body.append(back);
+  var head=document.createElement('div');head.className='group-members-head';
+  var heading=document.createElement('div');heading.className='group-members-heading';
+  var h=document.createElement('b');h.textContent='Участники';
+  var count=document.createElement('span');count.className='group-members-count';count.textContent=String((group.members||[]).length);
+  heading.append(h,count);
+  var close=document.createElement('button');close.type='button';close.className='sm-btn';close.textContent='Закрыть';close.onclick=function(){closeMenu();back.remove();};
+  head.append(heading,close);card.append(head);
+  var hint=document.createElement('div');hint.className='group-members-hint';hint.textContent='Нажми правой кнопкой на участника, чтобы открыть действия';card.append(hint);
+  var list=document.createElement('div');list.className='group-members-list';card.append(list);
+  function renderRows(){
+   list.innerHTML='';
+   (group.members||[]).forEach(function(u){
+    var row=document.createElement('div');row.className='list-item group-member-row';
+    var left=document.createElement('div');left.className='item-left';
+    var av=document.createElement('div');av.className='avatar profile-open-target';av.innerHTML=renderAvatarHtml(u);av.onclick=function(e){e.stopPropagation();openUserProfile(u);};
+    var info=document.createElement('div');info.className='group-member-info';
+    var name=document.createElement('div');name.className='item-name';name.textContent=displayNameOf(u)+(isOwner(group)&&String(group.owner).toLowerCase()===String(u).toLowerCase()?'  ·  Создатель':'');
+    var login=document.createElement('div');login.className='item-sub';login.textContent='@'+u+(isUserBlocked(u)?' · Заблокирован':'');
+    info.append(name,login);left.append(av,info);row.append(left);
+    row.addEventListener('contextmenu',function(e){showMenu(e,u,group,back);});
+    row.addEventListener('click',function(e){if(!e.target.closest('button'))openUserProfile(u);});
+    list.append(row);
+   });
+   if(!(group.members||[]).length){var empty=document.createElement('div');empty.className='item-sub';empty.style.padding='10px 4px';empty.textContent='В группе пока нет участников';list.append(empty);}
+  }
+  renderRows();
+  back.onclick=function(e){if(e.target===back){closeMenu();back.remove();}};
+  back.append(card);document.body.append(back);
+  fetch('/api/friends',{headers:{Authorization:'Bearer '+token}}).then(function(fr){return fr.ok?fr.json():{friends:[]};}).then(function(fd){friendSet=new Set((fd.friends||[]).map(function(x){return x.username;}));}).catch(function(){friendSet=new Set();});
  };
  sync();
 })();
