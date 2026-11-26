@@ -10921,3 +10921,26 @@ body.android-md3 .modal-card,body.android-md3 .incoming-card,body.android-md3 .a
 }
 </style>
 
+
+
+<style id="auralis-restore-full-android-sidebar">
+<!-- Restore the full-width Android sidebar navigation -->
+@media(max-width:760px){
+  body.android-md3 #auralisMobileRail{display:none!important}
+  body.android-md3 #app{display:block!important;position:relative!important;width:100%!important;height:100%!important;overflow:hidden!important}
+  body.android-md3 #app>.sidebar{
+    position:absolute!important;inset:0!important;left:0!important;right:0!important;top:0!important;bottom:0!important;
+    display:flex!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+    padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom))!important;
+    border:0!important;border-radius:0!important;overflow:hidden!important
+  }
+  body.android-md3 #app>.main{
+    position:absolute!important;inset:0!important;left:0!important;right:0!important;top:0!important;bottom:0!important;
+    display:none!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important
+  }
+  body.android-md3 #app .top-tabs{display:flex!important;visibility:visible!important;opacity:1!important}
+  body.android-md3.mobile-chat-open #app>.sidebar{display:none!important}
+  body.android-md3.mobile-chat-open #app>.main{display:flex!important}
+  body.android-md3.mobile-chat-open #auralisMobileRail{display:none!important}
+}
+</style>
