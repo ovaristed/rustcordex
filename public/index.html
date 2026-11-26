@@ -10413,6 +10413,95 @@ html[data-theme="glasscord"] .call-stage .call-state-badge.deaf {
   else init();
 })();
 </script>
+<style id="auralis-android-sidebar-account-status-2538">
+@media(max-width:760px){
+ body.android-md3 #auralisMobileRail .auralis-rail-account-btn{min-height:54px}
+ body.android-md3 #auralisMobileRail .auralis-rail-account-btn svg{width:20px;height:20px}
+ body.android-md3 #auralisMobileRail .auralis-rail-account-btn.auralis-logout{color:#ff6961}
+ body.android-md3 #auralisMobileRail .auralis-rail-account-btn.auralis-status{color:var(--green)}
+ body.android-md3 #auralisMobileRail .auralis-status-menu{
+  position:absolute;left:calc(100% + 8px);bottom:74px;z-index:60;width:190px;padding:7px;
+  border:1px solid var(--android-outline);border-radius:14px;background:var(--android-surface-2);
+  box-shadow:0 12px 32px rgba(0,0,0,.38);display:flex;flex-direction:column;gap:3px
+ }
+ body.android-md3 #auralisMobileRail .auralis-status-menu button{
+  width:100%;min-height:40px;padding:8px 10px;border:0;border-radius:9px;background:transparent;
+  color:var(--android-on-surface);text-align:left;font:600 12px inherit
+ }
+ body.android-md3 #auralisMobileRail .auralis-status-menu button.active{background:var(--android-surface-3)}
+ body.android-md3 #app .bottom-dock .user-bar .item-actions{display:none!important}
+ body.android-md3 #app #meLoginSub{font-size:10.5px!important}
+}
+</style>
+<script id="auralis-android-sidebar-account-status-runtime-2538">
+(function(){
+ const STATUSES={
+  online:{label:'В сети',color:'#30d158'},
+  idle:{label:'Не активен',color:'#f0b232'},
+  dnd:{label:'Не беспокоить',color:'#ff453a'},
+  invisible:{label:'Невидимый',color:'#9298a5'}
+ };
+ function init(){
+  if(!document.body.classList.contains('android-md3'))return;
+  const rail=document.getElementById('auralisMobileRail');
+  if(!rail||rail.dataset.accountStatusReady==='1')return;
+  rail.dataset.accountStatusReady='1';
+  const oldActions=document.querySelector('.bottom-dock .user-bar .item-actions');
+  if(oldActions)oldActions.remove();
+  let status=localStorage.getItem('auralis_presence_status')||'online';
+  if(!STATUSES[status])status='online';
+  const spacer=rail.querySelector('.auralis-rail-spacer');
+  const footer=document.createElement('div');
+  footer.className='auralis-rail-divider';
+  rail.insertBefore(footer,spacer);
+  const statusBtn=document.createElement('button');
+  statusBtn.type='button';statusBtn.className='auralis-rail-btn auralis-rail-account-btn auralis-status';
+  statusBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Статус</span>';
+  const settings=document.createElement('button');
+  settings.type='button';settings.className='auralis-rail-btn auralis-rail-account-btn';
+  settings.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5v.2h-4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1-2.8-2.8.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3v-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1 2.8-2.8.1.1a1.7 1.7 0 0 0 1.8.3 1.7 1.7 0 0 0 1-1.5V3h4v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1 2.8 2.8-.1.1a1.7 1.7 0 0 0-.3 1.8 1.7 1.7 0 0 0 1.5 1h.2v4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Настройки</span>';
+  settings.addEventListener('click',()=>{if(typeof window.openSettings==='function')window.openSettings()});
+  const logout=document.createElement('button');
+  logout.type='button';logout.className='auralis-rail-btn auralis-rail-account-btn auralis-logout';
+  logout.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg><span>Выйти</span>';
+  logout.addEventListener('click',()=>{if(typeof window.logout==='function')window.logout()});
+  const menu=document.createElement('div');menu.className='auralis-status-menu hidden';
+  Object.entries(STATUSES).forEach(([key,item])=>{
+   const option=document.createElement('button');option.type='button';option.dataset.status=key;
+   option.textContent=(key==='dnd'?'⛔ ':key==='idle'?'◷ ':key==='invisible'?'◌ ':'● ')+item.label;
+   option.addEventListener('click',()=>setStatus(key));menu.appendChild(option);
+  });
+  statusBtn.addEventListener('click',()=>menu.classList.toggle('hidden'));
+  rail.append(statusBtn,settings,logout,menu);
+  function setStatus(next){
+   status=next;localStorage.setItem('auralis_presence_status',status);
+   menu.classList.add('hidden');
+   const sub=document.getElementById('meLoginSub');
+   if(sub){sub.textContent=STATUSES[status].label;sub.style.color=STATUSES[status].color}
+   statusBtn.style.color=STATUSES[status].color;
+   menu.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.status===status));
+   document.body.dataset.auralisPresence=status;
+  }
+  window.auralisGetPresenceStatus=()=>status;
+  setStatus(status);
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
+})();
+</script>
+<script id="auralis-do-not-disturb-notification-guard-2538">
+(function(){
+ const blocked=()=>document.body&&document.body.dataset.auralisPresence==='dnd';
+ const wrap=(name)=>{
+  const original=window[name];
+  if(typeof original!=='function'||original.__auralisDndGuard)return;
+  const guarded=function(){if(blocked())return;return original.apply(this,arguments)};
+  guarded.__auralisDndGuard=true;window[name]=guarded;
+ };
+ function install(){wrap('notifyDesktop');wrap('playNotificationSound');}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+</script>
+
 <style id="auralis-android-motion-and-nav-fix-2538">
 @media(max-width:760px){
   body.android-md3 #auralisMobileRail{z-index:30;touch-action:pan-y}
