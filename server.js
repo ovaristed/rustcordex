@@ -83,6 +83,16 @@ async function initDb() {
     );
   `);
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS group_reactions (
+      id BIGSERIAL PRIMARY KEY,
+      message_id INTEGER NOT NULL REFERENCES group_messages(id) ON DELETE CASCADE,
+      username TEXT NOT NULL,
+      emoji TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      UNIQUE (message_id, username, emoji)
+    );
+  `);
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS dm_pins (
       message_id INTEGER PRIMARY KEY REFERENCES direct_messages(id) ON DELETE CASCADE,
       pinned_by TEXT NOT NULL,
@@ -954,12 +964,20 @@ app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
                 WHEN left(rp.text, 10) = '__VOICE__:' THEN 'Голосовое сообщение'
                 WHEN left(rp.text, 9) = '__CALL__:' THEN 'Звонок'
                 ELSE left(rp.text, 120)
-              END AS reply_text
+              END AS reply_text,
+              COALESCE(gr.reactions, '[]'::json) AS reactions
        FROM (
          SELECT * FROM group_messages WHERE group_id = $1 ORDER BY id DESC LIMIT 100
        ) t LEFT JOIN group_messages rp ON rp.id = t.reply_to_id AND rp.group_id = t.group_id
+       LEFT JOIN LATERAL (
+         SELECT json_agg(json_build_object('emoji', x.emoji, 'count', x.cnt, 'mine', x.mine) ORDER BY x.first_at) AS reactions
+         FROM (
+           SELECT emoji, COUNT(*)::int AS cnt, bool_or(username = $2) AS mine, MIN(created_at) AS first_at
+           FROM group_reactions WHERE message_id = t.id GROUP BY emoji
+         ) x
+       ) gr ON TRUE
        ORDER BY t.id ASC`,
-      [groupId]
+      [groupId, req.user.username]
     );
     res.json(r.rows);
   } catch (err) {
@@ -1331,6 +1349,32 @@ wss.on('connection', (ws) => {
         sendToUser(sender, payload);
         sendToUser(recipient, payload);
       } catch (err) { console.error('DM reaction error:', err); }
+      return;
+    }
+
+    // Реакции в групповых сообщениях.
+    if (data.type === 'group-reaction') {
+      const id = Number(data.id);
+      const groupId = String(data.groupId || '').trim();
+      const emoji = String(data.emoji || '');
+      const allowed = new Set(['👍','❤️','😂','🔥','😮','😢','👏','🎉','🤔','👀']);
+      if (!Number.isInteger(id) || id < 1 || !groupId || !allowed.has(emoji)) return;
+      try {
+        if (!(await isGroupMember(groupId, ws.username))) return;
+        const msg = await pool.query('SELECT id FROM group_messages WHERE id = $1 AND group_id = $2', [id, groupId]);
+        if (!msg.rows.length) return;
+        const existing = await pool.query('SELECT id FROM group_reactions WHERE message_id = $1 AND username = $2 AND emoji = $3', [id, ws.username, emoji]);
+        if (existing.rows.length) await pool.query('DELETE FROM group_reactions WHERE message_id = $1 AND username = $2 AND emoji = $3', [id, ws.username, emoji]);
+        else await pool.query('INSERT INTO group_reactions (message_id, username, emoji) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [id, ws.username, emoji]);
+        const members = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
+        const grouped = await pool.query(
+          `SELECT emoji, COUNT(*)::int AS count, bool_or(username = $2) AS mine
+           FROM group_reactions WHERE message_id = $1 GROUP BY emoji ORDER BY MIN(created_at)`,
+          [id, ws.username]
+        );
+        const payload = { type: 'group-reaction-updated', groupId, id, reactions: grouped.rows };
+        for (const member of members.rows) sendToUser(member.username, payload);
+      } catch (err) { console.error('Group reaction error:', err); }
       return;
     }
 
