@@ -551,7 +551,14 @@ app.patch('/api/presence', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'Не удалось обновить статус' });
   }
 });
+function setPrivateRevalidation(res) {
+  // Cache only in the signed-in browser and revalidate before reuse.
+  res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+  res.setHeader('Vary', 'Authorization');
+}
+
 app.get('/api/friends', authMiddleware, async (req, res) => {
+  setPrivateRevalidation(res);
   try {
     const meName = req.user.username;
     const rows = await pool.query(
@@ -568,7 +575,14 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
     const profByName = new Map(profRows.rows.map((r) => [r.username, r]));
 
     const lastRows = await pool.query(
-      `SELECT DISTINCT ON (peer) peer, text FROM (
+      `SELECT DISTINCT ON (peer) peer,
+              CASE
+                WHEN left(text, 9) = '__FILE__:' THEN '📎 Файл'
+                WHEN left(text, 10) = '__VOICE__:' THEN 'Голосовое сообщение'
+                WHEN left(text, 9) = '__CALL__:' THEN 'Звонок'
+                ELSE left(text, 120)
+              END AS text
+       FROM (
          SELECT CASE WHEN sender = $1 THEN recipient ELSE sender END AS peer, text, id
          FROM direct_messages
          WHERE (sender = $1 AND recipient = ANY($2::text[])) OR (recipient = $1 AND sender = ANY($2::text[]))
@@ -711,12 +725,20 @@ app.delete('/api/dm', authMiddleware, async (req, res) => {
 });
 
 app.get('/api/dm', authMiddleware, async (req, res) => {
+  setPrivateRevalidation(res);
   try {
     const meName = req.user.username;
     const peer = String(req.query.peer || '').trim();
     const r = await pool.query(
       `SELECT t.id, t.sender, t.recipient, t.text, t.created_at, t.edited_at, t.reply_to_id,
-              rp.sender AS reply_sender, rp.text AS reply_text
+              rp.sender AS reply_sender,
+              CASE
+                WHEN rp.text IS NULL THEN NULL
+                WHEN left(rp.text, 9) = '__FILE__:' THEN '📎 Файл'
+                WHEN left(rp.text, 10) = '__VOICE__:' THEN 'Голосовое сообщение'
+                WHEN left(rp.text, 9) = '__CALL__:' THEN 'Звонок'
+                ELSE left(rp.text, 120)
+              END AS reply_text
        FROM (
          SELECT id, sender, recipient, text, created_at, edited_at, reply_to_id FROM direct_messages
          WHERE (sender = $1 AND recipient = $2) OR (sender = $2 AND recipient = $1)
@@ -763,7 +785,13 @@ async function loadGroup(groupId) {
     [groupId]
   );
   const last = await pool.query(
-    'SELECT text FROM group_messages WHERE group_id = $1 ORDER BY id DESC LIMIT 1',
+    `SELECT CASE
+       WHEN left(text, 9) = '__FILE__:' THEN '📎 Файл'
+       WHEN left(text, 10) = '__VOICE__:' THEN 'Голосовое сообщение'
+       WHEN left(text, 9) = '__CALL__:' THEN 'Звонок'
+       ELSE left(text, 120)
+     END AS text
+     FROM group_messages WHERE group_id = $1 ORDER BY id DESC LIMIT 1`,
     [groupId]
   );
   const profiles = {};
@@ -791,6 +819,7 @@ async function existingUsernames(names) {
 }
 
 app.get('/api/groups', authMiddleware, async (req, res) => {
+  setPrivateRevalidation(res);
   try {
     const ids = await pool.query('SELECT group_id FROM group_members WHERE username = $1', [req.user.username]);
     const groups = [];
@@ -864,6 +893,7 @@ app.post('/api/groups/:id/invite', authMiddleware, async (req, res) => {
 });
 
 app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
+  setPrivateRevalidation(res);
   try {
     const groupId = String(req.params.id);
     if (!(await isGroupMember(groupId, req.user.username))) {
@@ -871,7 +901,14 @@ app.get('/api/groups/:id/messages', authMiddleware, async (req, res) => {
     }
     const r = await pool.query(
       `SELECT t.id, t.group_id AS "groupId", t.sender, t.text, t.created_at, t.edited_at, t.reply_to_id,
-              rp.sender AS reply_sender, rp.text AS reply_text
+              rp.sender AS reply_sender,
+              CASE
+                WHEN rp.text IS NULL THEN NULL
+                WHEN left(rp.text, 9) = '__FILE__:' THEN '📎 Файл'
+                WHEN left(rp.text, 10) = '__VOICE__:' THEN 'Голосовое сообщение'
+                WHEN left(rp.text, 9) = '__CALL__:' THEN 'Звонок'
+                ELSE left(rp.text, 120)
+              END AS reply_text
        FROM (
          SELECT * FROM group_messages WHERE group_id = $1 ORDER BY id DESC LIMIT 100
        ) t LEFT JOIN group_messages rp ON rp.id = t.reply_to_id AND rp.group_id = t.group_id
