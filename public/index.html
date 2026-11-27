@@ -6535,7 +6535,7 @@ const THEMES = {
   },
   emerald: {
     bg: '#071525', panelRgb: '17, 34, 53', accent: '#b9e8ff',
-    glow2: 'rgba(111, 190, 255, 0.22)', wallpaper: 'none',
+    glow2: 'rgba(111, 190, 255, 0.22)', wallpaper: "url('/auralis-christmas-bg.jpg')",
     overlay: 'rgba(5, 15, 28, 0.20)', panelAlpha: 0.18, effect: 'none'
   },
   violet: {
@@ -6600,9 +6600,8 @@ function applyTheme(name) {
     if (presetGlass[valid]) writeDesktopThemeSettings(presetGlass[valid]);
   }
   document.documentElement.style.setProperty('--bg', t.bg);
-  const desktopThemeVisuals = !(window.matchMedia && window.matchMedia('(max-width: 760px)').matches);
-  const themeWallpaperEnabled = desktopThemeVisuals;
-  document.documentElement.style.setProperty('--theme-wallpaper', themeWallpaperEnabled ? 'none' : (t.wallpaper || 'none'));
+  const themeWallpaperEnabled = true;
+  document.documentElement.style.setProperty('--theme-wallpaper', t.wallpaper || 'none');
   if (themeWallpaperEnabled && t.wallpaper && t.wallpaper !== 'none') {
     const wallpaperUrl = t.wallpaper.slice(5, -2);
     if (wallpaperUrl) {
@@ -14053,7 +14052,7 @@ html[data-theme] #authWrap #authSubmit::before,html[data-theme] #authWrap #authS
 <div class="axr-controls"><button id="axrPrev" aria-label="Previous track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5v14M19 6l-10 6 10 6V6Z"/></svg></button><button id="axrPlay" class="axr-play" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z" fill="currentColor" stroke="none"/></svg></button><button id="axrNext" aria-label="Next track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5v14M5 6l10 6-10 6V6Z"/></svg></button></div>
 <div class="axr-volume"><span>-</span><input id="axrVolume" type="range" min="0" max="1" step=".01" value=".8" aria-label="Volume"><span>+</span></div>
 <div class="axr-list-head"><span>Holiday playlist</span><span id="axrCount">06 TRACKS</span></div><div id="axrPlaylist" class="axr-playlist"></div>
-<div class="axr-credits">Offline audio. Kevin MacLeod tracks: CC BY 3.0 / CC BY 4.0. Aviators feat. d.notive, 4Everfreebrony, Liv & Learn and Matthew Mosier - Last Christmas: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), unchanged; source: https://soundoftheaviators.bandcamp.com/track/last-christmas-feat-d-notive-4everfreebrony-liv-learn-and-matthew-mosier. Public-domain downloads: Deck the Halls, Jingle Bells and Silent Night.</div>
+<div class="axr-credits">Auralis Offline Radio ? ??????? ????????? ???????? ? ??????????: ???????????? ?????????????? ???? ? ???????????? ?????? ???????????. ???????? ? MP3-????? ?? ?????????.</div>
 </section><button id="auralisLocalXmasToggle" class="axr-toggle"><span class="axr-star" aria-hidden="true">&#10022;</span></button></div>
 <style id="auralis-local-christmas-radio-style-v1">
 .auralis-xmas-dock{position:fixed;left:24px;top:22px;right:auto;bottom:auto;z-index:99990;font-family:Inter,system-ui,"Segoe UI",sans-serif;color:#f8f4e7}
@@ -14069,18 +14068,29 @@ html:not([data-theme="emerald"]) .auralis-xmas-dock{display:none!important}html[
 </style>
 <script id="AURALIS_LOCAL_CHRISTMAS_RADIO_V1">
 (function(){
-const songs=[
-{title:'Jingle Bells',artist:'Kevin MacLeod - Bright holiday arrangement',file:'/music/jingle-bells-kevin-macleod.mp3'},
-{title:'It Came Upon a Midnight Clear',artist:'Kevin MacLeod - Piano, violin and English horn',file:'/music/it-came-upon-a-midnight-clear.mp3'},{title:'Deck the Halls',artist:'Public-domain Christmas recording',file:'/music/deck-the-halls-public-domain.mp3'},{title:'Jingle Bells',artist:'Public-domain Christmas recording',file:'/music/jingle-bells-public-domain.mp3'},{title:'Silent Night',artist:'Public-domain Christmas recording',file:'/music/silent-night-public-domain.mp3'},{title:'Last Christmas',artist:'Aviators feat. d.notive, 4Everfreebrony, Liv & Learn, Matthew Mosier (CC BY 4.0)',file:'/music/last-christmas-aviators-cc-by.mp3'}];
-const $=id=>document.getElementById(id),audio=$('axrAudio'),panel=$('auralisLocalXmasPanel'),seek=$('axrSeek'),play=$('axrPlay');let index=0,seeking=false;
-const fmt=n=>{n=Math.max(0,Math.floor(Number(n)||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
-function render(){const s=songs[index];$('axrTitle').textContent=s.title;$('axrArtist').textContent=s.artist;$('axrPlaylist').innerHTML=songs.map((x,i)=>'<button class="axr-track '+(i===index?'active':'')+'" data-i="'+i+'"><span class="axr-num">'+(i===index?'&#9835;':String(i+1).padStart(2,'0'))+'</span><span class="axr-track-info"><b></b><small></small></span><span class="axr-track-mark">'+(i===index?'&#9679;':'&#9654;')+'</span></button>').join('');Array.from($('axrPlaylist').querySelectorAll('.axr-track')).forEach((el,i)=>{el.querySelector('b').textContent=songs[i].title;el.querySelector('small').textContent=songs[i].artist;el.addEventListener('click',()=>load(i,true));});$('axrCount').textContent=String(songs.length).padStart(2,'0')+' TRACKS';}
-function state(on){play.innerHTML=on?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 19 12 7 19.5Z"/></svg>';play.setAttribute('aria-label',on?'Pause':'Play');panel.classList.toggle('is-playing',on);$('axrStatus').textContent=on?'NOW PLAYING':'LOCAL AUDIO';}
-function load(i,autoplay){index=(i+songs.length)%songs.length;render();audio.pause();audio.src=songs[index].file;audio.load();seek.value=0;$('axrCurrent').textContent='0:00';$('axrDuration').textContent='0:00';state(false);if(autoplay){const p=audio.play();if(p&&p.catch)p.catch(()=>{$('axrStatus').textContent='PRESS PLAY';});}}
-$('auralisLocalXmasToggle').addEventListener('click',()=>{if(panel.hidden){panel.hidden=false;if(audio.paused){if(!audio.src)load(0,false);const p=audio.play();if(p&&p.catch)p.catch(()=>{$('axrStatus').textContent='PRESS PLAY';});}}else{panel.hidden=true;}});$('axrClose').addEventListener('click',()=>panel.hidden=true);$('axrPrev').addEventListener('click',()=>load(index-1,true));$('axrNext').addEventListener('click',()=>load(index+1,true));
-play.addEventListener('click',()=>{if(audio.paused){if(!audio.src)load(index,false);const p=audio.play();if(p&&p.catch)p.catch(()=>{$('axrStatus').textContent='PLAYBACK ERROR';});}else audio.pause();});
-audio.addEventListener('play',()=>state(true));audio.addEventListener('pause',()=>state(false));audio.addEventListener('ended',()=>load(index+1,true));audio.addEventListener('loadedmetadata',()=>{$('axrDuration').textContent=fmt(audio.duration);});audio.addEventListener('timeupdate',()=>{if(!seeking&&audio.duration){seek.value=Math.round(audio.currentTime/audio.duration*1000);$('axrCurrent').textContent=fmt(audio.currentTime);}});audio.addEventListener('error',()=>{$('axrStatus').textContent='AUDIO FILE MISSING';});
-seek.addEventListener('input',()=>{seeking=true;if(audio.duration)$('axrCurrent').textContent=fmt(audio.duration*Number(seek.value)/1000);});seek.addEventListener('change',()=>{if(audio.duration)audio.currentTime=audio.duration*Number(seek.value)/1000;seeking=false;});$('axrVolume').addEventListener('input',e=>audio.volume=Number(e.target.value));audio.volume=.8;render();load(0,false);
+ const songs=[
+  {title:'Jingle Bells',artist:'Traditional carol ? Auralis winter arrangement',tempo:116,notes:[[76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],[77,1],[77,1],[77,1],[77,1],[77,1],[76,1],[76,1],[76,.5],[76,.5],[74,1],[74,1],[76,1],[74,2],[79,2]]},
+  {title:'It Came Upon a Midnight Clear',artist:'Traditional carol ? Auralis winter arrangement',tempo:82,notes:[[64,2],[67,1],[69,1],[71,2],[72,1],[71,1],[69,2],[67,1],[65,1],[64,2],[62,1],[60,3]]},
+  {title:'Deck the Halls',artist:'Traditional carol ? Auralis winter arrangement',tempo:112,notes:[[79,1],[77,1],[76,1],[74,1],[72,1],[74,1],[76,1],[72,1],[74,1],[76,1],[77,1],[74,1],[76,1],[74,1],[72,1],[71,1],[69,2]]},
+  {title:'Jingle Bells ? Snowfall Mix',artist:'Traditional melody ? Soft bell arrangement',tempo:94,notes:[[72,1],[72,1],[72,2],[72,1],[72,1],[72,2],[72,1],[76,1],[67,1.5],[69,.5],[72,4],[74,1],[74,1],[74,1],[74,1],[74,1],[72,1],[72,1],[72,.5],[72,.5],[69,1],[69,1],[72,1],[69,2],[76,2]]},
+  {title:'Silent Night',artist:'Traditional carol ? Auralis winter arrangement',tempo:76,notes:[[67,3],[69,1],[67,2],[64,4],[67,3],[69,1],[67,2],[64,4],[74,2],[74,2],[71,4],[72,2],[72,2],[67,4]]},
+  {title:'Winter Lights',artist:'Original Auralis instrumental',tempo:88,notes:[[62,1],[66,1],[69,2],[74,2],[73,1],[71,1],[69,2],[66,2],[64,1],[67,1],[71,2],[76,2],[74,1],[71,1],[69,4]]}
+ ];
+ const $=id=>document.getElementById(id),panel=$('auralisLocalXmasPanel'),seek=$('axrSeek'),play=$('axrPlay');
+ let index=0,ctx=null,source=null,gain=null,buffer=null,playing=false,offset=0,startedAt=0,ticker=0,volume=.8;
+ const fmt=n=>{n=Math.max(0,Math.floor(Number(n)||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
+ function addNote(left,right,sr,start,midi,duration,amp,wave){if(!midi)return;const f=440*Math.pow(2,(midi-69)/12),begin=Math.max(0,Math.floor(start*sr)),end=Math.min(left.length,Math.floor((start+duration)*sr)),attack=Math.max(1,.025*sr),release=Math.max(1,.16*sr);for(let i=begin;i<end;i++){const t=(i-begin)/sr,remain=(end-i)/sr,env=Math.min(1,t*sr/attack)*Math.min(1,remain*sr/release),v=wave==='bell'?(Math.sin(2*Math.PI*f*t)+.34*Math.sin(2*Math.PI*f*2.01*t)+.16*Math.sin(2*Math.PI*f*3.98*t)):(Math.sin(2*Math.PI*f*t)+.2*Math.sin(2*Math.PI*f*2*t));const sample=v*env*amp;left[i]+=sample*.72;right[i]+=sample*.68;}}
+ function makeBuffer(song){const sr=22050,beat=60/song.tempo,phraseBeats=song.notes.reduce((n,x)=>n+x[1],0),phrase=phraseBeats*beat,duration=phrase*4,length=Math.ceil(duration*sr),b=ctx.createBuffer(2,length,sr),l=b.getChannelData(0),r=b.getChannelData(1);for(let rep=0;rep<4;rep++){let cursor=rep*phrase;for(const n of song.notes){const d=n[1]*beat;addNote(l,r,sr,cursor,n[0],d*.92,n[0]>=72?.105:.085,'bell');cursor+=d;}}const chords=[[48,52,55],[45,48,52],[41,45,48],[43,47,50]];for(let rep=0;rep<4;rep++)for(let bar=0;bar<4;bar++){const t=(rep*phraseBeats+bar*4)*beat;const chord=chords[(bar+index)%chords.length];for(const note of chord)addNote(l,r,sr,t,note,beat*3.7,.025,'pad');addNote(l,r,sr,t,chord[0]-12,beat*1.8,.055,'pad');addNote(l,r,sr,t+beat*2,chord[0]-12,beat*1.7,.035,'pad');}return b;}
+ function state(on){playing=on;play.innerHTML=on?'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 19 12 7 19.5Z"/></svg>';play.setAttribute('aria-label',on?'Pause':'Play');panel.classList.toggle('is-playing',on);$('axrStatus').textContent=on?'NOW PLAYING':'AURALIS OFFLINE RADIO';if(ticker)clearInterval(ticker);ticker=on?setInterval(updateProgress,200):0;}
+ function updateProgress(){if(!buffer)return;const pos=position();$('axrCurrent').textContent=fmt(pos);$('axrDuration').textContent=fmt(buffer.duration);seek.value=String(Math.round(pos/buffer.duration*1000));if(pos>=buffer.duration-.12){offset=0;stopSource();state(false);$('axrCurrent').textContent='0:00';seek.value='0';}}
+ function position(){return playing&&ctx?Math.min(buffer?.duration||0,offset+ctx.currentTime-startedAt):offset;}
+ function stopSource(){if(source){try{source.onended=null;source.stop();}catch{}source.disconnect();source=null;}}
+ async function start(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('Web Audio ?????????? ? ???? ?????? ??????????.');if(!ctx)ctx=new AC();await ctx.resume();if(!buffer)buffer=makeBuffer(songs[index]);gain=ctx.createGain();gain.gain.value=volume;gain.connect(ctx.destination);source=ctx.createBufferSource();source.buffer=buffer;source.connect(gain);source.start(0,Math.min(offset,buffer.duration-.01));startedAt=ctx.currentTime;state(true);}catch(e){$('axrStatus').textContent='AUDIO ERROR';console.error('[Auralis Radio]',e);}}
+ function pause(){if(playing)offset=position();stopSource();state(false);}
+ function load(i,autoplay){pause();index=(i+songs.length)%songs.length;offset=0;buffer=null;render();$('axrCurrent').textContent='0:00';$('axrDuration').textContent=fmt((songs[index].notes.reduce((n,x)=>n+x[1],0)*60/songs[index].tempo)*4);seek.value='0';if(autoplay)start();}
+ function render(){const s=songs[index];$('axrTitle').textContent=s.title;$('axrArtist').textContent=s.artist;$('axrPlaylist').innerHTML=songs.map((x,i)=>'<button class="axr-track '+(i===index?'active':'')+'" data-i="'+i+'"><span class="axr-num">'+(i===index?'&#9835;':String(i+1).padStart(2,'0'))+'</span><span class="axr-track-info"><b></b><small></small></span><span class="axr-track-mark">'+(i===index?'&#9679;':'&#9654;')+'</span></button>').join('');Array.from($('axrPlaylist').querySelectorAll('.axr-track')).forEach((el,i)=>{el.querySelector('b').textContent=songs[i].title;el.querySelector('small').textContent=songs[i].artist;el.addEventListener('click',()=>load(i,true));});$('axrCount').textContent=String(songs.length).padStart(2,'0')+' TRACKS';}
+ $('auralisLocalXmasToggle').addEventListener('click',()=>{panel.hidden=!panel.hidden;});$('axrClose').addEventListener('click',()=>panel.hidden=true);$('axrPrev').addEventListener('click',()=>load(index-1,true));$('axrNext').addEventListener('click',()=>load(index+1,true));play.addEventListener('click',()=>playing?pause():start());
+ seek.addEventListener('input',()=>{if(buffer)$('axrCurrent').textContent=fmt(buffer.duration*Number(seek.value)/1000);});seek.addEventListener('change',()=>{if(!buffer)return;const wasPlaying=playing;if(wasPlaying)pause();offset=buffer.duration*Number(seek.value)/1000;if(wasPlaying)start();else updateProgress();});$('axrVolume').addEventListener('input',e=>{volume=Number(e.target.value);if(gain)gain.gain.setTargetAtTime(volume,ctx.currentTime,.025);});render();load(0,false);
 })();
 </script>
 
@@ -14540,40 +14550,119 @@ html[data-theme="emerald"] body:has(#settingsModal:not(.hidden)) #desktopUpdateP
 }
 </style>
 
-<style id="auralis-settings-theme-adaptive-v4">
-/* One shared settings glass system; all colors come from active Auralis theme tokens. */
-html[data-theme] #settingsModal{background:color-mix(in srgb,var(--bg) 18%,transparent)!important;backdrop-filter:blur(3px) saturate(1.08)!important;-webkit-backdrop-filter:blur(3px) saturate(1.08)!important}
-html[data-theme] #settingsModal .modal-card{background:linear-gradient(145deg,color-mix(in srgb,var(--bg) 78%,transparent),color-mix(in srgb,rgb(var(--panel-rgb)) 72%,transparent))!important;background-image:radial-gradient(ellipse at 8% 0%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 42%),linear-gradient(145deg,color-mix(in srgb,var(--bg) 72%,transparent),color-mix(in srgb,rgb(var(--panel-rgb)) 76%,transparent))!important;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border))!important;box-shadow:0 28px 90px rgba(0,0,0,.38),0 0 36px color-mix(in srgb,var(--accent) 10%,transparent),inset 0 1px rgba(255,255,255,.12)!important;backdrop-filter:blur(30px) saturate(1.25)!important;-webkit-backdrop-filter:blur(30px) saturate(1.25)!important}
-html[data-theme] #settingsModal .settings-sidebar{background:color-mix(in srgb,var(--bg) 76%,transparent)!important;border-right:1px solid color-mix(in srgb,var(--accent) 17%,var(--border))!important}
-html[data-theme] #settingsModal .settings-user-card{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 17%,transparent),color-mix(in srgb,rgb(var(--panel-rgb)) 48%,transparent))!important;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--border))!important;box-shadow:inset 0 1px rgba(255,255,255,.1),0 8px 24px rgba(0,0,0,.12)!important}
-html[data-theme] #settingsModal .settings-user-meta strong,html[data-theme] #settingsModal .settings-main{color:var(--text)!important}
-html[data-theme] #settingsModal .settings-user-meta span,html[data-theme] #settingsModal .settings-nav-label{color:var(--muted)!important}
-html[data-theme] #settingsModal .settings-nav-btn{color:var(--text)!important;background:color-mix(in srgb,var(--accent) 4%,transparent)!important;border:1px solid transparent!important;border-radius:10px!important}
-html[data-theme] #settingsModal .settings-nav-btn .nav-ico{color:var(--accent)!important}
-html[data-theme] #settingsModal .settings-nav-btn:hover{background:color-mix(in srgb,var(--accent) 12%,transparent)!important;border-color:color-mix(in srgb,var(--accent) 24%,var(--border))!important}
-html[data-theme] #settingsModal .settings-nav-btn.active{color:var(--text)!important;background:color-mix(in srgb,var(--accent) 19%,transparent)!important;border-color:color-mix(in srgb,var(--accent) 42%,var(--border))!important;box-shadow:inset 3px 0 var(--accent),0 5px 16px rgba(0,0,0,.12)!important}
-html[data-theme] #settingsModal .settings-nav-btn.active .nav-ico{color:var(--accent)!important}
-html[data-theme] #settingsModal .settings-page-title{color:var(--text)!important;text-shadow:0 2px 18px color-mix(in srgb,var(--accent) 18%,transparent)!important}
-html[data-theme] #settingsModal .settings-close{color:var(--text)!important;border:1px solid var(--border)!important;background:color-mix(in srgb,var(--accent) 8%,transparent)!important}
-html[data-theme] #settingsModal .s-section>.field,html[data-theme] #settingsModal .s-section>.avatar-edit-row,html[data-theme] #settingsModal .s-section>section.field,html[data-theme] #settingsModal .settings-video-test{border-color:color-mix(in srgb,var(--accent) 17%,var(--border))!important;background:color-mix(in srgb,rgb(var(--panel-rgb)) 22%,transparent)!important}
-html[data-theme] #settingsModal .s-section .lbl{color:var(--text)!important}
-html[data-theme] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme] #settingsModal .s-section select,html[data-theme] #settingsModal .s-section textarea{color:var(--text)!important;background:color-mix(in srgb,var(--bg) 70%,transparent)!important;border:1px solid var(--border)!important}
-html[data-theme] #settingsModal .s-section input[type=range]{accent-color:var(--accent)!important}
-html[data-theme] #settingsModal .s-section .item-sub{color:var(--muted)!important}
-html[data-theme] #settingsModal .s-section button,html[data-theme] #settingsModal .settings-video-actions button{color:var(--text)!important;background:color-mix(in srgb,var(--accent) 17%,var(--panel-rgb))!important;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--border))!important;border-radius:9px!important}
-html[data-theme] #settingsModal .settings-video-test video{background:color-mix(in srgb,var(--bg) 78%,transparent)!important;border:1px solid var(--border)!important}
-#settingsModal .privacy-password-card{padding:22px;border:1px solid var(--border);border-radius:16px;background:color-mix(in srgb,rgb(var(--panel-rgb)) 24%,transparent);box-shadow:inset 0 1px rgba(255,255,255,.06);max-width:620px}
-#settingsModal .privacy-password-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-size:20px;margin-bottom:14px}
-#settingsModal .privacy-password-copy h3{margin:0 0 6px;color:var(--text);font-size:16px}
-#settingsModal .privacy-password-copy p{margin:0 0 18px;color:var(--muted);font-size:12px;line-height:1.5}
+
+<style id="auralis-settings-theme-adaptive-v5">
+/* Auralis settings: opaque theme-native surfaces, never neutral grey glass. */
+#settingsModal .modal-card{border-radius:20px!important;overflow:hidden!important;backdrop-filter:blur(22px) saturate(1.12)!important;-webkit-backdrop-filter:blur(22px) saturate(1.12)!important;box-shadow:0 28px 90px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.075)!important}
+#settingsModal .settings-tabs{border-radius:15px!important;padding:8px!important}
+#settingsModal .s-tab{border-radius:11px!important;min-height:48px!important;font-weight:650!important}
+#settingsModal .s-section .field,#settingsModal .s-section>.avatar-edit-row,#settingsModal .s-section>section.field,#settingsModal .settings-video-test{border-radius:12px!important;padding:14px!important;margin:0 0 9px!important}
+#settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),#settingsModal .s-section select,#settingsModal .s-section textarea{border-radius:9px!important;min-height:38px!important}
+#settingsModal .privacy-password-card{padding:22px;border-radius:15px;max-width:620px}
 #settingsModal .privacy-password-form{display:grid;gap:8px}
-#settingsModal .privacy-password-form label{font-size:12px;font-weight:650;color:var(--text);margin-top:7px}
-#settingsModal .privacy-password-form input{width:100%;box-sizing:border-box;min-height:40px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:color-mix(in srgb,var(--bg) 72%,transparent);color:var(--text);outline:none}
-#settingsModal .privacy-password-form input:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 17%,transparent)}
-#settingsModal .privacy-password-hint{font-size:11px;color:var(--muted);margin:5px 0 8px}
+#settingsModal .privacy-password-form label{font-size:12px;font-weight:650;margin-top:7px}
+#settingsModal .privacy-password-form input{width:100%;box-sizing:border-box;min-height:42px;padding:10px 12px;border-radius:10px;outline:none}
 #settingsModal .privacy-password-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-#settingsModal .privacy-password-actions button{border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));background:var(--accent);color:white;border-radius:10px;padding:10px 16px;font-weight:650;cursor:pointer}
-#settingsModal .privacy-password-actions button:disabled{opacity:.55;cursor:wait}
-#settingsModal #accountPasswordStatus{font-size:12px;color:var(--muted)}#settingsModal #accountPasswordStatus.success{color:#55c98a}#settingsModal #accountPasswordStatus.error{color:#ef7785}
+#settingsModal .privacy-password-actions button{border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
+#settingsModal #accountPasswordStatus{font-size:12px}#settingsModal #accountPasswordStatus.success{color:#55c98a}#settingsModal #accountPasswordStatus.error{color:#ef7785}
+html[data-theme="emerald"] #settingsModal .modal-card{background:linear-gradient(145deg,#102b45 0%,#0b1e33 58%,#091729 100%)!important;border:1px solid rgba(169,214,244,.28)!important}
+html[data-theme="emerald"] #settingsModal .settings-tabs{background:#0b2036!important;border:1px solid rgba(158,207,240,.17)!important}
+html[data-theme="emerald"] #settingsModal .s-tab{color:#b9d1e4!important}
+html[data-theme="emerald"] #settingsModal .s-tab.active{background:linear-gradient(110deg,#244c70,#183954)!important;border-color:#6399c1!important;color:#f2f9ff!important;box-shadow:inset 3px 0 #a9d8f4,0 5px 16px rgba(0,0,0,.22)!important}
+html[data-theme="emerald"] #settingsModal .s-section .field,html[data-theme="emerald"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="emerald"] #settingsModal .s-section>section.field,html[data-theme="emerald"] #settingsModal .settings-video-test{background:#102a43!important;border:1px solid rgba(153,201,234,.15)!important;color:#edf7ff!important}
+html[data-theme="emerald"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="emerald"] #settingsModal .s-section select,html[data-theme="emerald"] #settingsModal .s-section textarea{background:#081a2c!important;border:1px solid #31516c!important;color:#f1f8ff!important}
+html[data-theme="emerald"] #settingsModal .privacy-password-card{background:#102a43;border:1px solid rgba(153,201,234,.22)}
+html[data-theme="violet"] #settingsModal .modal-card{background:linear-gradient(145deg,#2a1027 0%,#1e0d20 58%,#170b1b 100%)!important;border:1px solid rgba(255,120,173,.32)!important;box-shadow:0 28px 90px rgba(0,0,0,.58),0 0 35px rgba(255,80,153,.10),inset 0 1px rgba(255,214,235,.08)!important}
+html[data-theme="violet"] #settingsModal .settings-tabs{background:#1a0c1c!important;border:1px solid rgba(255,120,173,.20)!important}
+html[data-theme="violet"] #settingsModal .s-tab{color:#e6b8d0!important}
+html[data-theme="violet"] #settingsModal .s-tab.active{background:linear-gradient(110deg,#592344,#3a1934)!important;border-color:#a84c7c!important;color:#fff0f7!important;box-shadow:inset 3px 0 #ff78ad,0 5px 16px rgba(0,0,0,.24)!important}
+html[data-theme="violet"] #settingsModal .s-section .field,html[data-theme="violet"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="violet"] #settingsModal .s-section>section.field,html[data-theme="violet"] #settingsModal .settings-video-test{background:#2b1429!important;border:1px solid rgba(255,120,173,.19)!important;color:#fff0f7!important}
+html[data-theme="violet"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="violet"] #settingsModal .s-section select,html[data-theme="violet"] #settingsModal .s-section textarea{background:#190d1b!important;border:1px solid #63304f!important;color:#fff0f7!important}
+html[data-theme="violet"] #settingsModal .s-section .lbl,html[data-theme="violet"] #settingsModal .settings-page-title{color:#ffe5f1!important}
+html[data-theme="violet"] #settingsModal .privacy-password-card{background:#2b1429;border:1px solid rgba(255,120,173,.25)}
+html[data-theme="graphite"] #settingsModal .modal-card{background:linear-gradient(145deg,#25232f 0%,#1b1a24 60%,#15141c 100%)!important;border:1px solid rgba(167,139,250,.30)!important}
+html[data-theme="graphite"] #settingsModal .settings-tabs{background:#191821!important;border:1px solid rgba(167,139,250,.19)!important}
+html[data-theme="graphite"] #settingsModal .s-tab{color:#cbc5df!important}
+html[data-theme="graphite"] #settingsModal .s-tab.active{background:linear-gradient(110deg,#403456,#2d263e)!important;border-color:#7862a8!important;color:#f7f2ff!important;box-shadow:inset 3px 0 #a78bfa,0 5px 16px rgba(0,0,0,.24)!important}
+html[data-theme="graphite"] #settingsModal .s-section .field,html[data-theme="graphite"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="graphite"] #settingsModal .s-section>section.field,html[data-theme="graphite"] #settingsModal .settings-video-test{background:#262431!important;border:1px solid rgba(167,139,250,.17)!important;color:#f4f0ff!important}
+html[data-theme="graphite"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="graphite"] #settingsModal .s-section select,html[data-theme="graphite"] #settingsModal .s-section textarea{background:#17161f!important;border:1px solid #514766!important;color:#f4f0ff!important}
+html[data-theme="graphite"] #settingsModal .privacy-password-card{background:#262431;border:1px solid rgba(167,139,250,.24)}
+html[data-theme="aurora"] #settingsModal .modal-card{background:linear-gradient(145deg,#102b38 0%,#0b202d 60%,#081822 100%)!important;border:1px solid rgba(75,220,205,.29)!important}
+html[data-theme="aurora"] #settingsModal .settings-tabs{background:#091d28!important;border:1px solid rgba(75,220,205,.18)!important}
+html[data-theme="aurora"] #settingsModal .s-tab{color:#b7d9dc!important}
+html[data-theme="aurora"] #settingsModal .s-tab.active{background:linear-gradient(110deg,#1b5960,#16404d)!important;border-color:#3d9d9c!important;color:#eaffff!important;box-shadow:inset 3px 0 #66e7d2,0 5px 16px rgba(0,0,0,.24)!important}
+html[data-theme="aurora"] #settingsModal .s-section .field,html[data-theme="aurora"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="aurora"] #settingsModal .s-section>section.field,html[data-theme="aurora"] #settingsModal .settings-video-test{background:#102b37!important;border:1px solid rgba(75,220,205,.17)!important;color:#eaffff!important}
+html[data-theme="aurora"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="aurora"] #settingsModal .s-section select,html[data-theme="aurora"] #settingsModal .s-section textarea{background:#091d28!important;border:1px solid #28616a!important;color:#eaffff!important}
+html[data-theme="aurora"] #settingsModal .privacy-password-card{background:#102b37;border:1px solid rgba(75,220,205,.24)}
 @media(max-width:650px){#settingsModal .privacy-password-card{padding:15px}}
+</style>
+
+<style id="auralis-settings-real-dom-skin-v6">
+/* The current settings navigation uses settings-sidebar/settings-nav-btn, not the legacy tabs. */
+#settingsModal .modal-card{border-radius:21px!important;overflow:hidden!important;box-shadow:0 30px 95px rgba(0,0,0,.58),inset 0 1px rgba(255,255,255,.07)!important}
+#settingsModal .settings-sidebar{display:flex!important;flex-direction:column!important;gap:7px!important;padding:13px!important;border-radius:16px!important;min-width:0!important}
+#settingsModal .settings-user-card{min-height:76px!important;display:flex!important;align-items:center!important;gap:11px!important;padding:12px!important;margin-bottom:7px!important;border-radius:14px!important}
+#settingsModal .settings-user-meta{min-width:0!important;display:flex!important;flex-direction:column!important;gap:4px!important}
+#settingsModal .settings-nav-label{padding:12px 9px 4px!important;font-size:9px!important;font-weight:800!important;letter-spacing:.13em!important;text-transform:uppercase!important}
+#settingsModal .settings-nav-btn{display:flex!important;align-items:center!important;gap:10px!important;min-height:41px!important;padding:9px 11px!important;border-radius:10px!important;text-align:left!important;font-size:12px!important;font-weight:650!important;transition:background .16s,border-color .16s,transform .16s!important}
+#settingsModal .settings-nav-btn .nav-ico{width:20px!important;min-width:20px!important;text-align:center!important;font-size:15px!important}
+#settingsModal .settings-nav-btn:hover{transform:translateX(2px)!important}
+#settingsModal .settings-main{min-width:0!important;min-height:0!important;padding:24px 27px 28px!important;border-radius:16px!important}
+#settingsModal .settings-page-title{font-size:20px!important;font-weight:750!important;letter-spacing:-.025em!important;margin:0 0 20px!important}
+#settingsModal .s-section{min-width:0!important;scrollbar-width:thin!important}
+#settingsModal .s-section .field,#settingsModal .s-section>.avatar-edit-row,#settingsModal .s-section>section.field,#settingsModal .settings-video-test{border-radius:12px!important;padding:13px 14px!important;margin:0 0 9px!important}
+#settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),#settingsModal .s-section select,#settingsModal .s-section textarea{min-height:39px!important;border-radius:9px!important}
+#settingsModal .settings-close{width:32px!important;height:32px!important;border-radius:10px!important}
+#settingsModal .privacy-password-card{padding:22px!important;border-radius:15px!important;max-width:620px!important}
+#settingsModal .privacy-password-form{display:grid!important;gap:8px!important}
+#settingsModal .privacy-password-form label{font-size:12px!important;font-weight:650!important;margin-top:7px!important}
+#settingsModal .privacy-password-form input{width:100%!important;box-sizing:border-box!important;min-height:42px!important;padding:10px 12px!important;border-radius:10px!important;outline:none!important}
+#settingsModal .privacy-password-actions{display:flex!important;align-items:center!important;gap:12px!important;flex-wrap:wrap!important}
+#settingsModal .privacy-password-actions button{border-radius:10px!important;padding:10px 16px!important;font-weight:700!important;cursor:pointer!important}
+html[data-theme="emerald"] #settingsModal .modal-card{background:linear-gradient(145deg,#102b45 0%,#0b1e33 58%,#091729 100%)!important;border:1px solid rgba(169,214,244,.28)!important}
+html[data-theme="emerald"] #settingsModal .settings-sidebar{background:#0b2036!important;border:1px solid rgba(158,207,240,.17)!important}
+html[data-theme="emerald"] #settingsModal .settings-user-card{background:linear-gradient(135deg,#1a3a57,#10263d)!important;border:1px solid rgba(169,214,244,.20)!important}
+html[data-theme="emerald"] #settingsModal .settings-user-meta strong{color:#f0f8ff!important}html[data-theme="emerald"] #settingsModal .settings-user-meta span,html[data-theme="emerald"] #settingsModal .settings-nav-label{color:#a9c9e1!important}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn{background:#102a43!important;color:#c6dced!important;border:1px solid transparent!important}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn .nav-ico{color:#a9d8f4!important}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn.active{background:linear-gradient(110deg,#244c70,#183954)!important;border-color:#6399c1!important;color:#f2f9ff!important;box-shadow:inset 3px 0 #a9d8f4,0 5px 16px rgba(0,0,0,.22)!important}
+html[data-theme="emerald"] #settingsModal .settings-main{background:#0c2034!important;color:#edf7ff!important}
+html[data-theme="emerald"] #settingsModal .s-section .field,html[data-theme="emerald"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="emerald"] #settingsModal .s-section>section.field,html[data-theme="emerald"] #settingsModal .settings-video-test{background:#102a43!important;border:1px solid rgba(153,201,234,.15)!important;color:#edf7ff!important}
+html[data-theme="emerald"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="emerald"] #settingsModal .s-section select,html[data-theme="emerald"] #settingsModal .s-section textarea{background:#081a2c!important;border:1px solid #31516c!important;color:#f1f8ff!important}
+html[data-theme="emerald"] #settingsModal .privacy-password-card{background:#102a43!important;border:1px solid rgba(153,201,234,.22)!important}
+html[data-theme="violet"] #settingsModal .modal-card{background:linear-gradient(145deg,#2a1027 0%,#1e0d20 58%,#170b1b 100%)!important;border:1px solid rgba(255,120,173,.32)!important;box-shadow:0 28px 90px rgba(0,0,0,.58),0 0 35px rgba(255,80,153,.10),inset 0 1px rgba(255,214,235,.08)!important}
+html[data-theme="violet"] #settingsModal .settings-sidebar{background:#1a0c1c!important;border:1px solid rgba(255,120,173,.20)!important}
+html[data-theme="violet"] #settingsModal .settings-user-card{background:linear-gradient(135deg,#49203d,#2a142b)!important;border:1px solid rgba(255,120,173,.25)!important}
+html[data-theme="violet"] #settingsModal .settings-user-meta strong{color:#fff0f7!important}html[data-theme="violet"] #settingsModal .settings-user-meta span,html[data-theme="violet"] #settingsModal .settings-nav-label{color:#d5a6c0!important}
+html[data-theme="violet"] #settingsModal .settings-nav-btn{background:#251027!important;color:#e6b8d0!important;border:1px solid transparent!important}
+html[data-theme="violet"] #settingsModal .settings-nav-btn .nav-ico{color:#ff91bd!important}
+html[data-theme="violet"] #settingsModal .settings-nav-btn.active{background:linear-gradient(110deg,#592344,#3a1934)!important;border-color:#a84c7c!important;color:#fff0f7!important;box-shadow:inset 3px 0 #ff78ad,0 5px 16px rgba(0,0,0,.24)!important}
+html[data-theme="violet"] #settingsModal .settings-main{background:#211022!important;color:#fff0f7!important}
+html[data-theme="violet"] #settingsModal .settings-page-title{color:#ffe5f1!important}
+html[data-theme="violet"] #settingsModal .s-section .field,html[data-theme="violet"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="violet"] #settingsModal .s-section>section.field,html[data-theme="violet"] #settingsModal .settings-video-test{background:#2b1429!important;border:1px solid rgba(255,120,173,.19)!important;color:#fff0f7!important}
+html[data-theme="violet"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="violet"] #settingsModal .s-section select,html[data-theme="violet"] #settingsModal .s-section textarea{background:#190d1b!important;border:1px solid #63304f!important;color:#fff0f7!important}
+html[data-theme="violet"] #settingsModal .privacy-password-card{background:#2b1429!important;border:1px solid rgba(255,120,173,.25)!important}
+html[data-theme="graphite"] #settingsModal .modal-card{background:linear-gradient(145deg,#25232f 0%,#1b1a24 60%,#15141c 100%)!important;border:1px solid rgba(167,139,250,.30)!important}
+html[data-theme="graphite"] #settingsModal .settings-sidebar{background:#191821!important;border:1px solid rgba(167,139,250,.19)!important}
+html[data-theme="graphite"] #settingsModal .settings-user-card{background:linear-gradient(135deg,#393247,#24222e)!important;border:1px solid rgba(167,139,250,.22)!important}
+html[data-theme="graphite"] #settingsModal .settings-user-meta strong{color:#f7f2ff!important}html[data-theme="graphite"] #settingsModal .settings-user-meta span,html[data-theme="graphite"] #settingsModal .settings-nav-label{color:#bdb5d4!important}
+html[data-theme="graphite"] #settingsModal .settings-nav-btn{background:#22212c!important;color:#cbc5df!important;border:1px solid transparent!important}
+html[data-theme="graphite"] #settingsModal .settings-nav-btn .nav-ico{color:#b9a3ff!important}
+html[data-theme="graphite"] #settingsModal .settings-nav-btn.active{background:linear-gradient(110deg,#403456,#2d263e)!important;border-color:#7862a8!important;color:#f7f2ff!important;box-shadow:inset 3px 0 #a78bfa,0 5px 16px rgba(0,0,0,.24)!important}
+html[data-theme="graphite"] #settingsModal .settings-main{background:#1b1a24!important;color:#f4f0ff!important}
+html[data-theme="graphite"] #settingsModal .s-section .field,html[data-theme="graphite"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="graphite"] #settingsModal .s-section>section.field,html[data-theme="graphite"] #settingsModal .settings-video-test{background:#262431!important;border:1px solid rgba(167,139,250,.17)!important;color:#f4f0ff!important}
+html[data-theme="graphite"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="graphite"] #settingsModal .s-section select,html[data-theme="graphite"] #settingsModal .s-section textarea{background:#17161f!important;border:1px solid #514766!important;color:#f4f0ff!important}
+html[data-theme="graphite"] #settingsModal .privacy-password-card{background:#262431!important;border:1px solid rgba(167,139,250,.24)!important}
+html[data-theme="aurora"] #settingsModal .modal-card{background:linear-gradient(145deg,#102b38 0%,#0b202d 60%,#081822 100%)!important;border:1px solid rgba(75,220,205,.29)!important}
+html[data-theme="aurora"] #settingsModal .settings-sidebar{background:#091d28!important;border:1px solid rgba(75,220,205,.18)!important}
+html[data-theme="aurora"] #settingsModal .settings-user-card{background:linear-gradient(135deg,#17444b,#102b37)!important;border:1px solid rgba(75,220,205,.22)!important}
+html[data-theme="aurora"] #settingsModal .settings-user-meta strong{color:#eaffff!important}html[data-theme="aurora"] #settingsModal .settings-user-meta span,html[data-theme="aurora"] #settingsModal .settings-nav-label{color:#a8d3d3!important}
+html[data-theme="aurora"] #settingsModal .settings-nav-btn{background:#102a35!important;color:#b7d9dc!important;border:1px solid transparent!important}
+html[data-theme="aurora"] #settingsModal .settings-nav-btn .nav-ico{color:#66e7d2!important}
+html[data-theme="aurora"] #settingsModal .settings-nav-btn.active{background:linear-gradient(110deg,#1b5960,#16404d)!important;border-color:#3d9d9c!important;color:#eaffff!important;box-shadow:inset 3px 0 #66e7d2,0 5px 16px rgba(0,0,0,.24)!important}
+html[data-theme="aurora"] #settingsModal .settings-main{background:#0b202d!important;color:#eaffff!important}
+html[data-theme="aurora"] #settingsModal .s-section .field,html[data-theme="aurora"] #settingsModal .s-section>.avatar-edit-row,html[data-theme="aurora"] #settingsModal .s-section>section.field,html[data-theme="aurora"] #settingsModal .settings-video-test{background:#102b37!important;border:1px solid rgba(75,220,205,.17)!important;color:#eaffff!important}
+html[data-theme="aurora"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),html[data-theme="aurora"] #settingsModal .s-section select,html[data-theme="aurora"] #settingsModal .s-section textarea{background:#091d28!important;border:1px solid #28616a!important;color:#eaffff!important}
+html[data-theme="aurora"] #settingsModal .privacy-password-card{background:#102b37!important;border:1px solid rgba(75,220,205,.24)!important}
+@media(max-width:760px){#settingsModal .settings-main{padding:16px 13px 20px!important}#settingsModal .settings-sidebar{padding:7px!important}}
 </style>
