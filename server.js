@@ -1022,7 +1022,7 @@ app.post('/api/groups/:id/messages/:messageId/reaction', authMiddleware, async (
     const members = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
     const payload = { type: 'group-reaction-updated', groupId, id: messageId, reactions };
     for (const member of members.rows) sendToUser(member.username, payload);
-    return res.json({ reactions });
+    return res.json({ ok: true, reactions });
   } catch (err) {
     console.error('Group reaction API error:', err);
     return res.status(500).json({ error: 'Не удалось сохранить реакцию' });
