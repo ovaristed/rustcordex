@@ -49,6 +49,8 @@ async function initDb() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_sticker_url TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_background TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS presence_status TEXT NOT NULL DEFAULT 'auto';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS activity_game TEXT NOT NULL DEFAULT '';`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS activity_updated_at TIMESTAMPTZ;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_reason TEXT NOT NULL DEFAULT '';`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_until TIMESTAMPTZ;`);
@@ -571,7 +573,18 @@ app.get('/api/users/:username/profile', authMiddleware, async (req, res) => {
 app.patch('/api/presence', authMiddleware, async (req, res) => {
   try {
     const status = req.body && req.body.status === 'ghost' ? 'ghost' : 'auto';
-    await pool.query('UPDATE users SET presence_status = $1 WHERE id = $2', [status, req.user.id]);
+    const hasActivity = Object.prototype.hasOwnProperty.call(req.body || {}, 'activity_game');
+    if (hasActivity) {
+      const game = status === 'ghost' ? '' : String(req.body.activity_game || '').trim().replace(/[\\u0000-\\u001f]/g, '').slice(0, 80);
+      if (game) {
+        await pool.query('UPDATE users SET presence_status = $1, activity_game = $2, activity_updated_at = NOW() WHERE id = $3', [status, game, req.user.id]);
+      } else {
+        await pool.query("UPDATE users SET presence_status = $1, activity_game = '', activity_updated_at = NULL WHERE id = $2", [status, req.user.id]);
+      }
+    } else {
+      await pool.query('UPDATE users SET presence_status = $1 WHERE id = $2', [status, req.user.id]);
+      if (status === 'ghost') await pool.query("UPDATE users SET activity_game = '', activity_updated_at = NULL WHERE id = $1", [req.user.id]);
+    }
     return res.json({ ok: true, presence_status: status });
   } catch (err) {
     console.error('Presence update error:', err);
@@ -596,7 +609,7 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
     if (!friendNames.length) return res.json({ friends: [], chats: [] });
 
     const profRows = await pool.query(
-      'SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, presence_status FROM users WHERE username = ANY($1::text[])',
+      'SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, presence_status, activity_game, activity_updated_at FROM users WHERE username = ANY($1::text[])',
       [friendNames]
     );
     const profByName = new Map(profRows.rows.map((r) => [r.username, r]));
@@ -627,6 +640,8 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
         profile_description: prof.profile_description || '',
         profile_sticker_url: prof.profile_sticker_url || '', profile_background: prof.profile_background || '',
         presence_status: prof.presence_status === 'ghost' ? 'ghost' : (socketsByUser.get(name)?.size ? 'online' : 'offline'),
+        activity_game: prof.presence_status !== 'ghost' && socketsByUser.get(name)?.size && prof.activity_updated_at && (Date.now() - new Date(prof.activity_updated_at).getTime() < 75000) ? (prof.activity_game || '') : '',
+        activity_updated_at: prof.activity_updated_at || null,
         lastMessage: lastByName.get(name) || ''
       };
     });
