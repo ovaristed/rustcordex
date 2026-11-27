@@ -14,7 +14,7 @@ const MIME = {
   '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8',
   '.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8',
   '.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg',
-  '.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif',
+  '.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.mp3':'audio/mpeg',
   '.ico':'image/x-icon','.woff':'font/woff','.woff2':'font/woff2'
 };
 
@@ -30,8 +30,42 @@ function serveFile(req, res) {
   const target = fs.existsSync(candidate) && fs.statSync(candidate).isFile()
     ? candidate
     : path.join(PUBLIC_DIR, 'index.html');
+  const stat = fs.statSync(target);
+  const contentType = MIME[path.extname(target).toLowerCase()] || 'application/octet-stream';
+  const range = req.headers.range;
+  if (range) {
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (!match || (!match[1] && !match[2])) {
+      res.writeHead(416, { 'Content-Range': 'bytes */' + stat.size, 'Accept-Ranges': 'bytes' });
+      return res.end();
+    }
+    let start, end;
+    if (!match[1]) {
+      const suffixLength = Number(match[2]);
+      start = Math.max(0, stat.size - suffixLength);
+      end = stat.size - 1;
+    } else {
+      start = Number(match[1]);
+      end = match[2] ? Math.min(Number(match[2]), stat.size - 1) : stat.size - 1;
+    }
+    if (start >= stat.size || end < start) {
+      res.writeHead(416, { 'Content-Range': 'bytes */' + stat.size, 'Accept-Ranges': 'bytes' });
+      return res.end();
+    }
+    res.writeHead(206, {
+      'Content-Type': contentType,
+      'Content-Length': end - start + 1,
+      'Content-Range': 'bytes ' + start + '-' + end + '/' + stat.size,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'no-store'
+    });
+    if (req.method === 'HEAD') return res.end();
+    return fs.createReadStream(target, { start, end }).pipe(res);
+  }
   res.writeHead(200, {
-    'Content-Type': MIME[path.extname(target).toLowerCase()] || 'application/octet-stream',
+    'Content-Type': contentType,
+    'Content-Length': stat.size,
+    'Accept-Ranges': 'bytes',
     'Cache-Control': 'no-store'
   });
   if (req.method === 'HEAD') return res.end();
