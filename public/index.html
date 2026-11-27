@@ -11295,6 +11295,7 @@ main.appendChild(privacyPanel);
 main.appendChild(notificationPanel);
 if(oldTabs)oldTabs.remove();
 const oldHead=card.querySelector('.modal-head');if(oldHead)oldHead.remove();
+const versionLink=card.querySelector(".app-version-link");if(versionLink)main.appendChild(versionLink);const updatePanel=card.querySelector("#desktopUpdatePanel");if(updatePanel)main.appendChild(updatePanel);
 card.insertBefore(sidebar,card.firstChild);card.appendChild(main);
 window.switchSettingsTab=function(tab){
  const allowed=['profile','notifications','audio','appearance','privacy','admin'];
