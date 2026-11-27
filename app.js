@@ -1237,6 +1237,11 @@ function renderAvatarHtml(username) {
   return esc(title.slice(0, 2));
 }
 
+function renderGhostPresenceBadge(entry) {
+  if (!entry || entry.presence_status !== 'ghost') return '';
+  return '<span class="presence-indicator presence-ghost" title="Режим призрака" aria-label="Режим призрака">👻</span>';
+}
+
 function setMode(m) {
   mode = m; setErr('');
   const isReg = m === 'register';
@@ -1677,6 +1682,7 @@ function normalizeUserEntry(entry) {
     username: uname,
     nickname: entry.nickname || entry.nick || '',
     avatar_url: entry.avatar_url || entry.avatarUrl || '',
+    presence_status: entry.presence_status || entry.presenceStatus || (entry.online ? 'online' : 'offline'),
     lastMessage: entry.lastMessage || entry.last_message || ''
   };
 }
@@ -1826,7 +1832,7 @@ function renderLists() {
     return (
       '<div class="list-item ' + (isAct ? 'active' : '') + '" data-open-dm="' + esc(c.username) + '">' +
         '<div class="item-left">' +
-          '<div class="avatar">' + renderAvatarHtml(c.username) + '</div>' +
+          '<div class="avatar">' + renderAvatarHtml(c.username) + renderGhostPresenceBadge(c) + '</div>' +
           '<div style="min-width:0">' +
             '<div class="item-name">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
             '<div class="item-sub">' + esc(blocked ? 'Пользователь заблокирован' : formatPreviewText(c.lastMessage)) + '</div>' +
@@ -1852,7 +1858,7 @@ function renderLists() {
       return (
         '<div class="list-item ' + (activeChat && activeChat.kind === 'dm' && activeChat.id === f.username ? 'active' : '') + '" data-open-dm="' + esc(f.username) + '">' +
           '<div class="item-left">' +
-            '<div class="avatar">' + renderAvatarHtml(f.username) + '</div>' +
+            '<div class="avatar">' + renderAvatarHtml(f.username) + renderGhostPresenceBadge(f) + '</div>' +
             '<div style="min-width:0">' +
               '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
               (blocked ? '<div class="item-sub" style="color:#ff6961;">Заблокирован</div>' : '<div class="item-sub">@' + esc(f.username) + '</div>') +
