@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.7.0",
-  "description": "Auralis 3.7.0",
+  "version": "3.7.1",
+  "description": "Auralis 3.7.1",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
