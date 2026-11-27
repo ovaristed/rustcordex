@@ -1035,7 +1035,11 @@ app.patch('/api/groups/:id', authMiddleware, async (req, res) => {
     if (g.rows[0].owner !== req.user.username) {
       return res.status(403).json({ error: 'Изменить название может только создатель группы' });
     }
+    const previous = await pool.query('SELECT title FROM groups WHERE id = $1', [groupId]);
+    const oldTitle = String(previous.rows[0]?.title || '').trim();
     await pool.query('UPDATE groups SET title = $1 WHERE id = $2', [title, groupId]);
+    const auditText = '__SYSTEM__:' + JSON.stringify({ actor: req.user.username, action: 'group-renamed', oldTitle, title, at: new Date().toISOString() });
+    await pool.query('INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3)', [groupId, req.user.username, auditText]);
     const group = await loadGroup(groupId);
     for (const username of group.members) {
       sendToUser(username, { type: 'group-update', group });
