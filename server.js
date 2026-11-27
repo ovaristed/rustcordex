@@ -1006,6 +1006,29 @@ app.post('/api/groups/:id/members/:username/remove', authMiddleware, async (req,
   }
 });
 
+// Переименование группы — только создатель; рассылаем обновлённое название всем участникам.
+app.patch('/api/groups/:id', authMiddleware, async (req, res) => {
+  try {
+    const groupId = String(req.params.id);
+    const title = String(req.body.title || '').trim().slice(0, 60);
+    if (!title) return res.status(400).json({ error: 'Название группы не может быть пустым' });
+    const g = await pool.query('SELECT owner FROM groups WHERE id = $1', [groupId]);
+    if (!g.rows.length) return res.status(404).json({ error: 'Группа не найдена' });
+    if (g.rows[0].owner !== req.user.username) {
+      return res.status(403).json({ error: 'Изменить название может только создатель группы' });
+    }
+    await pool.query('UPDATE groups SET title = $1 WHERE id = $2', [title, groupId]);
+    const group = await loadGroup(groupId);
+    for (const username of group.members) {
+      sendToUser(username, { type: 'group-update', group });
+    }
+    return res.json({ group });
+  } catch (err) {
+    console.error('Group rename error:', err);
+    return res.status(500).json({ error: 'Не удалось изменить название группы' });
+  }
+});
+
 // Удаление группы — только создатель
 app.delete('/api/groups/:id', authMiddleware, async (req, res) => {
   try {
