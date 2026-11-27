@@ -11241,6 +11241,92 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAuralisMessage
   #settingsModal .s-tab { font-size:9px !important; }
 }
 </style>
+<script id="auralis-settings-redesign-v2-script">
+(()=>{
+const modal=document.getElementById('settingsModal');
+if(!modal||modal.dataset.redesignV2)return;
+modal.dataset.redesignV2='1';
+const card=modal.querySelector('.modal-card');
+const oldTabs=card.querySelector('.settings-tabs');
+const sidebar=document.createElement('aside');sidebar.className='settings-sidebar';
+const main=document.createElement('main');main.className='settings-main';
+const user=document.createElement('div');user.className='settings-user-card';
+user.innerHTML='<div class="avatar" id="settingsSidebarAvatar">Я</div><div class="settings-user-meta"><strong id="settingsSidebarName">Аккаунт</strong><span id="settingsSidebarStatus">Auralis</span></div>';
+sidebar.appendChild(user);
+const nav=(id,label,icon,tab)=>{const b=document.createElement('button');b.type='button';b.className='settings-nav-btn';b.dataset.settingsTab=tab;b.innerHTML='<span class="nav-ico">'+icon+'</span><span>'+label+'</span>';b.addEventListener('click',()=>switchSettingsTab(tab));sidebar.appendChild(b);return b};
+nav('account','Учётная запись','♟','profile');
+nav('notifications','Уведомления','♧','notifications');
+const group=document.createElement('div');group.className='settings-nav-label';group.textContent='Взаимодействие';sidebar.appendChild(group);
+nav('voice','Голос и видео','♩','audio');
+nav('appearance','Внешний вид','◐','appearance');
+nav('privacy','Данные и конфиденциальность','⬡','privacy');
+const close=document.createElement('button');close.type='button';close.className='settings-close';close.setAttribute('aria-label','Закрыть настройки');close.textContent='×';close.addEventListener('click',closeSettings);main.appendChild(close);
+const pages=[
+['profile','Учётная запись','sPanelProfile'],
+['notifications','Уведомления','sPanelNotifications'],
+['audio','Голос','sPanelAudio'],
+['appearance','Внешний вид','sPanelAppearance'],
+['privacy','Данные и конфиденциальность','sPanelPrivacy'],
+['admin','Панель владельца','sPanelAdmin']
+];
+const panelIds=['sPanelAppearance','sPanelAudio','sPanelBinds','sPanelProfile','sPanelAdmin'];
+const panels={};panelIds.forEach(id=>{const p=document.getElementById(id);if(p)panels[id]=p});
+const notificationPanel=document.createElement('div');notificationPanel.id='sPanelNotifications';notificationPanel.className='s-section hidden';
+const appearance=panels.sPanelAppearance;
+if(appearance){
+ const notificationField=Array.from(appearance.querySelectorAll('.field')).find(el=>el.textContent.includes('Уведомления о сообщениях и звонках'));
+ if(notificationField){notificationPanel.appendChild(notificationField);const title=notificationField.querySelector('.lbl');if(title)title.remove()}
+}
+const privacyPanel=document.createElement('div');privacyPanel.id='sPanelPrivacy';privacyPanel.className='s-section hidden';
+privacyPanel.innerHTML=`<section class="privacy-password-card"><div class="privacy-password-icon" aria-hidden="true">?</div><div class="privacy-password-copy"><h3>Пароль и безопасность</h3><p>Меняй пароль аккаунта Auralis. Для подтверждения потребуется текущий пароль.</p></div><form id="accountPasswordForm" class="privacy-password-form" onsubmit="changeAccountPassword(event)"><label for="accountCurrentPassword">Текущий пароль</label><input id="accountCurrentPassword" type="password" autocomplete="current-password" required maxlength="128" placeholder="Введи текущий пароль"><label for="accountNewPassword">Новый пароль</label><input id="accountNewPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="Минимум 10 символов"><label for="accountConfirmPassword">Повтори новый пароль</label><input id="accountConfirmPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="Повтори новый пароль"><div class="privacy-password-hint">Используй уникальный пароль, который нигде больше не применяешь.</div><div class="privacy-password-actions"><button type="submit" id="accountPasswordSubmit">Изменить пароль</button><span id="accountPasswordStatus" role="status" aria-live="polite"></span></div></form></section>`;
+window.changeAccountPassword=async function(event){if(event)event.preventDefault();const current=document.getElementById('accountCurrentPassword'),next=document.getElementById('accountNewPassword'),confirm=document.getElementById('accountConfirmPassword'),status=document.getElementById('accountPasswordStatus'),button=document.getElementById('accountPasswordSubmit');if(!current||!next||!confirm||!status||!button)return;status.textContent='';status.className='';if(next.value!==confirm.value){status.textContent='Новые пароли не совпадают.';status.className='error';confirm.focus();return}if(next.value.length<10){status.textContent='Минимальная длина — 10 символов.';status.className='error';next.focus();return}button.disabled=true;button.textContent='Проверяем…';try{const response=await fetch('/api/account/password',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({currentPassword:current.value,newPassword:next.value})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Не удалось изменить пароль.');document.getElementById('accountPasswordForm').reset();status.textContent='Пароль успешно изменён.';status.className='success'}catch(error){status.textContent=error.message||'Ошибка соединения с сервером.';status.className='error'}finally{button.disabled=false;button.textContent='Изменить пароль'}};
+const audio=panels.sPanelAudio,binds=panels.sPanelBinds;
+if(audio&&binds){
+ const ptt=binds.querySelector('.field');if(ptt)audio.appendChild(ptt);
+ const key=binds.querySelector('.field');if(key)audio.appendChild(key);
+ const shortcuts=binds.querySelector('.keybind-box');if(shortcuts)audio.appendChild(shortcuts);
+ binds.remove();
+}
+const video=document.createElement('section');video.className='settings-video-test';
+video.innerHTML='<div class="lbl">Камера</div><video id="settingsCameraPreview" class="hidden" autoplay muted playsinline></video><div class="settings-video-actions"><button type="button" id="settingsCameraTest">Проверить видео</button><span class="item-sub" id="settingsCameraStatus">Проверка камеры</span></div>';
+if(audio)audio.appendChild(video);
+pages.forEach(([tab,title,id])=>{const p=document.getElementById(id);if(!p)return;const h=document.createElement('div');h.className='settings-page-title';h.textContent=title;p.insertBefore(h,p.firstChild);main.appendChild(p)});
+main.appendChild(privacyPanel);
+main.appendChild(notificationPanel);
+if(oldTabs)oldTabs.remove();
+const oldHead=card.querySelector('.modal-head');if(oldHead)oldHead.remove();
+card.insertBefore(sidebar,card.firstChild);card.appendChild(main);
+window.switchSettingsTab=function(tab){
+ const allowed=['profile','notifications','audio','appearance','privacy','admin'];
+ if(tab==='admin'&&(!me||String(me.username).toLowerCase()!=='ovarist'))return;
+ if(!allowed.includes(tab))tab='profile';
+ const ids={profile:'sPanelProfile',notifications:'sPanelNotifications',audio:'sPanelAudio',appearance:'sPanelAppearance',privacy:'sPanelPrivacy',admin:'sPanelAdmin'};
+ Object.entries(ids).forEach(([key,id])=>{const p=document.getElementById(id);if(p)p.classList.toggle('hidden',key!==tab)});
+ sidebar.querySelectorAll('.settings-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.settingsTab===tab));
+ if(tab==='audio')populateAudioDevices();
+ if(tab==='profile')loadProfileForm();
+ if(tab==='admin')loadAdminUsers();
+};
+const oldOpen=window.openSettings;
+window.openSettings=async function(){
+ await oldOpen();
+ switchSettingsTab('profile');
+ const name=document.getElementById('settingsSidebarName');if(name)name.textContent=me?.nickname||me?.username||'Аккаунт';
+ const status=document.getElementById('settingsSidebarStatus');if(status)status.textContent=me?'В сети':'Auralis';
+ const av=document.getElementById('settingsSidebarAvatar');if(av&&me)av.innerHTML=renderAvatarHtml(me.username);
+};
+let cameraStream=null;
+const cameraButton=document.getElementById('settingsCameraTest');
+if(cameraButton)cameraButton.addEventListener('click',async()=>{
+ const preview=document.getElementById('settingsCameraPreview'),status=document.getElementById('settingsCameraStatus');
+ if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;preview.srcObject=null;preview.classList.add('hidden');cameraButton.textContent='Проверить видео';status.textContent='Камера остановлена';return}
+ try{cameraStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});preview.srcObject=cameraStream;preview.classList.remove('hidden');cameraButton.textContent='Остановить камеру';status.textContent='Камера работает'}
+ catch(e){status.textContent=e.name==='NotAllowedError'?'Нет разрешения на камеру':'Не удалось открыть камеру';}
+});
+const oldClose=window.closeSettings;
+window.closeSettings=function(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const v=document.getElementById('settingsCameraPreview');if(v){v.srcObject=null;v.classList.add('hidden')}const b=document.getElementById('settingsCameraTest');if(b)b.textContent='Проверить видео';oldClose()};
+})();
+</script>
 </body>
 
 <style id="auralis-3600-ui-fixes">
@@ -14380,92 +14466,7 @@ html[data-theme="emerald"] #auralisLocalXmasRadio #auralisLocalXmasPanel{positio
 #settingsModal .settings-page-title{font-size:14px;margin-bottom:12px}
 }
 </style>
-<script id="auralis-settings-redesign-v2-script">
-(()=>{
-const modal=document.getElementById('settingsModal');
-if(!modal||modal.dataset.redesignV2)return;
-modal.dataset.redesignV2='1';
-const card=modal.querySelector('.modal-card');
-const oldTabs=card.querySelector('.settings-tabs');
-const sidebar=document.createElement('aside');sidebar.className='settings-sidebar';
-const main=document.createElement('main');main.className='settings-main';
-const user=document.createElement('div');user.className='settings-user-card';
-user.innerHTML='<div class="avatar" id="settingsSidebarAvatar">Я</div><div class="settings-user-meta"><strong id="settingsSidebarName">Аккаунт</strong><span id="settingsSidebarStatus">Auralis</span></div>';
-sidebar.appendChild(user);
-const nav=(id,label,icon,tab)=>{const b=document.createElement('button');b.type='button';b.className='settings-nav-btn';b.dataset.settingsTab=tab;b.innerHTML='<span class="nav-ico">'+icon+'</span><span>'+label+'</span>';b.addEventListener('click',()=>switchSettingsTab(tab));sidebar.appendChild(b);return b};
-nav('account','Учётная запись','♟','profile');
-nav('notifications','Уведомления','♧','notifications');
-const group=document.createElement('div');group.className='settings-nav-label';group.textContent='Взаимодействие';sidebar.appendChild(group);
-nav('voice','Голос и видео','♩','audio');
-nav('appearance','Внешний вид','◐','appearance');
-nav('privacy','Данные и конфиденциальность','⬡','privacy');
-const close=document.createElement('button');close.type='button';close.className='settings-close';close.setAttribute('aria-label','Закрыть настройки');close.textContent='×';close.addEventListener('click',closeSettings);main.appendChild(close);
-const pages=[
-['profile','Учётная запись','sPanelProfile'],
-['notifications','Уведомления','sPanelNotifications'],
-['audio','Голос','sPanelAudio'],
-['appearance','Внешний вид','sPanelAppearance'],
-['privacy','Данные и конфиденциальность','sPanelPrivacy'],
-['admin','Панель владельца','sPanelAdmin']
-];
-const panelIds=['sPanelAppearance','sPanelAudio','sPanelBinds','sPanelProfile','sPanelAdmin'];
-const panels={};panelIds.forEach(id=>{const p=document.getElementById(id);if(p)panels[id]=p});
-const notificationPanel=document.createElement('div');notificationPanel.id='sPanelNotifications';notificationPanel.className='s-section hidden';
-const appearance=panels.sPanelAppearance;
-if(appearance){
- const notificationField=Array.from(appearance.querySelectorAll('.field')).find(el=>el.textContent.includes('Уведомления о сообщениях и звонках'));
- if(notificationField){notificationPanel.appendChild(notificationField);const title=notificationField.querySelector('.lbl');if(title)title.remove()}
-}
-const privacyPanel=document.createElement('div');privacyPanel.id='sPanelPrivacy';privacyPanel.className='s-section hidden';
-privacyPanel.innerHTML=`<section class="privacy-password-card"><div class="privacy-password-icon" aria-hidden="true">?</div><div class="privacy-password-copy"><h3>Пароль и безопасность</h3><p>Меняй пароль аккаунта Auralis. Для подтверждения потребуется текущий пароль.</p></div><form id="accountPasswordForm" class="privacy-password-form" onsubmit="changeAccountPassword(event)"><label for="accountCurrentPassword">Текущий пароль</label><input id="accountCurrentPassword" type="password" autocomplete="current-password" required maxlength="128" placeholder="Введи текущий пароль"><label for="accountNewPassword">Новый пароль</label><input id="accountNewPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="Минимум 10 символов"><label for="accountConfirmPassword">Повтори новый пароль</label><input id="accountConfirmPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" placeholder="Повтори новый пароль"><div class="privacy-password-hint">Используй уникальный пароль, который нигде больше не применяешь.</div><div class="privacy-password-actions"><button type="submit" id="accountPasswordSubmit">Изменить пароль</button><span id="accountPasswordStatus" role="status" aria-live="polite"></span></div></form></section>`;
-window.changeAccountPassword=async function(event){if(event)event.preventDefault();const current=document.getElementById('accountCurrentPassword'),next=document.getElementById('accountNewPassword'),confirm=document.getElementById('accountConfirmPassword'),status=document.getElementById('accountPasswordStatus'),button=document.getElementById('accountPasswordSubmit');if(!current||!next||!confirm||!status||!button)return;status.textContent='';status.className='';if(next.value!==confirm.value){status.textContent='Новые пароли не совпадают.';status.className='error';confirm.focus();return}if(next.value.length<10){status.textContent='Минимальная длина — 10 символов.';status.className='error';next.focus();return}button.disabled=true;button.textContent='Проверяем…';try{const response=await fetch('/api/account/password',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({currentPassword:current.value,newPassword:next.value})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Не удалось изменить пароль.');document.getElementById('accountPasswordForm').reset();status.textContent='Пароль успешно изменён.';status.className='success'}catch(error){status.textContent=error.message||'Ошибка соединения с сервером.';status.className='error'}finally{button.disabled=false;button.textContent='Изменить пароль'}};
-const audio=panels.sPanelAudio,binds=panels.sPanelBinds;
-if(audio&&binds){
- const ptt=binds.querySelector('.field');if(ptt)audio.appendChild(ptt);
- const key=binds.querySelector('.field');if(key)audio.appendChild(key);
- const shortcuts=binds.querySelector('.keybind-box');if(shortcuts)audio.appendChild(shortcuts);
- binds.remove();
-}
-const video=document.createElement('section');video.className='settings-video-test';
-video.innerHTML='<div class="lbl">Камера</div><video id="settingsCameraPreview" class="hidden" autoplay muted playsinline></video><div class="settings-video-actions"><button type="button" id="settingsCameraTest">Проверить видео</button><span class="item-sub" id="settingsCameraStatus">Проверка камеры</span></div>';
-if(audio)audio.appendChild(video);
-pages.forEach(([tab,title,id])=>{const p=document.getElementById(id);if(!p)return;const h=document.createElement('div');h.className='settings-page-title';h.textContent=title;p.insertBefore(h,p.firstChild);main.appendChild(p)});
-main.appendChild(privacyPanel);
-main.appendChild(notificationPanel);
-if(oldTabs)oldTabs.remove();
-const oldHead=card.querySelector('.modal-head');if(oldHead)oldHead.remove();
-card.insertBefore(sidebar,card.firstChild);card.appendChild(main);
-window.switchSettingsTab=function(tab){
- const allowed=['profile','notifications','audio','appearance','privacy','admin'];
- if(tab==='admin'&&(!me||String(me.username).toLowerCase()!=='ovarist'))return;
- if(!allowed.includes(tab))tab='profile';
- const ids={profile:'sPanelProfile',notifications:'sPanelNotifications',audio:'sPanelAudio',appearance:'sPanelAppearance',privacy:'sPanelPrivacy',admin:'sPanelAdmin'};
- Object.entries(ids).forEach(([key,id])=>{const p=document.getElementById(id);if(p)p.classList.toggle('hidden',key!==tab)});
- sidebar.querySelectorAll('.settings-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.settingsTab===tab));
- if(tab==='audio')populateAudioDevices();
- if(tab==='profile')loadProfileForm();
- if(tab==='admin')loadAdminUsers();
-};
-const oldOpen=window.openSettings;
-window.openSettings=async function(){
- await oldOpen();
- switchSettingsTab('profile');
- const name=document.getElementById('settingsSidebarName');if(name)name.textContent=me?.nickname||me?.username||'Аккаунт';
- const status=document.getElementById('settingsSidebarStatus');if(status)status.textContent=me?'В сети':'Auralis';
- const av=document.getElementById('settingsSidebarAvatar');if(av&&me)av.innerHTML=renderAvatarHtml(me.username);
-};
-let cameraStream=null;
-const cameraButton=document.getElementById('settingsCameraTest');
-if(cameraButton)cameraButton.addEventListener('click',async()=>{
- const preview=document.getElementById('settingsCameraPreview'),status=document.getElementById('settingsCameraStatus');
- if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;preview.srcObject=null;preview.classList.add('hidden');cameraButton.textContent='Проверить видео';status.textContent='Камера остановлена';return}
- try{cameraStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});preview.srcObject=cameraStream;preview.classList.remove('hidden');cameraButton.textContent='Остановить камеру';status.textContent='Камера работает'}
- catch(e){status.textContent=e.name==='NotAllowedError'?'Нет разрешения на камеру':'Не удалось открыть камеру';}
-});
-const oldClose=window.closeSettings;
-window.closeSettings=function(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const v=document.getElementById('settingsCameraPreview');if(v){v.srcObject=null;v.classList.add('hidden')}const b=document.getElementById('settingsCameraTest');if(b)b.textContent='Проверить видео';oldClose()};
-})();
-</script>
+
 
 <style id="auralis-winter-settings-skin-v3">
 /* Auralis winter identity: keep the app wallpaper visible through the settings glass. */
