@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, shell, desktopCapturer, session, Menu, Notification, Tray, nativeImage, dialog } = require('electron');
 const path = require('path');
+const { execFile } = require('child_process');
 const http = require('http');
 const https = require('https');
 const { startLocalPreview } = require('./local-preview');
@@ -435,6 +436,33 @@ function isStatusSender(event) {
 
 function setupIpc() {
   const isTrustedAppSender = (event) => isOurOrigin((event.senderFrame && event.senderFrame.url) || '');
+  ipcMain.handle('auralis:game-activity', async (event) => {
+    if (!isTrustedAppSender(event)) throw new Error('Untrusted app sender');
+    if (process.platform !== 'win32') return { supported: false, game: '' };
+    const known = {
+      'robloxplayerbeta': 'Roblox', 'fortniteclient-win64-shipping': 'Fortnite',
+      'cs2': 'Counter-Strike 2', 'valorant-win64-shipping': 'VALORANT',
+      'league of legends': 'League of Legends', 'overwatch': 'Overwatch 2',
+      'gta5': 'Grand Theft Auto V', 'dota2': 'Dota 2', 'r5apex': 'Apex Legends',
+      'rocketleague': 'Rocket League', 'among us': 'Among Us', 'terraria': 'Terraria',
+      'stardew valley': 'Stardew Valley', 'genshinimpact': 'Genshin Impact',
+      'eldenring': 'Elden Ring', 'hollow knight': 'Hollow Knight',
+      'palworld-win64-shipping': 'Palworld', 'cyberpunk2077': 'Cyberpunk 2077',
+      'javaw': 'Minecraft', 'minecraft.windows': 'Minecraft', 'rustclient': 'Rust',
+      'destiny2': 'Destiny 2', 'tmodloader': 'Terraria (tModLoader)'
+    };
+    return new Promise((resolve) => {
+      execFile('tasklist.exe', ['/FO', 'CSV', '/NH'], { windowsHide: true, timeout: 5000, maxBuffer: 1024 * 1024 }, (err, stdout) => {
+        if (err) return resolve({ supported: true, game: '' });
+        const names = String(stdout || '').split(/\r?\n/).map(line => {
+          const match = line.match(/^"([^"]+)"/);
+          return match ? match[1].replace(/\.exe$/i, '').toLowerCase() : '';
+        });
+        const match = names.find(name => Object.prototype.hasOwnProperty.call(known, name));
+        resolve({ supported: true, game: match ? known[match] : '' });
+      });
+    });
+  });
   ipcMain.handle('auralis:update-version', (event) => {
     if (!isTrustedAppSender(event)) throw new Error('Недоверенный источник');
     return app.getVersion();
