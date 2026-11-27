@@ -14455,3 +14455,86 @@ const oldClose=window.closeSettings;
 window.closeSettings=function(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const v=document.getElementById('settingsCameraPreview');if(v){v.srcObject=null;v.classList.add('hidden')}const b=document.getElementById('settingsCameraTest');if(b)b.textContent='Проверить видео';oldClose()};
 })();
 </script>
+
+<style id="auralis-winter-settings-skin-v3">
+/* Auralis winter identity: keep the app wallpaper visible through the settings glass. */
+html[data-theme="emerald"] #settingsModal{background:rgba(5,13,25,.28)!important;backdrop-filter:blur(3px) saturate(1.08)!important;-webkit-backdrop-filter:blur(3px) saturate(1.08)!important}
+html[data-theme="emerald"] #settingsModal .modal-card{
+ background:linear-gradient(145deg,rgba(18,39,61,.76),rgba(10,24,42,.82) 58%,rgba(17,34,51,.78))!important;
+ background-color:rgba(12,28,46,.78)!important;background-image:radial-gradient(ellipse at 8% 0%,rgba(144,203,239,.15),transparent 38%),radial-gradient(ellipse at 100% 100%,rgba(210,183,129,.08),transparent 36%)!important;
+ border:1px solid rgba(181,218,244,.26)!important;border-radius:20px!important;
+ box-shadow:0 28px 90px rgba(0,5,17,.55),0 0 42px rgba(107,174,218,.10),inset 0 1px rgba(238,248,255,.13)!important;
+ backdrop-filter:blur(30px) saturate(1.28)!important;-webkit-backdrop-filter:blur(30px) saturate(1.28)!important;
+}
+html[data-theme="emerald"] #settingsModal .settings-sidebar{
+ background:linear-gradient(180deg,rgba(8,24,41,.72),rgba(10,25,42,.54))!important;
+ border-right:1px solid rgba(175,213,240,.13)!important;
+ padding:17px 12px!important;gap:8px!important;
+}
+html[data-theme="emerald"] #settingsModal .settings-user-card{
+ background:linear-gradient(135deg,rgba(130,186,222,.18),rgba(35,70,99,.30) 58%,rgba(202,174,119,.10))!important;
+ border:1px solid rgba(179,216,241,.20)!important;border-radius:14px!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.10),0 8px 24px rgba(0,0,0,.14)!important;
+}
+html[data-theme="emerald"] #settingsModal .settings-user-meta strong{color:#f0f7fc!important;text-shadow:0 1px 12px rgba(130,193,231,.20)}
+html[data-theme="emerald"] #settingsModal .settings-user-meta span{color:#a9c4d9!important}
+html[data-theme="emerald"] #settingsModal .settings-nav-label{color:#9bb9d0!important;letter-spacing:.12em!important;text-transform:uppercase!important;font-size:9px!important;padding:12px 10px 4px!important}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn{
+ color:#c2d5e4!important;background:rgba(147,190,220,.045)!important;border:1px solid transparent!important;
+ border-radius:10px!important;min-height:39px!important;padding:8px 10px!important;
+ transition:background .18s,border-color .18s,transform .18s!important;
+}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn .nav-ico{color:#a8cce4!important}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn:hover{
+ background:rgba(126,183,222,.12)!important;border-color:rgba(164,211,242,.17)!important;transform:translateX(2px)
+}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn.active{
+ color:#f5e7c9!important;background:linear-gradient(100deg,rgba(129,184,220,.22),rgba(181,157,112,.12))!important;
+ border-color:rgba(189,216,235,.27)!important;box-shadow:inset 3px 0 #cdb889,0 5px 16px rgba(0,0,0,.12)!important
+}
+html[data-theme="emerald"] #settingsModal .settings-nav-btn.active .nav-ico{color:#f1dcae!important}
+html[data-theme="emerald"] #settingsModal .settings-main{background:transparent!important;padding:24px 30px 30px!important;color:#eaf3fa!important}
+html[data-theme="emerald"] #settingsModal .settings-page-title{
+ color:#edf7ff!important;font-size:20px!important;font-weight:650!important;letter-spacing:-.025em!important;
+ text-shadow:0 2px 18px rgba(117,183,222,.20)!important;margin:1px 0 23px!important;
+}
+html[data-theme="emerald"] #settingsModal .settings-close{color:#c6deef!important;border:1px solid rgba(183,218,241,.18)!important;border-radius:50%!important;background:rgba(133,185,219,.08)!important}
+html[data-theme="emerald"] #settingsModal .settings-close:hover{background:rgba(146,204,241,.20)!important;color:#fff!important}
+html[data-theme="emerald"] #settingsModal .s-section>.field,
+html[data-theme="emerald"] #settingsModal .s-section>.avatar-edit-row,
+html[data-theme="emerald"] #settingsModal .s-section>section.field,
+html[data-theme="emerald"] #settingsModal .settings-video-test{
+ border-bottom:1px solid rgba(175,213,239,.12)!important;
+ background:linear-gradient(100deg,rgba(149,194,224,.055),rgba(149,194,224,.015))!important;
+ border-radius:11px!important;padding:15px 14px!important;margin:0 0 9px!important;
+}
+html[data-theme="emerald"] #settingsModal .s-section .lbl{color:#d9eaf6!important;font-size:12px!important;letter-spacing:.01em!important}
+html[data-theme="emerald"] #settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),
+html[data-theme="emerald"] #settingsModal .s-section select,
+html[data-theme="emerald"] #settingsModal .s-section textarea{
+ color:#edf7ff!important;background:rgba(7,22,38,.48)!important;border:1px solid rgba(170,210,237,.19)!important;
+ border-radius:9px!important;box-shadow:inset 0 1px 4px rgba(0,0,0,.16)!important;
+}
+html[data-theme="emerald"] #settingsModal .s-section input:focus,
+html[data-theme="emerald"] #settingsModal .s-section select:focus,
+html[data-theme="emerald"] #settingsModal .s-section textarea:focus{border-color:rgba(169,216,245,.52)!important;box-shadow:0 0 0 3px rgba(112,177,218,.12)!important}
+html[data-theme="emerald"] #settingsModal .s-section .item-sub{color:#9dbbd0!important}
+html[data-theme="emerald"] #settingsModal .s-section button,
+html[data-theme="emerald"] #settingsModal .settings-video-actions button{
+ color:#f1f8fd!important;background:linear-gradient(135deg,rgba(94,154,197,.48),rgba(64,111,151,.42))!important;
+ border:1px solid rgba(177,216,241,.24)!important;border-radius:9px!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.12),0 5px 16px rgba(0,0,0,.15)!important;
+}
+html[data-theme="emerald"] #settingsModal .s-section button:hover,
+html[data-theme="emerald"] #settingsModal .settings-video-actions button:hover{background:linear-gradient(135deg,rgba(117,180,222,.55),rgba(78,133,176,.5))!important}
+html[data-theme="emerald"] #settingsModal .s-section input[type=range]{accent-color:#b9def4!important}
+html[data-theme="emerald"] #settingsModal .settings-video-test video{background:rgba(4,15,27,.60)!important;border:1px solid rgba(177,216,241,.19)!important;border-radius:12px!important}
+html[data-theme="emerald"] #settingsModal .settings-empty-page{color:#aac5d9!important}
+html[data-theme="emerald"] body:has(#settingsModal:not(.hidden)) .app-version-link,
+html[data-theme="emerald"] body:has(#settingsModal:not(.hidden)) #desktopUpdatePanel{visibility:hidden!important;pointer-events:none!important}
+@media(max-width:650px){
+ html[data-theme="emerald"] #settingsModal .modal-card{border-radius:15px!important}
+ html[data-theme="emerald"] #settingsModal .settings-main{padding:18px 13px 22px!important}
+ html[data-theme="emerald"] #settingsModal .settings-page-title{font-size:17px!important}
+}
+</style>
