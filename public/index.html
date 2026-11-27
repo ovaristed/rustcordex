@@ -999,7 +999,7 @@
     align-items: center;
     gap: 14px;
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]  }
+  }
   .avatar-preview-lg {
     width: 68px;
     height: 68px;
@@ -2000,7 +2000,7 @@ body {
   height:42px;
   flex:0 0 42px;
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]  display:grid;
+  display:grid;
   place-items:center;
   margin:0 0 12px;
   border-radius:15px;
@@ -3001,7 +3001,7 @@ html[data-theme="emerald"] .pop-banner {
 html[data-theme="emerald"] .user-profile-avatar { border-color:#0b3822 !important; background:#174b2d !important; }
 html[data-theme="emerald"] .user-profile-thought,
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]html[data-theme="emerald"] .user-profile-description,
+html[data-theme="emerald"] .user-profile-description,
 html[data-theme="emerald"] .pop-profile-strip,
 html[data-theme="emerald"] .pop-card,
 html[data-theme="emerald"] .pop-login-row {
@@ -4002,7 +4002,7 @@ body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;bac
 <style id="auralis-profile-ghost-toggle">
 .pop-presence-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:rgba(var(--accent-rgb),.045)}
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)].pop-presence-label{font-size:12px;font-weight:700;color:var(--muted)}
+.pop-presence-label{font-size:12px;font-weight:700;color:var(--muted)}
 .pop-ghost-toggle{display:flex;align-items:center;gap:8px;min-height:36px;padding:5px 9px;border:1px solid var(--border);border-radius:11px;background:transparent;color:var(--text);font:600 11px inherit;cursor:pointer;transition:.18s ease}
 .pop-ghost-toggle .auralis-status-icon{width:23px;height:23px;flex-basis:23px}
 .pop-ghost-switch{width:29px;height:17px;border-radius:99px;background:rgba(140,145,160,.28);position:relative;transition:.18s ease}
@@ -5003,7 +5003,7 @@ function openExternalSite(event, url) {
   const target = String(url || 'https://rustcord.hostless.app/download/');
   try {
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]    if (window.cordova && window.cordova.InAppBrowser && typeof window.cordova.InAppBrowser.open === 'function') {
+    if (window.cordova && window.cordova.InAppBrowser && typeof window.cordova.InAppBrowser.open === 'function') {
       window.cordova.InAppBrowser.open(target, '_system');
       return false;
     }
@@ -6004,7 +6004,7 @@ function notifyDesktop(title, body, tag, kind = 'message') {
     title: String(title || 'Auralis').slice(0, 100),
     body: String(body || '').slice(0, 220),
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]    tag: String(tag || 'rustcord').slice(0, 120)
+    tag: String(tag || 'rustcord').slice(0, 120)
   };
   // Electron uses native Windows/macOS notifications; browser mode falls back to Notification API.
   if (window.rustcordDesktop && typeof window.rustcordDesktop.notify === 'function') {
@@ -7005,7 +7005,7 @@ function renderAvatarHtml(username) {
   const url = avatarUrlOf(username);
   const title = displayNameOf(username);
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]  if (url) return '<img src="' + esc(url) + '" alt="' + esc(title) + '" />';
+  if (url) return '<img src="' + esc(url) + '" alt="' + esc(title) + '" />';
   return '<span class="default-avatar-fox" role="img" aria-label="Базовый аватар Auralis"><img src="data:image/jpeg;base64,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" alt=""></span>';
 }
 
@@ -8006,7 +8006,7 @@ async function refreshSocial() {
           lastMessage: sg.lastMessage || prev.lastMessage || ''
         } : sg);
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]      }
+      }
       groupsMeta = [...mergedMap.values()];
       saveCachedGroups();
       if (activeChat && activeChat.kind === 'group' && !getGroupById(activeChat.id)) {
@@ -9007,7 +9007,7 @@ function toggleVoicePlay(vpId) {
   if (currentPlayingUi && currentPlayingUi !== vp) {
     if (currentPlayingAudio) { try { currentPlayingAudio.pause(); } catch {} }
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]    const prevBtn = currentPlayingUi.querySelector('.vp-play');
+    const prevBtn = currentPlayingUi.querySelector('.vp-play');
     if (prevBtn) prevBtn.textContent = '▶';
   }
   if (!vp._audio) {
@@ -10008,7 +10008,7 @@ function updateLocalStageUI() {
       fsBtn.textContent = 'Вебка на весь экран';
       fsBtn.classList.remove('hidden');
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]    }
+    }
   } else {
     lv.srcObject = null;
     lv.classList.add('hidden');
@@ -11009,7 +11009,7 @@ html[data-theme="aurora"] #zoomRoot .bottom-dock {z-index:7!important}
   #callStage #callGrid.is-ringing > .tile:not(.in-call).screen-mode::before { display:none; }
   @keyframes auralisRingDialPulse { 0% { transform:scale(.55); opacity:.85; } 75%,100% { transform:scale(1.6); opacity:0; } }
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]</style>
+</style>
 <style id="auralis-winter-mini-profile-glass-v1">
 /* Winter/New Year theme only: translucent mini profile; theme accent replaces green UI tint. */
 html[data-theme="emerald"] .profile-popover {
@@ -12010,7 +12010,7 @@ body.auralis-no-active-chat .sidebar .panel-body::after { content:none !importan
  window.openGroupMembers=function(){
   var chat=activeChat;if(!chat||chat.kind!=='group')return;var group=getGroupById(chat.id);if(!group)return;
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]  closeMenu();
+  closeMenu();
   var old=document.getElementById('groupMembersBackdrop');if(old)old.remove();
   var back=document.createElement('div');back.id='groupMembersBackdrop';back.className='group-members-backdrop';
   var card=document.createElement('div');card.className='group-members-card';
@@ -13011,7 +13011,7 @@ html[data-theme="emerald"] .msg:has(html[data-theme="emerald"] .msg-sticker-big)
 html[data-theme="emerald"] .msg.sticker-only .msg-bubble,
 html[data-theme="emerald"] .msg-sticker-big,
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]html[data-theme="emerald"] html[data-theme="emerald"] .msg-sticker-big .msg-sticker-token,
+html[data-theme="emerald"] html[data-theme="emerald"] .msg-sticker-big .msg-sticker-token,
 html[data-theme="emerald"] html[data-theme="emerald"] .msg-sticker-big .msg-sticker-emoji,
 html[data-theme="emerald"] .sticker-card,
 html[data-theme="emerald"] .sticker-wrapper{
@@ -14012,7 +14012,7 @@ html[data-theme="emerald"] .axr-controls .axr-play{width:52px!important;height:5
 html[data-theme="emerald"] .axr-controls button:hover{transform:translateY(-2px)!important;border-color:rgba(var(--accent-rgb),.65)!important;background:rgba(var(--accent-rgb),.18)!important}
 html[data-theme="emerald"] .axr-controls .axr-play:hover{background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 90%,white),var(--accent))!important}
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]html[data-theme="emerald"] .axr-range,html[data-theme="emerald"] .axr-volume input{height:6px!important;border-radius:99px!important;background:linear-gradient(90deg,rgba(var(--accent-rgb),.7),rgba(var(--accent-rgb),.18))!important;accent-color:var(--accent)!important}
+html[data-theme="emerald"] .axr-range,html[data-theme="emerald"] .axr-volume input{height:6px!important;border-radius:99px!important;background:linear-gradient(90deg,rgba(var(--accent-rgb),.7),rgba(var(--accent-rgb),.18))!important;accent-color:var(--accent)!important}
 html[data-theme="emerald"] .axr-range::-webkit-slider-thumb,html[data-theme="emerald"] .axr-volume input::-webkit-slider-thumb{width:14px!important;height:14px!important;border:2px solid var(--accent)!important;background:var(--text)!important;box-shadow:0 0 0 4px rgba(var(--accent-rgb),.16),0 0 12px rgba(var(--accent-rgb),.38)!important}
 html[data-theme="emerald"] .axr-range::-moz-range-thumb,html[data-theme="emerald"] .axr-volume input::-moz-range-thumb{width:10px!important;height:10px!important;border:2px solid var(--accent)!important;background:var(--text)!important}
 html[data-theme="emerald"] .axr-track.active{background:rgba(var(--accent-rgb),.13)!important;border-color:rgba(var(--accent-rgb),.32)!important;box-shadow:inset 3px 0 var(--accent)!important}
@@ -14163,4 +14163,3 @@ html[data-theme="emerald"] #auralisLocalXmasRadio #auralisLocalXmasPanel{positio
 })();
 </script>
 
-[executed on device: ovarist (b698496f-777a-430d-9e7e-2fa89151e0cc)]
