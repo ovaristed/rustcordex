@@ -1048,7 +1048,7 @@ app.patch('/api/groups/:id', authMiddleware, async (req, res) => {
       sendToUser(username, { type: 'group-update', group });
       sendToUser(username, { type: 'group-dm', groupId, message: audit.rows[0] });
     }
-    return res.json({ group });
+    return res.json({ group, message: audit.rows[0] });
   } catch (err) {
     console.error('Group rename error:', err);
     return res.status(500).json({ error: 'Не удалось изменить название группы' });
