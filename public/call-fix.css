@@ -49,9 +49,6 @@
   background:rgba(0,0,0,.42) !important;
 }
 #callStage #callGrid > .tile.screen-mode {
-  height:auto !important;
-  min-height:0 !important;
-  max-height:none !important;
   padding:0 !important;
   justify-content:initial !important;
   background:#000 !important;
