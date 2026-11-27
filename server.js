@@ -569,7 +569,7 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
     if (!friendNames.length) return res.json({ friends: [], chats: [] });
 
     const profRows = await pool.query(
-      'SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background FROM users WHERE username = ANY($1::text[])',
+      'SELECT username, nickname, avatar_url, profile_description, profile_sticker_url, profile_background, presence_status FROM users WHERE username = ANY($1::text[])',
       [friendNames]
     );
     const profByName = new Map(profRows.rows.map((r) => [r.username, r]));
