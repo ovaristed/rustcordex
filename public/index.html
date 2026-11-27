@@ -5630,7 +5630,7 @@ function openGroupModal(nextMode) {
           '<div class="avatar profile-open-target" data-profile-user="' + esc(f.username) + '">' + renderAvatarHtml(f.username) + renderDmStatusBadge(f.status || f.presence || 'offline') + '</div>' +
           '<div>' +
             '<div class="item-name">' + esc(displayNameOf(f.username)) + '</div>' +
-            '<div class="item-sub">@' + esc(f.username) + '</div>' +
+            '<div class="item-sub">' + (f.activity_game ? '🎮 Играет в ' + esc(f.activity_game) : '@' + esc(f.username)) + '</div>' +
           '</div>' +
         '</div>' +
         '<span class="member-pick-pill">+</span>' +
@@ -7739,6 +7739,7 @@ function normalizeUserEntry(entry) {
     profile_sticker_url: entry.profile_sticker_url || '',
     status: entry.presence_status || entry.status || entry.presence || entry.onlineStatus || entry.online_status || (entry.online ? 'online' : 'offline'),
     presence: entry.presence_status || entry.presence || entry.status || entry.onlineStatus || entry.online_status || (entry.online ? 'online' : 'offline'),
+    activity_game: String(entry.activity_game || '').slice(0, 80),
     lastMessage: entry.lastMessage || entry.last_message || ''
   };
 }
@@ -7901,7 +7902,7 @@ function renderLists() {
           '<div class="avatar profile-open-target" data-profile-user="' + esc(c.username) + '">' + renderAvatarHtml(c.username) + renderDmStatusBadge(c.status || c.presence || 'offline') + '</div>' +
           '<div style="min-width:0">' +
             '<div class="item-name">' + esc(displayNameOf(c.username)) + (blocked ? ' (заблокирован)' : '') + '</div>' +
-            '<div class="item-sub">' + esc(blocked ? 'Пользователь заблокирован' : formatPreviewText(c.lastMessage)) + '</div>' +
+            '<div class="item-sub">' + esc(blocked ? 'Пользователь заблокирован' : (c.activity_game ? '🎮 Играет в ' + c.activity_game : formatPreviewText(c.lastMessage))) + '</div>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -11729,3 +11730,26 @@ body.auralis-no-active-chat .sidebar .panel-body::after { content:none !importan
     z-index:5 !important;
   }
 </style>
+
+<script id="auralis-game-presence-v1">
+(function(){
+ let lastGame=null,lastSentAt=0,busy=false;
+ async function syncGame(){
+  if(busy||!window.rustcordDesktop||typeof window.rustcordDesktop.getGameActivity!=='function'||!token)return;
+  busy=true;
+  try{
+   const detected=await window.rustcordDesktop.getGameActivity();
+   const ghost=!!(window.auralisIsGhostMode&&window.auralisIsGhostMode());
+   const game=ghost?'':String(detected&&detected.game||'').slice(0,80);
+   if(game!==lastGame||Date.now()-lastSentAt>30000){
+    const response=await fetch('/api/presence',{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({status:ghost?'ghost':'auto',activity_game:game})});
+    if(response.ok){lastGame=game;lastSentAt=Date.now();}
+   }
+   if(Date.now()-(window.__auralisGameRefreshAt||0)>18000){window.__auralisGameRefreshAt=Date.now();if(typeof refreshSocial==='function')refreshSocial();}
+  }catch(e){console.debug('[Auralis game presence]',e);}
+  finally{busy=false;}
+ }
+ syncGame();setInterval(syncGame,20000);
+ window.addEventListener('auralis:account-change',()=>{lastGame=null;lastSentAt=0;syncGame();});
+})();
+</script>
