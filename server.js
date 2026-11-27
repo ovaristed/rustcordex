@@ -83,16 +83,6 @@ async function initDb() {
     );
   `);
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS group_reactions (
-      id BIGSERIAL PRIMARY KEY,
-      message_id INTEGER NOT NULL REFERENCES group_messages(id) ON DELETE CASCADE,
-      username TEXT NOT NULL,
-      emoji TEXT NOT NULL,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      UNIQUE (message_id, username, emoji)
-    );
-  `);
-  await pool.query(`
     CREATE TABLE IF NOT EXISTS dm_pins (
       message_id INTEGER PRIMARY KEY REFERENCES direct_messages(id) ON DELETE CASCADE,
       pinned_by TEXT NOT NULL,
@@ -122,6 +112,16 @@ async function initDb() {
       sender TEXT NOT NULL,
       text TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS group_reactions (
+      id BIGSERIAL PRIMARY KEY,
+      message_id INTEGER NOT NULL REFERENCES group_messages(id) ON DELETE CASCADE,
+      username TEXT NOT NULL,
+      emoji TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      UNIQUE (message_id, username, emoji)
     );
   `);
   await pool.query(`ALTER TABLE direct_messages ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP;`);
@@ -1039,10 +1039,14 @@ app.patch('/api/groups/:id', authMiddleware, async (req, res) => {
     const oldTitle = String(previous.rows[0]?.title || '').trim();
     await pool.query('UPDATE groups SET title = $1 WHERE id = $2', [title, groupId]);
     const auditText = '__SYSTEM__:' + JSON.stringify({ actor: req.user.username, action: 'group-renamed', oldTitle, title, at: new Date().toISOString() });
-    await pool.query('INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3)', [groupId, req.user.username, auditText]);
+    const audit = await pool.query(
+      'INSERT INTO group_messages (group_id, sender, text) VALUES ($1, $2, $3) RETURNING id, group_id AS "groupId", sender, text, created_at',
+      [groupId, req.user.username, auditText]
+    );
     const group = await loadGroup(groupId);
     for (const username of group.members) {
       sendToUser(username, { type: 'group-update', group });
+      sendToUser(username, { type: 'group-dm', groupId, message: audit.rows[0] });
     }
     return res.json({ group });
   } catch (err) {
