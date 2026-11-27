@@ -599,6 +599,7 @@ app.get('/api/friends', authMiddleware, async (req, res) => {
         avatar_url: prof.avatar_url || '',
         profile_description: prof.profile_description || '',
         profile_sticker_url: prof.profile_sticker_url || '', profile_background: prof.profile_background || '',
+        presence_status: prof.presence_status === 'ghost' ? 'ghost' : (socketsByUser.get(name)?.size ? 'online' : 'offline'),
         lastMessage: lastByName.get(name) || ''
       };
     });
