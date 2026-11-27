@@ -1029,6 +1029,49 @@ app.post('/api/groups/:id/messages/:messageId/reaction', authMiddleware, async (
   }
 });
 
+// Версионированный endpoint реакций группы — отдельный URL для desktop-клиента.
+app.post('/api/group-reactions/toggle', authMiddleware, async (req, res) => {
+  try {
+    const groupId = String(req.body.groupId || '').trim();
+    const messageId = Number(req.body.messageId);
+    const emoji = String(req.body.emoji || '');
+    const allowed = new Set(['👍','❤️','😂','🔥','😮','😢','👏','🎉','🤔','👀']);
+    if (!groupId || !Number.isInteger(messageId) || messageId < 1 || !allowed.has(emoji)) {
+      return res.status(400).json({ error: 'Некорректная реакция' });
+    }
+    if (!(await isGroupMember(groupId, req.user.username))) {
+      return res.status(403).json({ error: 'Нет доступа к группе' });
+    }
+    const msg = await pool.query('SELECT id FROM group_messages WHERE id = $1 AND group_id = $2', [messageId, groupId]);
+    if (!msg.rows.length) return res.status(404).json({ error: 'Сообщение не найдено' });
+    const existing = await pool.query(
+      'SELECT id FROM group_reactions WHERE message_id = $1 AND username = $2 AND emoji = $3',
+      [messageId, req.user.username, emoji]
+    );
+    if (existing.rows.length) {
+      await pool.query('DELETE FROM group_reactions WHERE message_id = $1 AND username = $2 AND emoji = $3', [messageId, req.user.username, emoji]);
+    } else {
+      await pool.query(
+        'INSERT INTO group_reactions (message_id, username, emoji) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        [messageId, req.user.username, emoji]
+      );
+    }
+    const grouped = await pool.query(
+      `SELECT emoji, COUNT(*)::int AS count, bool_or(username = $2) AS mine
+       FROM group_reactions WHERE message_id = $1 GROUP BY emoji ORDER BY MIN(created_at)`,
+      [messageId, req.user.username]
+    );
+    const reactions = grouped.rows;
+    const members = await pool.query('SELECT username FROM group_members WHERE group_id = $1', [groupId]);
+    const payload = { type: 'group-reaction-updated', groupId, id: messageId, reactions };
+    for (const member of members.rows) sendToUser(member.username, payload);
+    return res.json({ ok: true, reactions });
+  } catch (err) {
+    console.error('Group reaction toggle error:', err);
+    return res.status(500).json({ error: 'Не удалось сохранить реакцию' });
+  }
+});
+
 // Журнал действий над участниками в истории группового чата.
 app.post('/api/groups/:id/audit', authMiddleware, async (req, res) => {
   // Friend/block actions are intentionally not written into group chat history.
