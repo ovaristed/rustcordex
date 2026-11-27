@@ -1811,3 +1811,25 @@ input[type="color"] {
 .msg-text,
 .msg-author,
 .peer-info { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+
+
+/* Ghost presence marker in DM and friends sidebars */
+.avatar .presence-indicator {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  z-index: 3;
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--bg, #171923);
+  background: #8b5cf6;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .35);
+  pointer-events: none;
+}
+.avatar .presence-ghost { background: #8b5cf6; }
