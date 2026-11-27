@@ -1,7 +1,7 @@
 {
   "name": "auralis-desktop",
-  "version": "3.6.9",
-  "description": "Auralis 3.6.9 — screen sharing contained in call profile tile",
+  "version": "3.7.0",
+  "description": "Auralis 3.7.0",
   "main": "electron-main.js",
   "scripts": {
     "start": "node server.js",
