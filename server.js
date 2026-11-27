@@ -72,6 +72,23 @@ async function initDb() {
       created_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS dm_reactions (
+      id BIGSERIAL PRIMARY KEY,
+      message_id INTEGER NOT NULL REFERENCES direct_messages(id) ON DELETE CASCADE,
+      username TEXT NOT NULL,
+      emoji TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      UNIQUE (message_id, username, emoji)
+    );
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS dm_pins (
+      message_id INTEGER PRIMARY KEY REFERENCES direct_messages(id) ON DELETE CASCADE,
+      pinned_by TEXT NOT NULL,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS groups (
@@ -725,6 +742,26 @@ app.delete('/api/dm', authMiddleware, async (req, res) => {
   }
 });
 
+app.get('/api/dm/pins', authMiddleware, async (req, res) => {
+  setPrivateRevalidation(res);
+  try {
+    const meName = req.user.username;
+    const peer = String(req.query.peer || '').trim();
+    if (!peer || !(await canContact(meName, peer))) return res.status(403).json({ error: 'Нет доступа к этой переписке' });
+    const r = await pool.query(
+      `SELECT dm.id, dm.sender, dm.recipient, dm.text, dm.created_at, dp.pinned_by, dp.created_at AS pinned_at
+       FROM dm_pins dp JOIN direct_messages dm ON dm.id = dp.message_id
+       WHERE (dm.sender = $1 AND dm.recipient = $2) OR (dm.sender = $2 AND dm.recipient = $1)
+       ORDER BY dp.created_at DESC LIMIT 30`,
+      [meName, peer]
+    );
+    return res.json(r.rows);
+  } catch (err) {
+    console.error('DM pins error:', err);
+    return res.status(500).json({ error: 'Не удалось загрузить закреплённые сообщения' });
+  }
+});
+
 app.get('/api/dm', authMiddleware, async (req, res) => {
   setPrivateRevalidation(res);
   try {
@@ -739,7 +776,15 @@ app.get('/api/dm', authMiddleware, async (req, res) => {
                 WHEN left(rp.text, 10) = '__VOICE__:' THEN 'Голосовое сообщение'
                 WHEN left(rp.text, 9) = '__CALL__:' THEN 'Звонок'
                 ELSE left(rp.text, 120)
-              END AS reply_text
+              END AS reply_text,
+              COALESCE((
+                SELECT json_agg(json_build_object('emoji', x.emoji, 'count', x.reaction_count, 'mine', x.mine))
+                FROM (
+                  SELECT emoji, COUNT(*)::int AS reaction_count, bool_or(username = $1) AS mine
+                  FROM dm_reactions WHERE message_id = t.id GROUP BY emoji
+                ) x
+              ), '[]'::json) AS reactions,
+              EXISTS (SELECT 1 FROM dm_pins dp WHERE dp.message_id = t.id) AS pinned
        FROM (
          SELECT id, sender, recipient, text, created_at, edited_at, reply_to_id FROM direct_messages
          WHERE (sender = $1 AND recipient = $2) OR (sender = $2 AND recipient = $1)
@@ -1229,6 +1274,71 @@ wss.on('connection', (ws) => {
       } catch (err) {
         console.error('Group DM error:', err);
       }
+      return;
+    }
+
+    // Реакции в личных сообщениях: только участники переписки, whitelist эмодзи.
+    if (data.type === 'dm-reaction') {
+      const id = Number(data.id);
+      const emoji = String(data.emoji || '');
+      const allowed = new Set(['👍','❤️','😂','🔥','😮','😢','👏','🎉','🤔','👀']);
+      if (!Number.isInteger(id) || id < 1 || !allowed.has(emoji)) return;
+      try {
+        const msg = await pool.query(
+          'SELECT sender, recipient FROM direct_messages WHERE id = $1 AND (sender = $2 OR recipient = $2)',
+          [id, ws.username]
+        );
+        if (!msg.rows.length) return;
+        const { sender, recipient } = msg.rows[0];
+        const existing = await pool.query(
+          'SELECT id FROM dm_reactions WHERE message_id = $1 AND username = $2 AND emoji = $3',
+          [id, ws.username, emoji]
+        );
+        if (existing.rows.length) {
+          await pool.query('DELETE FROM dm_reactions WHERE message_id = $1 AND username = $2 AND emoji = $3', [id, ws.username, emoji]);
+        } else {
+          await pool.query('INSERT INTO dm_reactions (message_id, username, emoji) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [id, ws.username, emoji]);
+        }
+        const grouped = await pool.query(
+          `SELECT emoji, COUNT(*)::int AS count, bool_or(username = $2) AS mine
+           FROM dm_reactions WHERE message_id = $1 GROUP BY emoji ORDER BY MIN(created_at)`,
+          [id, ws.username]
+        );
+        const payload = { type: 'dm-reaction-updated', id, reactions: grouped.rows };
+        sendToUser(sender, payload);
+        sendToUser(recipient, payload);
+      } catch (err) { console.error('DM reaction error:', err); }
+      return;
+    }
+
+    // Закрепление сообщения в личном чате — доступно обоим участникам.
+    if (data.type === 'dm-pin') {
+      const id = Number(data.id);
+      const pinned = !!data.pinned;
+      if (!Number.isInteger(id) || id < 1) return;
+      try {
+        const msg = await pool.query(
+          'SELECT sender, recipient FROM direct_messages WHERE id = $1 AND (sender = $2 OR recipient = $2)',
+          [id, ws.username]
+        );
+        if (!msg.rows.length) return;
+        const { sender, recipient } = msg.rows[0];
+        if (pinned) {
+          await pool.query(
+            'INSERT INTO dm_pins (message_id, pinned_by) VALUES ($1, $2) ON CONFLICT (message_id) DO NOTHING',
+            [id, ws.username]
+          );
+        } else {
+          await pool.query('DELETE FROM dm_pins WHERE message_id = $1', [id]);
+        }
+        const pinInfo = await pool.query(
+          'SELECT pinned_by, created_at FROM dm_pins WHERE message_id = $1',
+          [id]
+        );
+        const payload = { type: 'dm-pin-updated', id, pinned: pinInfo.rows.length > 0, pin: pinInfo.rows[0] || null };
+        sendToUser(sender, payload);
+        sendToUser(recipient, payload);
+      } catch (err) { console.error('DM pin error:', err); }
       return;
     }
 
