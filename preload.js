@@ -13,6 +13,7 @@ if (location.protocol === 'data:') {
 // Native bridges are exposed only inside Electron's isolated preload context.
 if (location.protocol === 'https:' || location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
   contextBridge.exposeInMainWorld('rustcordDesktop', {
+    getGameActivity: () => ipcRenderer.invoke('auralis:game-activity'),
     getVersion: () => ipcRenderer.invoke('auralis:update-version'),
     checkForUpdates: () => ipcRenderer.invoke('auralis:update-check'),
     downloadUpdate: () => ipcRenderer.invoke('auralis:update-download'),
