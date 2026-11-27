@@ -7737,8 +7737,8 @@ function normalizeUserEntry(entry) {
     avatar_url: entry.avatar_url || entry.avatarUrl || '',
     profile_description: entry.profile_description || '',
     profile_sticker_url: entry.profile_sticker_url || '',
-    status: entry.status || entry.presence || entry.onlineStatus || entry.online_status || 'offline',
-    presence: entry.presence || entry.status || entry.onlineStatus || entry.online_status || 'offline',
+    status: entry.presence_status || entry.status || entry.presence || entry.onlineStatus || entry.online_status || (entry.online ? 'online' : 'offline'),
+    presence: entry.presence_status || entry.presence || entry.status || entry.onlineStatus || entry.online_status || (entry.online ? 'online' : 'offline'),
     lastMessage: entry.lastMessage || entry.last_message || ''
   };
 }
@@ -11539,7 +11539,7 @@ html[data-theme="emerald"] #app>.main{background:linear-gradient(160deg,rgba(11,
 .dm-status-dot{position:absolute;right:-4px;top:-7px;bottom:auto;width:13px;height:13px;border-radius:50%;border:2px solid var(--glass-solid,var(--bg));display:flex;align-items:center;justify-content:center;font-size:8px;z-index:4;box-shadow:0 1px 5px rgba(0,0,0,.28)}
 .avatar:has(>.dm-status-dot){overflow:visible!important;position:relative!important}
 .dm-status-dot.status-online{background:#22c55e}.dm-status-dot.status-offline{background:#6b7280}
-.dm-status-dot.status-ghost{background:#475569;color:#e2e8f0;box-shadow:0 0 8px rgba(148,163,184,.45)}
+.dm-status-dot.status-ghost{background:#8b5cf6;color:#fff;box-shadow:0 0 9px rgba(139,92,246,.65)}
 .crop-modal[hidden]{display:none!important}.crop-modal{position:fixed;inset:0;z-index:240;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(9px)}
 .crop-modal__card{width:min(440px,100%);padding:18px;border-radius:18px;background:#202226;color:#f3f4f6;border:1px solid rgba(255,255,255,.14);box-shadow:0 24px 80px rgba(0,0,0,.6)}
 .crop-modal__header,.crop-actions,.crop-actions__right,.crop-zoom-row{display:flex;align-items:center;gap:10px}
