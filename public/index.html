@@ -14314,3 +14314,144 @@ html[data-theme="emerald"] #auralisLocalXmasRadio #auralisLocalXmasPanel{positio
 })();
 </script>
 
+
+<style id="auralis-settings-redesign-v2">
+#settingsModal{padding:0!important;align-items:center!important;justify-content:center!important;background:rgba(0,0,0,.62)!important;backdrop-filter:blur(5px)!important}
+#settingsModal .modal-card{display:grid!important;grid-template-columns:224px minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;width:min(980px,calc(100vw - 32px))!important;height:min(650px,calc(100vh - 32px))!important;max-width:980px!important;max-height:calc(100vh - 32px)!important;padding:0!important;gap:0!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:12px!important;background:#303136!important;box-shadow:0 24px 80px #0009!important}
+#settingsModal .modal-head{display:none!important}
+#settingsModal .settings-tabs{display:none!important}
+#settingsModal .settings-sidebar{grid-column:1;grid-row:1;min-width:0;background:#28292e;padding:14px 10px;display:flex;flex-direction:column;gap:7px;border-right:1px solid rgba(255,255,255,.035);overflow-y:auto}
+#settingsModal .settings-user-card{height:68px;flex:0 0 68px;border-radius:9px;background:linear-gradient(130deg,#182b25,#202d28 65%,#19221f);display:flex;align-items:center;gap:10px;padding:9px 10px;margin-bottom:7px;min-width:0}
+#settingsModal .settings-user-card .avatar{width:38px;height:38px;flex:0 0 38px}
+#settingsModal .settings-user-meta{min-width:0;display:flex;flex-direction:column;gap:3px}
+#settingsModal .settings-user-meta strong{font-size:12px;color:#f1f1f2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#settingsModal .settings-user-meta span{font-size:10px;color:#a1a2a8}
+#settingsModal .settings-nav-label{font-size:10px;color:#9b9ca3;padding:7px 9px 1px;text-transform:none}
+#settingsModal .settings-nav-btn{width:100%;min-height:34px;border:0;border-radius:6px;background:transparent;color:#c5c6cb;text-align:left;padding:7px 9px;display:flex;align-items:center;gap:9px;font-size:12px;cursor:pointer}
+#settingsModal .settings-nav-btn .nav-ico{width:15px;text-align:center;color:#bfc0c6;font-size:14px}
+#settingsModal .settings-nav-btn:hover{background:#383a40;color:#fff}
+#settingsModal .settings-nav-btn.active{background:#41434a;color:#fff;font-weight:600}
+#settingsModal .settings-main{grid-column:2;grid-row:1;min-width:0;min-height:0;position:relative;overflow-y:auto;padding:18px 22px 24px;background:#303136}
+#settingsModal .settings-close{position:sticky;float:right;top:0;margin:-5px -7px 0 10px;z-index:3;width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:#aeb0b7;font-size:19px;cursor:pointer}
+#settingsModal .settings-close:hover{background:#45474e;color:#fff}
+#settingsModal .settings-page-title{font-size:16px;font-weight:700;color:#f1f1f3;margin:1px 0 18px}
+#settingsModal .settings-page-intro{font-size:12px;color:#a8a9b0;margin:-10px 0 20px}
+#settingsModal .s-section{display:block!important;min-width:0}
+#settingsModal .s-section.hidden{display:none!important}
+#settingsModal .s-section>.field,#settingsModal .s-section>.avatar-edit-row,#settingsModal .s-section>section.field{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:12px 4px!important;margin:0!important;border-bottom:1px solid rgba(255,255,255,.055)!important}
+#settingsModal .s-section .lbl{font-size:12px!important;font-weight:600!important;color:#e1e1e4!important;margin-bottom:8px!important}
+#settingsModal .s-section input:not([type=checkbox]):not([type=range]):not([type=file]),#settingsModal .s-section select,#settingsModal .s-section textarea{background:#292a2f!important;border:1px solid #44464e!important;color:#e8e8eb!important;border-radius:6px!important;min-height:34px}
+#settingsModal .s-section input[type=range]{accent-color:#7184ff}
+#settingsModal .s-section .item-sub{color:#9b9da5!important}
+#settingsModal #sPanelProfile{display:block!important;padding:0!important;overflow:visible!important}
+#settingsModal #sPanelProfile.hidden{display:none!important}
+#settingsModal #sPanelAudio{display:block!important}
+#settingsModal #sPanelAudio.hidden{display:none!important}
+#settingsModal #sPanelBinds{display:block!important}
+#settingsModal #sPanelBinds.hidden{display:none!important}
+#settingsModal .settings-video-test{padding:14px 4px;border-bottom:1px solid rgba(255,255,255,.055)}
+#settingsModal .settings-video-test video{display:block;width:min(100%,460px);height:150px;object-fit:cover;background:#292a2f;border:1px solid #41434a;border-radius:7px;margin:12px 0}
+#settingsModal .settings-video-test video.hidden{display:none}
+#settingsModal .settings-video-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#settingsModal .settings-video-actions button{background:#5865f2;color:#fff;border:0;border-radius:6px;padding:8px 13px;cursor:pointer;font-size:12px}
+#settingsModal .settings-empty-page{color:#a7a8af;font-size:12px;min-height:100px}
+@media(max-width:650px){
+#settingsModal{align-items:stretch!important}
+#settingsModal .modal-card{grid-template-columns:128px minmax(0,1fr)!important;width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important;max-height:calc(100dvh - 12px)!important;border-radius:10px!important}
+#settingsModal .settings-sidebar{padding:9px 6px}
+#settingsModal .settings-user-card{height:58px;flex-basis:58px;padding:6px;gap:6px}
+#settingsModal .settings-user-card .avatar{width:30px;height:30px;flex-basis:30px}
+#settingsModal .settings-user-meta strong{font-size:10px}
+#settingsModal .settings-user-meta span{font-size:9px}
+#settingsModal .settings-nav-btn{font-size:10px;padding:7px 5px;gap:5px}
+#settingsModal .settings-nav-btn .nav-ico{width:12px}
+#settingsModal .settings-nav-label{font-size:9px;padding-left:5px}
+#settingsModal .settings-main{padding:14px 12px 20px}
+#settingsModal .settings-page-title{font-size:14px;margin-bottom:12px}
+}
+</style>
+<script id="auralis-settings-redesign-v2-script">
+(()=>{
+const modal=document.getElementById('settingsModal');
+if(!modal||modal.dataset.redesignV2)return;
+modal.dataset.redesignV2='1';
+const card=modal.querySelector('.modal-card');
+const oldTabs=card.querySelector('.settings-tabs');
+const sidebar=document.createElement('aside');sidebar.className='settings-sidebar';
+const main=document.createElement('main');main.className='settings-main';
+const user=document.createElement('div');user.className='settings-user-card';
+user.innerHTML='<div class="avatar" id="settingsSidebarAvatar">Я</div><div class="settings-user-meta"><strong id="settingsSidebarName">Аккаунт</strong><span id="settingsSidebarStatus">Auralis</span></div>';
+sidebar.appendChild(user);
+const nav=(id,label,icon,tab)=>{const b=document.createElement('button');b.type='button';b.className='settings-nav-btn';b.dataset.settingsTab=tab;b.innerHTML='<span class="nav-ico">'+icon+'</span><span>'+label+'</span>';b.addEventListener('click',()=>switchSettingsTab(tab));sidebar.appendChild(b);return b};
+nav('account','Учётная запись','♟','profile');
+nav('notifications','Уведомления','♧','notifications');
+const group=document.createElement('div');group.className='settings-nav-label';group.textContent='Взаимодействие';sidebar.appendChild(group);
+nav('voice','Голос и видео','♩','audio');
+nav('appearance','Внешний вид','◐','appearance');
+nav('privacy','Данные и конфиденциальность','⬡','privacy');
+const close=document.createElement('button');close.type='button';close.className='settings-close';close.setAttribute('aria-label','Закрыть настройки');close.textContent='×';close.addEventListener('click',closeSettings);main.appendChild(close);
+const pages=[
+['profile','Учётная запись','sPanelProfile'],
+['notifications','Уведомления','sPanelNotifications'],
+['audio','Голос','sPanelAudio'],
+['appearance','Внешний вид','sPanelAppearance'],
+['privacy','Данные и конфиденциальность','sPanelPrivacy'],
+['admin','Панель владельца','sPanelAdmin']
+];
+const panelIds=['sPanelAppearance','sPanelAudio','sPanelBinds','sPanelProfile','sPanelAdmin'];
+const panels={};panelIds.forEach(id=>{const p=document.getElementById(id);if(p)panels[id]=p});
+const notificationPanel=document.createElement('div');notificationPanel.id='sPanelNotifications';notificationPanel.className='s-section hidden';
+const appearance=panels.sPanelAppearance;
+if(appearance){
+ const notificationField=Array.from(appearance.querySelectorAll('.field')).find(el=>el.textContent.includes('Уведомления о сообщениях и звонках'));
+ if(notificationField){notificationPanel.appendChild(notificationField);const title=notificationField.querySelector('.lbl');if(title)title.remove()}
+}
+const privacyPanel=document.createElement('div');privacyPanel.id='sPanelPrivacy';privacyPanel.className='s-section hidden';
+privacyPanel.innerHTML='<div class="settings-empty-page"></div>';
+const audio=panels.sPanelAudio,binds=panels.sPanelBinds;
+if(audio&&binds){
+ const ptt=binds.querySelector('.field');if(ptt)audio.appendChild(ptt);
+ const key=binds.querySelector('.field');if(key)audio.appendChild(key);
+ const shortcuts=binds.querySelector('.keybind-box');if(shortcuts)audio.appendChild(shortcuts);
+ binds.remove();
+}
+const video=document.createElement('section');video.className='settings-video-test';
+video.innerHTML='<div class="lbl">Камера</div><video id="settingsCameraPreview" class="hidden" autoplay muted playsinline></video><div class="settings-video-actions"><button type="button" id="settingsCameraTest">Проверить видео</button><span class="item-sub" id="settingsCameraStatus">Проверка камеры</span></div>';
+if(audio)audio.appendChild(video);
+pages.forEach(([tab,title,id])=>{const p=document.getElementById(id);if(!p)return;const h=document.createElement('div');h.className='settings-page-title';h.textContent=title;p.insertBefore(h,p.firstChild);main.appendChild(p)});
+main.appendChild(privacyPanel);
+main.appendChild(notificationPanel);
+if(oldTabs)oldTabs.remove();
+const oldHead=card.querySelector('.modal-head');if(oldHead)oldHead.remove();
+card.insertBefore(sidebar,card.firstChild);card.appendChild(main);
+window.switchSettingsTab=function(tab){
+ const allowed=['profile','notifications','audio','appearance','privacy','admin'];
+ if(tab==='admin'&&(!me||String(me.username).toLowerCase()!=='ovarist'))return;
+ if(!allowed.includes(tab))tab='profile';
+ const ids={profile:'sPanelProfile',notifications:'sPanelNotifications',audio:'sPanelAudio',appearance:'sPanelAppearance',privacy:'sPanelPrivacy',admin:'sPanelAdmin'};
+ Object.entries(ids).forEach(([key,id])=>{const p=document.getElementById(id);if(p)p.classList.toggle('hidden',key!==tab)});
+ sidebar.querySelectorAll('.settings-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.settingsTab===tab));
+ if(tab==='audio')populateAudioDevices();
+ if(tab==='profile')loadProfileForm();
+ if(tab==='admin')loadAdminUsers();
+};
+const oldOpen=window.openSettings;
+window.openSettings=async function(){
+ await oldOpen();
+ switchSettingsTab('profile');
+ const name=document.getElementById('settingsSidebarName');if(name)name.textContent=me?.nickname||me?.username||'Аккаунт';
+ const status=document.getElementById('settingsSidebarStatus');if(status)status.textContent=me?'В сети':'Auralis';
+ const av=document.getElementById('settingsSidebarAvatar');if(av&&me)av.innerHTML=renderAvatarHtml(me.username);
+};
+let cameraStream=null;
+const cameraButton=document.getElementById('settingsCameraTest');
+if(cameraButton)cameraButton.addEventListener('click',async()=>{
+ const preview=document.getElementById('settingsCameraPreview'),status=document.getElementById('settingsCameraStatus');
+ if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;preview.srcObject=null;preview.classList.add('hidden');cameraButton.textContent='Проверить видео';status.textContent='Камера остановлена';return}
+ try{cameraStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});preview.srcObject=cameraStream;preview.classList.remove('hidden');cameraButton.textContent='Остановить камеру';status.textContent='Камера работает'}
+ catch(e){status.textContent=e.name==='NotAllowedError'?'Нет разрешения на камеру':'Не удалось открыть камеру';}
+});
+const oldClose=window.closeSettings;
+window.closeSettings=function(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null}const v=document.getElementById('settingsCameraPreview');if(v){v.srcObject=null;v.classList.add('hidden')}const b=document.getElementById('settingsCameraTest');if(b)b.textContent='Проверить видео';oldClose()};
+})();
+</script>
