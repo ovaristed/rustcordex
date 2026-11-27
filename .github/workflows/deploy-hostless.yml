@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - restore/auralis-full-ui
   workflow_dispatch:
 
 permissions:

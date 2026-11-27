@@ -432,6 +432,26 @@ app.post('/api/login', authLimiter, async (req, res) => {
 });
 
 
+app.post('/api/account/password', authMiddleware, authLimiter, async (req, res) => {
+  try {
+    const currentPassword = String(req.body.currentPassword || '');
+    const newPassword = String(req.body.newPassword || '');
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: '\u0417\u0430\u043f\u043e\u043b\u043d\u0438 \u043e\u0431\u0430 \u043f\u043e\u043b\u044f \u043f\u0430\u0440\u043e\u043b\u044f.' });
+    if (newPassword.length < 10) return res.status(400).json({ error: '\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0434\u043e\u043b\u0436\u0435\u043d \u0441\u043e\u0434\u0435\u0440\u0436\u0430\u0442\u044c \u043d\u0435 \u043c\u0435\u043d\u0435\u0435 10 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u0432.' });
+    if (newPassword.length > 128) return res.status(400).json({ error: '\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u0434\u043b\u0438\u043d\u043d\u044b\u0439.' });
+    if (currentPassword === newPassword) return res.status(400).json({ error: '\u041d\u043e\u0432\u044b\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0434\u043e\u043b\u0436\u0435\u043d \u043e\u0442\u043b\u0438\u0447\u0430\u0442\u044c\u0441\u044f \u043e\u0442 \u0442\u0435\u043a\u0443\u0449\u0435\u0433\u043e.' });
+    const found = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+    if (!found.rows.length) return res.status(404).json({ error: '\u0410\u043a\u043a\u0430\u0443\u043d\u0442 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d.' });
+    if (!(await bcrypt.compare(currentPassword, found.rows[0].password_hash))) return res.status(401).json({ error: '\u0422\u0435\u043a\u0443\u0449\u0438\u0439 \u043f\u0430\u0440\u043e\u043b\u044c \u0443\u043a\u0430\u0437\u0430\u043d \u043d\u0435\u0432\u0435\u0440\u043d\u043e.' });
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, req.user.id]);
+    return res.json({ ok: true, message: '\u041f\u0430\u0440\u043e\u043b\u044c \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0438\u0437\u043c\u0435\u043d\u0451\u043d.' });
+  } catch (err) {
+    console.error('Password change error:', err);
+    return res.status(500).json({ error: '\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c. \u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439 \u043f\u043e\u0437\u0436\u0435.' });
+  }
+});
+
 app.get('/api/admin/users', authMiddleware, adminOnly, async (_req, res) => {
   try {
     const result = await pool.query(
